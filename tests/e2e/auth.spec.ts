@@ -11,7 +11,9 @@ test.describe('Authentication and Navigation', () => {
   test('should redirect to login page if not authenticated', async ({ page }) => {
     await page.goto('/collection');
     await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { name: 'Discogs Viewer' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Discogs Viewer' }),
+    ).toBeVisible();
   });
 
   test('should show an error for an invalid token', async ({ page }) => {
@@ -21,12 +23,14 @@ test.describe('Authentication and Navigation', () => {
     await expect(page.getByText('Error: Authentication failed')).toBeVisible();
   });
 
-  test('should allow a user to log in, navigate, and log out', async ({ page }) => {
+  test('should allow a user to log in, navigate, and log out', async ({
+    page,
+  }) => {
     if (!DISCOGS_TOKEN) {
       test.skip(true, 'E2E_DISCOGS_TOKEN is not set. Skipping login test.');
       return;
     }
-    
+
     // 1. Login
     await page.goto('/');
     await page.getByLabel('Personal Access Token').fill(DISCOGS_TOKEN);
@@ -35,14 +39,18 @@ test.describe('Authentication and Navigation', () => {
     // 2. Verify redirect to collection and see content
     await page.waitForURL('/collection');
     await expect(page).toHaveURL('/collection');
-    await expect(page.getByRole('link', { name: /Collection/ })).toHaveClass(/bg-discogs-blue/);
+    await expect(page.getByRole('link', { name: /Collection/ })).toHaveClass(
+      /bg-discogs-blue/,
+    );
     await expect(page.locator('.group').first()).toBeVisible(); // Check for at least one album card
 
     // 3. Navigate to Wantlist
     await page.getByRole('link', { name: /Wantlist/ }).click();
     await page.waitForURL('/wantlist');
     await expect(page).toHaveURL('/wantlist');
-    await expect(page.getByRole('link', { name: /Wantlist/ })).toHaveClass(/bg-discogs-blue/);
+    await expect(page.getByRole('link', { name: /Wantlist/ })).toHaveClass(
+      /bg-discogs-blue/,
+    );
     await expect(page.locator('.group').first()).toBeVisible();
 
     // 4. Navigate back to Collection
@@ -54,7 +62,9 @@ test.describe('Authentication and Navigation', () => {
     await page.getByRole('button', { name: 'Logout' }).click();
     await page.waitForURL('/');
     await expect(page).toHaveURL('/');
-    await expect(page.getByRole('heading', { name: 'Discogs Viewer' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'Discogs Viewer' }),
+    ).toBeVisible();
 
     // 6. Verify logged out state
     await page.goto('/collection');

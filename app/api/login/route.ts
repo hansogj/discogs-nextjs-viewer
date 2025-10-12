@@ -4,7 +4,7 @@ import { getIdentity } from '@/lib/discogs';
 import { z } from 'zod';
 
 const loginSchema = z.object({
-  token: z.string().min(1, { message: "Token is required" }),
+  token: z.string().min(1, { message: 'Token is required' }),
 });
 
 export async function POST(request: Request) {
@@ -13,16 +13,19 @@ export async function POST(request: Request) {
     const parsed = loginSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid token provided.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid token provided.' },
+        { status: 400 },
+      );
     }
-    
+
     const { token } = parsed.data;
 
     // Verify token with Discogs API
     const identity = await getIdentity(token);
 
     if (!identity || !identity.username) {
-        throw new Error("Invalid token or failed to fetch identity.");
+      throw new Error('Invalid token or failed to fetch identity.');
     }
 
     // Save user info and token in session
@@ -37,10 +40,13 @@ export async function POST(request: Request) {
     await session.save();
 
     return NextResponse.json({ user: session.user });
-
   } catch (error) {
-    console.error("Login error:", error);
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-    return NextResponse.json({ error: `Authentication failed: ${errorMessage}` }, { status: 401 });
+    console.error('Login error:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json(
+      { error: `Authentication failed: ${errorMessage}` },
+      { status: 401 },
+    );
   }
 }

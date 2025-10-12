@@ -1,12 +1,12 @@
-import AppLayout from "@/components/layout/AppLayout";
-import { getInitialWantlist, getHeaderData } from "@/lib/data";
-import AlbumViewer from "@/components/AlbumViewer";
+import AppLayout from '@/components/layout/AppLayout';
+import { getInitialWantlist, getHeaderData } from '@/lib/data';
+import AlbumViewer from '@/components/AlbumViewer';
 
 export default async function WantlistPage() {
   // Fetch initial wantlist for infinite scroll and full collection for filtering
   const [
     { data: initialWantlist, pagination },
-    { fullCollectionForDuplicates: collection }
+    { fullCollectionForDuplicates: collection },
   ] = await Promise.all([
     getInitialWantlist(),
     getHeaderData(), // This provides the full collection for the filter
@@ -14,11 +14,11 @@ export default async function WantlistPage() {
 
   return (
     <AppLayout activeView="wantlist">
-      <AlbumViewer 
+      <AlbumViewer
         initialItems={initialWantlist}
-        initialPagination={pagination} 
-        collectionItemsForFiltering={collection} 
-        viewType="wantlist" 
+        initialPagination={pagination}
+        collectionItemsForFiltering={collection}
+        viewType="wantlist"
       />
     </AppLayout>
   );
