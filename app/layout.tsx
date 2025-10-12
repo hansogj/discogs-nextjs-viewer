@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+// FIX: Import React to resolve 'Cannot find namespace' error for React.ReactNode.
+import React from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
