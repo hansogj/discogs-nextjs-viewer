@@ -1,5 +1,3 @@
-/// <reference types="node" />
-
 import 'server-only';
 import { getSession } from './session';
 import {
@@ -13,8 +11,6 @@ import type {
   Pagination,
   DiscogsUser,
 } from './types';
-import path from 'path';
-import fs from 'fs/promises';
 
 const ITEMS_PER_PAGE = 48; // Should match the client-side constant
 
