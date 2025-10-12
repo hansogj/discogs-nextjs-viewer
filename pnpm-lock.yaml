@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@vercel/kv':
-        specifier: ^1.0.1
-        version: 1.0.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -166,14 +163,6 @@ packages:
       '@types/prop-types': 15.7.12
       csstype: 3.1.3
     dev: true
-
-  '@upstash/redis@1.31.3':
-    resolution: {integrity: sha512-dF2/4z02eA0sK+sW8z3G0P28A3Kj3v+lF8A4iUfKSCy8I+8uB/XBUU2FzM4dYvXw8B1Q2B4Y+g8B7iAFA==}
-
-  '@vercel/kv@1.0.1':
-    resolution: {integrity: sha512-K62nEq32nL1n3S5cPMl8T9j2S5x4UeS+tB157gUuYfEAUY2U5u96xTRXmP/9e4F/949a2yTzQ+zW8g==}
-    dependencies:
-      '@upstash/redis': 1.31.3
 
   '@vitejs/plugin-react@4.2.1':
     resolution: {integrity: sha512-s2TD398n14f24K02z9yS9i43rnsiqlEWzGN2T7ItrgK2cW2qJ/P+1a3pC9509f5O573KHDnJ9/TmM0mJ4fA0w==}

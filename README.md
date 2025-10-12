@@ -1,6 +1,6 @@
 # Discogs Collection Viewer (Next.js Version)
 
-This is a web application built with Next.js that allows you to view your Discogs record collection and wantlist. It uses the Discogs API for data and Vercel KV for server-side caching to provide a fast and seamless experience.
+This is a web application built with Next.js that allows you to view your Discogs record collection and wantlist. It uses the Discogs API for data and a simple in-memory cache for a fast and seamless experience during a session.
 
 ## Features
 
@@ -8,7 +8,7 @@ This is a web application built with Next.js that allows you to view your Discog
 - **Server-Side Rendering (SSR)**: Fast initial page loads.
 - **Dedicated Routes**: Separate, shareable pages for `/collection` and `/wantlist`.
 - **Secure Authentication**: User sessions are managed with encrypted, HTTP-only cookies.
-- **Persistent Caching**: Fetched data from Discogs is cached in a Vercel KV (Redis) database for near-instant subsequent loads.
+- **In-Memory Caching**: Fetched data from Discogs is cached in memory for near-instant subsequent loads within a session.
 - **Modern Dark UI**: A sleek, "Discogs-ish" dark mode interface.
 - **Comprehensive Testing**: Includes unit tests with Vitest and end-to-end tests with Playwright.
 
@@ -18,7 +18,6 @@ This is a web application built with Next.js that allows you to view your Discog
 
 - [Node.js](https://nodejs.org/) (version 18 or later)
 - [pnpm](https://pnpm.io/installation)
-- A [Vercel](https://vercel.com) account for Vercel KV storage.
 - A [Discogs](https://www.discogs.com) account.
 
 ### 1. Installation
@@ -33,7 +32,7 @@ pnpm install
 
 ### 2. Environment Variables
 
-You need to set up environment variables for the Discogs API, Vercel KV, and session security.
+You need to set up environment variables for the Discogs API and session security.
 
 First, create a `.env.local` file in the root of the project by copying the example file:
 
@@ -54,23 +53,6 @@ Now, fill in the values in `.env.local`:
 
 # Used by Playwright for end-to-end testing login flow
 E2E_DISCOGS_TOKEN="your_discogs_personal_access_token"
-```
-
-#### Vercel KV
-
-1.  [Create a Vercel KV database](https://vercel.com/docs/storage/vercel-kv/create-kv-store) from your Vercel dashboard.
-2.  Connect it to your project.
-3.  Navigate to the project's settings, go to "Storage", select your KV database, and click on the ".env.local" tab.
-4.  Copy the provided environment variables into your `.env.local` file.
-
-```env
-# .env.local
-
-# Vercel KV variables
-KV_URL="..."
-KV_REST_API_URL="..."
-KV_REST_API_TOKEN="..."
-KV_REST_API_READ_ONLY_TOKEN="..."
 ```
 
 #### Auth Secret
