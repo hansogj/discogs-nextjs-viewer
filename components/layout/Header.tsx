@@ -14,7 +14,7 @@ interface HeaderProps {
   wantlistCount: number;
 }
 
-const Header: React.FC<HeaderProps> & { Skeleton: React.FC<{ activeView: 'collection' | 'wantlist' }> } = ({ user, activeView, collectionCount, wantlistCount }) => {
+const Header: React.FC<HeaderProps> = ({ user, activeView, collectionCount, wantlistCount }) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -63,7 +63,7 @@ const Header: React.FC<HeaderProps> & { Skeleton: React.FC<{ activeView: 'collec
   );
 };
 
-Header.Skeleton = function HeaderSkeleton({ activeView }) {
+export function HeaderSkeleton({ activeView }: { activeView: 'collection' | 'wantlist' }) {
     const buttonBaseClasses = "px-4 py-2 text-sm font-medium rounded-md";
     const activeButtonClasses = "bg-discogs-blue text-white";
     const inactiveButtonClasses = "bg-discogs-bg-light text-discogs-text-secondary";
