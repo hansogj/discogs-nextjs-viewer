@@ -30,7 +30,28 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   viewType,
   collectionItemsForFiltering,
 }) => {
-  const [items, setItems] = useState(initialItems);
+  // Memoize the processing of initial items to ensure wantlist is unique from the start.
+  const { initialUniqueItems, initialSeenMasterIds } = useMemo(() => {
+    if (viewType !== 'wantlist') {
+      return {
+        initialUniqueItems: initialItems,
+        initialSeenMasterIds: new Set<number>(),
+      };
+    }
+    const uniqueItems: ProcessedWantlistItem[] = [];
+    const seenIds = new Set<number>();
+    for (const item of initialItems as ProcessedWantlistItem[]) {
+      const masterId = item.basic_information.master_id;
+      // Rule: Item must have a master_id and it must not have been seen before.
+      if (masterId > 0 && !seenIds.has(masterId)) {
+        seenIds.add(masterId);
+        uniqueItems.push(item);
+      }
+    }
+    return { initialUniqueItems: uniqueItems, initialSeenMasterIds: seenIds };
+  }, [initialItems, viewType]);
+
+  const [items, setItems] = useState(initialUniqueItems);
   const [page, setPage] = useState(2); // Start with the next page to fetch
   const [hasNextPage, setHasNextPage] = useState(!!initialPagination.urls.next);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,17 +60,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showInCollectionOnly, setShowInCollectionOnly] = useState(false);
 
-  // State for wantlist de-duplication
-  const [seenMasterIds, setSeenMasterIds] = useState(
-    () =>
-      new Set(
-        viewType === 'wantlist'
-          ? initialItems
-              .map((it) => it.basic_information.master_id)
-              .filter((id) => id > 0)
-          : [],
-      ),
-  );
+  // Use the memoized set of master IDs for the initial state.
+  const [seenMasterIds, setSeenMasterIds] = useState(initialSeenMasterIds);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -91,6 +103,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           'Stopped fetching wantlist after too many consecutive empty pages of duplicates.',
         );
         setHasNextPage(false);
+        setIsLoading(false); // Ensure loading is reset
         return;
       }
 
@@ -112,12 +125,14 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         if (viewType === 'wantlist') {
           const uniqueNewItems = newItems.filter((item) => {
             const masterId = item.basic_information.master_id;
-            return !masterId || masterId <= 0 || !seenMasterIds.has(masterId);
+            // Item must have a master ID and it must be one we haven't seen.
+            return masterId > 0 && !seenMasterIds.has(masterId);
           });
 
           const newMasterIds = uniqueNewItems
             .map((item) => item.basic_information.master_id)
             .filter((id) => id > 0);
+
           if (newMasterIds.length > 0) {
             setSeenMasterIds((prev) => new Set([...prev, ...newMasterIds]));
           }
