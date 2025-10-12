@@ -1,9 +1,8 @@
-import { HeaderSkeleton } from "@/components/layout/Header";
-import { getHeaderData } from "@/lib/data";
-import { getSession } from "@/lib/session";
-// FIX: Import React to resolve 'Cannot find namespace' error for React.ReactNode. This also fixes cascading errors in pages using this layout.
-import React, { Suspense } from "react";
-import Header from "./Header";
+import { HeaderSkeleton } from '@/components/layout/Header';
+import { getHeaderData } from '@/lib/data';
+import { getSession } from '@/lib/session';
+import React, { Suspense } from 'react';
+import Header from './Header';
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -11,20 +10,27 @@ type AppLayoutProps = {
 };
 
 // This component fetches data required by the Header
-async function HeaderDataFetcher({ activeView }: { activeView: 'collection' | 'wantlist' | 'duplicates' }) {
+async function HeaderDataFetcher({
+  activeView,
+}: {
+  activeView: 'collection' | 'wantlist' | 'duplicates';
+}) {
   const session = await getSession();
   const user = session.user;
 
   if (!user) {
     // This should not happen due to middleware, but as a safeguard:
-    return <header className="bg-discogs-bg-light p-4 shadow-lg border-b border-discogs-border" />;
+    return (
+      <header className="border-b border-discogs-border bg-discogs-bg-light p-4 shadow-lg" />
+    );
   }
-  
-  const { collectionCount, wantlistCount, duplicatesCount } = await getHeaderData();
+
+  const { collectionCount, wantlistCount, duplicatesCount } =
+    await getHeaderData();
 
   return (
-    <Header 
-      user={user} 
+    <Header
+      user={user}
       activeView={activeView}
       collectionCount={collectionCount}
       wantlistCount={wantlistCount}
@@ -39,9 +45,7 @@ export default function AppLayout({ children, activeView }: AppLayoutProps) {
       <Suspense fallback={<HeaderSkeleton activeView={activeView} />}>
         <HeaderDataFetcher activeView={activeView} />
       </Suspense>
-      <main className="container mx-auto">
-        {children}
-      </main>
+      <main className="container mx-auto">{children}</main>
     </div>
   );
 }

@@ -15,8 +15,8 @@ export default function LoginForm() {
     e.preventDefault();
     setError(null);
     if (!token.trim()) {
-        setError("Please enter a token.");
-        return;
+      setError('Please enter a token.');
+      return;
     }
 
     const response = await fetch('/api/login', {
@@ -37,15 +37,24 @@ export default function LoginForm() {
 
   return (
     <>
-      <form onSubmit={handleSubmit} className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+      <form
+        onSubmit={handleSubmit}
+        className="animate-slide-up"
+        style={{ animationDelay: '100ms' }}
+      >
         <div className="mb-6">
-          <label htmlFor="token" className="block mb-2 text-sm font-medium text-discogs-text-secondary">Personal Access Token</label>
+          <label
+            htmlFor="token"
+            className="mb-2 block text-sm font-medium text-discogs-text-secondary"
+          >
+            Personal Access Token
+          </label>
           <input
             type="password"
             id="token"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            className="bg-discogs-bg border border-discogs-border text-white text-sm rounded-lg focus:ring-discogs-blue focus:border-discogs-blue block w-full p-2.5 placeholder-discogs-text-secondary/50"
+            className="block w-full rounded-lg border border-discogs-border bg-discogs-bg p-2.5 text-sm text-white placeholder-discogs-text-secondary/50 focus:border-discogs-blue focus:ring-discogs-blue"
             placeholder="Your Discogs token"
             required
             disabled={isPending}
@@ -54,12 +63,16 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="w-full text-white bg-discogs-blue hover:bg-discogs-blue-dark focus:ring-4 focus:outline-none focus:ring-discogs-blue/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-colors duration-300 flex items-center justify-center disabled:bg-discogs-blue-dark/50"
+          className="flex w-full items-center justify-center rounded-lg bg-discogs-blue px-5 py-2.5 text-center text-sm font-medium text-white transition-colors duration-300 hover:bg-discogs-blue-dark focus:outline-none focus:ring-4 focus:ring-discogs-blue/50 disabled:bg-discogs-blue-dark/50"
         >
           {isPending ? <Spinner /> : 'Connect to Discogs'}
         </button>
       </form>
-      {error && <div className="mt-4"><ErrorMessage message={error} onClear={() => setError(null)} /></div>}
+      {error && (
+        <div className="mt-4">
+          <ErrorMessage message={error} onClear={() => setError(null)} />
+        </div>
+      )}
     </>
   );
 }

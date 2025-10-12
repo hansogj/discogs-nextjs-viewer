@@ -3,8 +3,6 @@ import dotenv from 'dotenv';
 import path from 'path';
 
 // Read from default ".env.local" file.
-// FIX: Replace `__dirname` with `'.'` to resolve from the current working directory.
-// This avoids the "Cannot find name '__dirname'" error in environments where it's not defined (e.g., ES Modules).
 dotenv.config({ path: path.resolve('.', '.env.local') });
 
 export default defineConfig({

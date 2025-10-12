@@ -4,21 +4,21 @@ This is a web application built with Next.js that allows you to view your Discog
 
 ## Features
 
-- **Next.js App Router**: Built with the latest Next.js features for optimal performance and developer experience.
-- **Server-Side Rendering (SSR)**: Fast initial page loads.
-- **Dedicated Routes**: Separate, shareable pages for `/collection` and `/wantlist`.
-- **Secure Authentication**: User sessions are managed with encrypted, HTTP-only cookies.
-- **File-based Caching**: Fetched data from Discogs is cached in the local filesystem (`.next/cache/`) to prevent hitting API rate limits and for near-instant loads across server restarts.
-- **Modern Dark UI**: A sleek, "Discogs-ish" dark mode interface.
-- **Comprehensive Testing**: Includes unit tests with Vitest and end-to-end tests with Playwright.
+-   **Next.js App Router**: Built with the latest Next.js features for optimal performance and developer experience.
+-   **Server-Side Rendering (SSR)**: Fast initial page loads.
+-   **Dedicated Routes**: Separate, shareable pages for `/collection` and `/wantlist`.
+-   **Secure Authentication**: User sessions are managed with encrypted, HTTP-only cookies.
+-   **File-based Caching**: Fetched data from Discogs is cached in the local filesystem (`.next/cache/`) to prevent hitting API rate limits and for near-instant loads across server restarts.
+-   **Modern Dark UI**: A sleek, "Discogs-ish" dark mode interface.
+-   **Comprehensive Testing**: Includes unit tests with Vitest and end-to-end tests with Playwright.
 
 ## Getting Started
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (version 18 or later)
-- [pnpm](https://pnpm.io/installation)
-- A [Discogs](https://www.discogs.com) account.
+-   [Node.js](https://nodejs.org/) (version 18 or later)
+-   [pnpm](https://pnpm.io/installation)
+-   A [Discogs](https://www.discogs.com) account.
 
 ### 1. Installation
 
@@ -91,11 +91,13 @@ pnpm test
 The project uses Playwright for E2E tests. These tests simulate real user interactions in a browser.
 
 First, install the browser dependencies for Playwright:
+
 ```bash
 pnpm playwright install
 ```
 
 Then, run the tests:
+
 ```bash
 pnpm test:e2e
 ```
