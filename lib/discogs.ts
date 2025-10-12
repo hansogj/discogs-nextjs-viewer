@@ -6,7 +6,6 @@ import type {
   WantlistRelease,
   MasterRelease,
   ProcessedWantlistItem,
-  Pagination,
 } from './types';
 
 // --- Discogs API Rate Limiter ---
@@ -91,9 +90,9 @@ async function fetchDiscogsAPI<T>(url: string, token: string): Promise<T> {
     try {
       const response = await fetch(url, {
         headers: getAuthHeader(token),
-        // Revalidate cache every hour for Next.js fetch
-        next: { revalidate: 3600 },
-      } as any);
+        // Caching is now handled by our file system cache, so don't use Next.js fetch cache here.
+        cache: 'no-store',
+      });
 
       if (response.ok) {
         return response.json() as Promise<T>;
@@ -151,30 +150,52 @@ export async function getIdentity(token: string): Promise<DiscogsUser> {
   return fetchDiscogsAPI<DiscogsUser>(`${API_BASE_URL}/oauth/identity`, token);
 }
 
-export async function getCollectionPage(
-  username: string,
+async function fetchAllPaginatedData<T, R>(
+  initialUrl: string,
   token: string,
-  page: number,
-  per_page: number,
-  sort: string,
-  sort_order: string,
-): Promise<{ data: CollectionRelease[]; pagination: Pagination }> {
-  const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?page=${page}&per_page=${per_page}&sort=${sort}&sort_order=${sort_order}`;
-  const response = await fetchDiscogsAPI<CollectionResponse>(url, token);
-  return { data: response.releases, pagination: response.pagination };
+  dataKey: keyof R,
+): Promise<T[]> {
+  let allData: T[] = [];
+  let nextUrl: string | undefined = initialUrl;
+
+  type PaginatedResponse = R & { pagination: { urls: { next?: string } } };
+
+  while (nextUrl) {
+    const urlWithoutToken = nextUrl.replace(/token=[^&]+/, 'token=REDACTED');
+    console.log(`[Discogs API] Fetching page: ${urlWithoutToken}`);
+    const response: PaginatedResponse =
+      await fetchDiscogsAPI<PaginatedResponse>(nextUrl, token);
+    const data = response[dataKey] as T[] | undefined;
+    if (data) {
+      allData = [...allData, ...data];
+    }
+    nextUrl = response.pagination?.urls?.next;
+  }
+  return allData;
 }
 
-export async function getWantlistPage(
+export async function getFullCollection(
   username: string,
   token: string,
-  page: number,
-  per_page: number,
-  sort: string,
-  sort_order: string,
-): Promise<{ data: WantlistRelease[]; pagination: Pagination }> {
-  const url = `${API_BASE_URL}/users/${username}/wants?page=${page}&per_page=${per_page}&sort=${sort}&sort_order=${sort_order}`;
-  const response = await fetchDiscogsAPI<WantlistResponse>(url, token);
-  return { data: response.wants, pagination: response.pagination };
+): Promise<CollectionRelease[]> {
+  const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?per_page=100`;
+  return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
+    url,
+    token,
+    'releases',
+  );
+}
+
+export async function getFullWantlist(
+  username: string,
+  token: string,
+): Promise<WantlistRelease[]> {
+  const url = `${API_BASE_URL}/users/${username}/wants?per_page=100`;
+  return fetchAllPaginatedData<WantlistRelease, WantlistResponse>(
+    url,
+    token,
+    'wants',
+  );
 }
 
 export async function getMasterRelease(
@@ -185,16 +206,10 @@ export async function getMasterRelease(
   return fetchDiscogsAPI<MasterRelease>(url, token);
 }
 
-// This function can now process any array of wantlist releases, not just a full list.
 export async function processWantlist(
   wantlist: WantlistRelease[],
   token: string,
 ): Promise<ProcessedWantlistItem[]> {
-  // The logic for de-duping by master_id should now happen on the client
-  // if we are paginating, otherwise each page will have the same master.
-  // However, the original prompt curated the list to one-per-master.
-  // For infinite scroll, this is harder. For now, let's just process what we get.
-  // A more advanced implementation might de-dupe across pages.
   const processedItemsPromises = wantlist.map(async (want) => {
     // Only fetch master if there's a master ID
     if (want.basic_information.master_id > 0) {

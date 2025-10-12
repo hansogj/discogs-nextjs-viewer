@@ -1,22 +1,19 @@
 import AppLayout from '@/components/layout/AppLayout';
-import { getInitialWantlist, getHeaderData } from '@/lib/data';
+import { getCachedWantlist, getCachedCollection } from '@/lib/data';
 import AlbumViewer from '@/components/AlbumViewer';
 
+export const dynamic = 'force-dynamic'; // Ensures data is fetched from cache on every request
+
 export default async function WantlistPage() {
-  // Fetch initial wantlist for infinite scroll and full collection for filtering
-  const [
-    { data: initialWantlist, pagination },
-    { fullCollectionForDuplicates: collection },
-  ] = await Promise.all([
-    getInitialWantlist(),
-    getHeaderData(), // This provides the full collection for the filter
+  const [wantlist, collection] = await Promise.all([
+    getCachedWantlist(),
+    getCachedCollection(),
   ]);
 
   return (
     <AppLayout activeView="wantlist">
       <AlbumViewer
-        initialItems={initialWantlist}
-        initialPagination={pagination}
+        items={wantlist}
         collectionItemsForFiltering={collection}
         viewType="wantlist"
       />

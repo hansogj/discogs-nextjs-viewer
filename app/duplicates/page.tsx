@@ -1,16 +1,17 @@
 import AppLayout from '@/components/layout/AppLayout';
-import { getHeaderData, getCollectionDuplicates } from '@/lib/data';
+import { getCachedCollection, getCollectionDuplicates } from '@/lib/data';
 import Grid from '@/components/Grid';
 import type { CollectionRelease } from '@/lib/types';
+
+export const dynamic = 'force-dynamic';
 
 const getArtistName = (item: CollectionRelease): string => {
   return item.basic_information.artists?.[0]?.name || 'Unknown Artist';
 };
 
 export default async function DuplicatesPage() {
-  // We need the full collection to find duplicates
-  const { fullCollectionForDuplicates } = await getHeaderData();
-  const duplicateGroups = getCollectionDuplicates(fullCollectionForDuplicates);
+  const collection = await getCachedCollection();
+  const duplicateGroups = getCollectionDuplicates(collection);
 
   return (
     <AppLayout activeView="duplicates">
@@ -20,7 +21,8 @@ export default async function DuplicatesPage() {
         </h1>
         {duplicateGroups.length === 0 ? (
           <p className="mt-10 text-center text-discogs-text-secondary">
-            No duplicate releases found.
+            No duplicate releases found in your cached collection. Try syncing with
+            Discogs.
           </p>
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 2xl:grid-cols-3">

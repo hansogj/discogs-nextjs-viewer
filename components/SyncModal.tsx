@@ -11,17 +11,10 @@ const PLACEHOLDER_AVATAR_URL =
 
 interface SyncModalProps {
   isOpen: boolean;
-  syncingTarget: string | null;
-  user: DiscogsUser;
-  onLogout: () => void;
+  user: DiscogsUser | null;
 }
 
-const SyncModal: React.FC<SyncModalProps> = ({
-  isOpen,
-  syncingTarget,
-  user,
-  onLogout,
-}) => {
+const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user }) => {
   const [quote, setQuote] = useState(getRandomQuote());
 
   useEffect(() => {
@@ -29,7 +22,7 @@ const SyncModal: React.FC<SyncModalProps> = ({
       setQuote(getRandomQuote()); // Set initial quote when opened
       const intervalId = setInterval(() => {
         setQuote(getRandomQuote());
-      }, 15000); // Change quote every 15 seconds
+      }, 10000); // Change quote every 10 seconds
 
       return () => clearInterval(intervalId); // Cleanup on close
     }
@@ -39,9 +32,7 @@ const SyncModal: React.FC<SyncModalProps> = ({
     return null;
   }
 
-  const avatarUrl = user.avatar_url || PLACEHOLDER_AVATAR_URL;
-  const targetText =
-    syncingTarget === 'duplicates' ? 'collection for duplicates' : syncingTarget;
+  const avatarUrl = user?.avatar_url || PLACEHOLDER_AVATAR_URL;
 
   return (
     <div
@@ -49,42 +40,37 @@ const SyncModal: React.FC<SyncModalProps> = ({
       aria-modal="true"
       role="dialog"
     >
-      <div className="relative w-full max-w-md animate-slide-up rounded-xl border border-discogs-border bg-discogs-bg-light p-6 text-center shadow-2xl">
-        <div className="absolute top-4 right-4 flex items-center space-x-3">
-          <div className="text-right">
-            <p className="truncate text-sm font-semibold text-white">
-              {user.username}
-            </p>
+      <div className="relative w-full max-w-md animate-slide-up rounded-xl border border-discogs-border bg-discogs-bg-light p-8 text-center shadow-2xl">
+        {user && (
+          <div className="absolute top-4 right-4 flex items-center space-x-3">
+            <div className="text-right">
+              <p className="truncate text-sm font-semibold text-white">
+                {user.username}
+              </p>
+            </div>
+            <Image
+              src={avatarUrl}
+              alt={user.username}
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full border-2 border-discogs-blue"
+            />
           </div>
-          <Image
-            src={avatarUrl}
-            alt={user.username}
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-full border-2 border-discogs-blue"
-          />
-        </div>
+        )}
 
-        <div className="mt-12">
+        <div className={user ? 'mt-12' : ''}>
           <div className="mx-auto mb-4 h-8 w-8">
             <Spinner size="md" />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-white">Syncing...</h2>
+          <h2 className="mb-2 text-xl font-bold text-white">
+            Syncing with Discogs...
+          </h2>
           <p className="mb-6 text-discogs-text-secondary">
-            Fetching the latest updates for your {targetText} from Discogs.
+            Fetching your collection and wantlist. This may take a few moments.
           </p>
           <blockquote className="flex min-h-[60px] items-center justify-center border-l-4 border-discogs-blue pl-4 italic text-discogs-text-secondary">
             <p>"{quote}"</p>
           </blockquote>
-        </div>
-
-        <div className="mt-8">
-          <button
-            onClick={onLogout}
-            className="rounded-lg border border-red-500/50 bg-red-600/50 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-red-600"
-          >
-            Cancel & Logout
-          </button>
         </div>
       </div>
     </div>

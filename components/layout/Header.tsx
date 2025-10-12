@@ -13,6 +13,8 @@ interface HeaderProps {
   collectionCount: number;
   wantlistCount: number;
   duplicatesCount: number;
+  onSync: () => void;
+  onClearCache: () => void;
 }
 
 export default function Header({
@@ -21,6 +23,8 @@ export default function Header({
   collectionCount,
   wantlistCount,
   duplicatesCount,
+  onSync,
+  onClearCache,
 }: HeaderProps) {
   const router = useRouter();
 
@@ -101,12 +105,39 @@ export default function Header({
           </Link>
         </nav>
 
-        <button
-          onClick={handleLogout}
-          className="rounded-lg bg-red-600 px-4 py-2 font-bold text-white transition-colors duration-300 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-discogs-bg"
-        >
-          Logout
-        </button>
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={onSync}
+            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-discogs-bg"
+          >
+            Sync with Discogs
+          </button>
+          <button
+            {/* FIX: Use the local handleLogout function instead of a non-existent onLogout prop. */}
+            onClick={handleLogout}
+            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-discogs-bg"
+          >
+            Logout
+          </button>
+          <button
+            onClick={onClearCache}
+            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-discogs-border hover:text-white"
+            title="Clear local cache"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
     </header>
   );
@@ -163,7 +194,10 @@ export function HeaderSkeleton({
           ></div>
         </div>
 
-        <div className="h-10 w-24 rounded-lg bg-discogs-border"></div>
+        <div className="flex items-center space-x-2">
+            <div className="h-10 w-36 rounded-lg bg-discogs-border"></div>
+            <div className="h-10 w-24 rounded-lg bg-discogs-border"></div>
+        </div>
       </div>
     </header>
   );

@@ -1,66 +1,66 @@
-// app/actions.ts
 'use server';
 
 import { getSession } from '@/lib/session';
 import {
-  getCollectionPage as getCollectionPageFromApi,
-  getWantlistPage as getWantlistPageFromApi,
-  processWantlist,
+  getFullCollection,
+  getFullWantlist,
+  processWantlist as processWantlistWithApi,
 } from '@/lib/discogs';
-import type { SortKey, SortOrder } from '@/components/SortControls';
+import { setCachedData, clearUserCache } from '@/lib/cache';
+import { revalidatePath } from 'next/cache';
 
-const ITEMS_PER_PAGE = 48;
-
-// Maps our internal sort keys to the keys the Discogs API expects.
-const sortKeyMap: Record<SortKey, string> = {
-  date_added: 'added',
-  year: 'year',
-  title: 'title',
-  artist: 'artist',
-};
-
-export async function fetchCollectionPage(
-  page: number,
-  sortKey: SortKey,
-  sortOrder: SortOrder,
-) {
+export async function syncAllData(): Promise<{
+  success: boolean;
+  message?: string;
+}> {
   const session = await getSession();
   if (!session.isLoggedIn || !session.user || !session.token) {
     throw new Error('Not authenticated');
   }
+  const { user, token } = session;
 
-  return getCollectionPageFromApi(
-    session.user.username,
-    session.token,
-    page,
-    ITEMS_PER_PAGE,
-    sortKeyMap[sortKey],
-    sortOrder,
-  );
+  console.log(`[Action] Starting full sync for ${user.username}...`);
+
+  try {
+    // Fetch all data from Discogs
+    console.log('[Action] Fetching collection...');
+    const collection = await getFullCollection(user.username, token);
+    console.log(`[Action] Fetched ${collection.length} collection items.`);
+
+    console.log('[Action] Fetching wantlist...');
+    const wantlist = await getFullWantlist(user.username, token);
+    console.log(`[Action] Fetched ${wantlist.length} wantlist items.`);
+
+    // Process wantlist to get master images
+    console.log('[Action] Processing wantlist images...');
+    const processedWantlist = await processWantlistWithApi(wantlist, token);
+    console.log('[Action] Finished processing wantlist.');
+
+    // Write to cache
+    console.log('[Action] Writing data to cache...');
+    await setCachedData(user.username, 'collection', collection);
+    await setCachedData(user.username, 'wantlist', processedWantlist);
+    console.log('[Action] Caching complete.');
+
+    // Invalidate paths to trigger re-fetch from cache on client
+    revalidatePath('/', 'layout');
+
+    return { success: true, message: 'Sync completed successfully!' };
+  } catch (error) {
+    console.error('[Action] Sync failed:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'An unknown error occurred';
+    return { success: false, message: `Sync failed: ${errorMessage}` };
+  }
 }
 
-export async function fetchWantlistPage(
-  page: number,
-  sortKey: SortKey,
-  sortOrder: SortOrder,
-) {
+export async function clearCacheAction() {
   const session = await getSession();
-  if (!session.isLoggedIn || !session.user || !session.token) {
+  if (!session.isLoggedIn || !session.user) {
     throw new Error('Not authenticated');
   }
-
-  const { data: rawWants, pagination } = await getWantlistPageFromApi(
-    session.user.username,
-    session.token,
-    page,
-    ITEMS_PER_PAGE,
-    sortKeyMap[sortKey],
-    sortOrder,
-  );
-
-  // After fetching a page of the wantlist, we still need to process it
-  // to get master release images.
-  const processedWants = await processWantlist(rawWants, session.token);
-
-  return { data: processedWants, pagination };
+  await clearUserCache(session.user.username);
+  revalidatePath('/', 'layout');
+  console.log(`[Action] Cache cleared for ${session.user.username}`);
+  return { success: true };
 }
