@@ -78,8 +78,10 @@ async function fetchAllPaginatedData<T, R>(
     let allData: T[] = [];
     let nextUrl: string | undefined = initialUrl;
 
+    type PaginatedResponse = R & { pagination: { urls: { next?: string } } };
+
     while (nextUrl) {
-        const response = await fetchDiscogsAPI<R & { pagination: { urls: { next?: string } } }>(nextUrl, token);
+        const response: PaginatedResponse = await fetchDiscogsAPI<PaginatedResponse>(nextUrl, token);
         const data = response[dataKey] as T[] | undefined;
         if (data) {
             allData = [...allData, ...data];
