@@ -1,5 +1,4 @@
 import 'server-only';
-import pLimit from 'p-limit';
 import type {
   DiscogsUser,
   CollectionResponse,
@@ -236,6 +235,9 @@ export async function processWantlist(
   wantlist: WantlistRelease[],
   token: string,
 ): Promise<ProcessedWantlistItem[]> {
+  // Dynamically import p-limit to avoid issues with Next.js bundling client-side.
+  const pLimit = (await import('p-limit')).default;
+  
   // Set a concurrency limit to avoid overwhelming the Discogs API,
   // even with the rate limiter in place. This provides a more robust
   // way to handle the burst of requests from processing the wantlist.

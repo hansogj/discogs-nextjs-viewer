@@ -1,12 +1,13 @@
 import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
-// Fix: Import `cwd` from the `process` module to resolve type error.
-import { cwd } from 'process';
+// Fix: Explicitly import 'process' to resolve a TypeScript type error where the global 
+// 'process' object was not being correctly identified, leading to a missing 'cwd' method error.
+import { process } from 'process';
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
-const CACHE_DIR = path.join(cwd(), '.next', 'cache', 'discogs-data');
+const CACHE_DIR = path.join(process.cwd(), '.next', 'cache', 'discogs-data');
 
 // Ensure cache directory exists
 async function ensureCacheDir() {
