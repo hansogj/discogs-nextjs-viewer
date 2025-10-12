@@ -1,20 +1,20 @@
 import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
-// FIX: Add explicit import for 'process' to resolve TypeScript error about 'cwd'.
-import process from 'process';
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
+// FIX: Rely on the global `process` object from the Node.js environment.
+// The previous explicit import was causing a type conflict, leading to an error.
 const CACHE_DIR = path.join(process.cwd(), '.next', 'cache', 'discogs-data');
 
 // Ensure cache directory exists
 async function ensureCacheDir() {
   try {
-    await fs.mkdir(CACHE_DE_DIR, { recursive: true });
+    await fs.mkdir(CACHE_DIR, { recursive: true });
   } catch (error) {
     // This can fail if multiple requests try to create it at once, which is fine.
-    if (error.code !== 'EEXIST') {
+    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
       console.error('Failed to create cache directory:', error);
     }
   }
@@ -36,7 +36,7 @@ export async function getCachedData<T>(
     return JSON.parse(fileContent) as T;
   } catch (error) {
     // If file doesn't exist (ENOENT), it's a cache miss, which is normal.
-    if (error.code !== 'ENOENT') {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
       console.error(`Failed to read cache for ${key}:`, error);
     }
     return null;
@@ -63,11 +63,11 @@ export async function clearUserCache(username: string): Promise<void> {
   try {
     await fs.unlink(getCachePath(username, 'collection'));
   } catch (error) {
-    if (error.code !== 'ENOENT') console.error('Failed to clear collection cache:', error);
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') console.error('Failed to clear collection cache:', error);
   }
   try {
     await fs.unlink(getCachePath(username, 'wantlist'));
   } catch (error) {
-    if (error.code !== 'ENOENT') console.error('Failed to clear wantlist cache:', error);
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') console.error('Failed to clear wantlist cache:', error);
   }
 }
