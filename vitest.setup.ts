@@ -1,4 +1,6 @@
-// FIX: Import '@testing-library/jest-dom/vitest' to extend vitest's `expect` with
-// jest-dom matchers like 'toBeInTheDocument' and 'toHaveAttribute'.
+import { expect } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
 import '@testing-library/react';
-import '@testing-library/jest-dom/vitest';
+
+// Extend vitest's expect with jest-dom matchers
+expect.extend(matchers);
