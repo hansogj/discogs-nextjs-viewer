@@ -1,0 +1,5 @@
+{
+  "name": "Discogs Collection Viewer",
+  "description": "An application to connect to your Discogs account using a personal access token to view your record collection and a curated wantlist. The wantlist is intelligently filtered to show a single version for each release, using the master release's cover art for a clean, unified view.",
+  "requestFramePermissions": []
+}
