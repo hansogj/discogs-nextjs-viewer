@@ -1,4 +1,5 @@
 
+import pLimit from 'p-limit';
 import type {
   DiscogsUser,
   CollectionResponse,
@@ -235,34 +236,41 @@ export async function processWantlist(
   wantlist: WantlistRelease[],
   token: string,
 ): Promise<ProcessedWantlistItem[]> {
-  const processedItemsPromises = wantlist.map(async (want) => {
-    // Only fetch master if there's a master ID
-    if (want.basic_information.master_id > 0) {
-      try {
-        const master = await getMasterRelease(
-          want.basic_information.master_id,
-          token,
-        );
-        const masterImage =
-          master.images?.find((img) => img.type === 'primary')?.uri ||
-          want.basic_information.cover_image;
-        return {
-          ...want,
-          master_cover_image: masterImage,
-        };
-      } catch (error) {
-        console.error(
-          `Failed to fetch master for ${want.basic_information.title}`,
-          error,
-        );
+  // Set a concurrency limit to avoid overwhelming the Discogs API,
+  // even with the rate limiter in place. This provides a more robust
+  // way to handle the burst of requests from processing the wantlist.
+  const limit = pLimit(10);
+
+  const processedItemsPromises = wantlist.map((want) =>
+    limit(async () => {
+      // Only fetch master if there's a master ID
+      if (want.basic_information.master_id > 0) {
+        try {
+          const master = await getMasterRelease(
+            want.basic_information.master_id,
+            token,
+          );
+          const masterImage =
+            master.images?.find((img) => img.type === 'primary')?.uri ||
+            want.basic_information.cover_image;
+          return {
+            ...want,
+            master_cover_image: masterImage,
+          };
+        } catch (error) {
+          console.error(
+            `Failed to fetch master for ${want.basic_information.title}`,
+            error,
+          );
+        }
       }
-    }
-    // Fallback for items with no master or if fetch fails
-    return {
-      ...want,
-      master_cover_image: want.basic_information.cover_image,
-    };
-  });
+      // Fallback for items with no master or if fetch fails
+      return {
+        ...want,
+        master_cover_image: want.basic_information.cover_image,
+      };
+    }),
+  );
 
   return Promise.all(processedItemsPromises);
 }
