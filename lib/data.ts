@@ -1,12 +1,14 @@
+// FIX: Add a triple-slash directive to include Node.js types. This resolves the
+// error on 'process.cwd()' by correctly typing the global 'process' object.
+/// <reference types="node" />
+
 import 'server-only';
 import { getSession } from './session';
 import { getCollection, getWantlist, processWantlist as processWantlistWithApi } from './discogs';
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
 import path from 'path';
 import fs from 'fs/promises';
-import process from 'process';
 
-// FIX: Imported `process` to provide types for `process.cwd()`.
 const CACHE_DIR = path.join(process.cwd(), '.next', 'cache', 'discogs');
 const CACHE_TTL_SECONDS = 60 * 60; // 1 hour
 
