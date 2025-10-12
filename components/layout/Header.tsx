@@ -9,12 +9,13 @@ import clsx from 'clsx';
 
 interface HeaderProps {
   user: DiscogsUser;
-  activeView: 'collection' | 'wantlist';
+  activeView: 'collection' | 'wantlist' | 'duplicates';
   collectionCount: number;
   wantlistCount: number;
+  duplicatesCount: number;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, activeView, collectionCount, wantlistCount }) => {
+const Header: React.FC<HeaderProps> = ({ user, activeView, collectionCount, wantlistCount, duplicatesCount }) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -50,6 +51,12 @@ const Header: React.FC<HeaderProps> = ({ user, activeView, collectionCount, want
             >
                 Wantlist <span className="bg-discogs-border text-gray-200 text-xs font-bold ml-2 px-2 py-0.5 rounded-full">{wantlistCount}</span>
             </Link>
+            <Link 
+                href="/duplicates"
+                className={clsx(buttonBaseClasses, { [activeButtonClasses]: activeView === 'duplicates', [inactiveButtonClasses]: activeView !== 'duplicates' })}
+            >
+                Duplicates <span className="bg-discogs-border text-gray-200 text-xs font-bold ml-2 px-2 py-0.5 rounded-full">{duplicatesCount}</span>
+            </Link>
         </nav>
 
         <button
@@ -63,7 +70,7 @@ const Header: React.FC<HeaderProps> = ({ user, activeView, collectionCount, want
   );
 };
 
-export function HeaderSkeleton({ activeView }: { activeView: 'collection' | 'wantlist' }) {
+export function HeaderSkeleton({ activeView }: { activeView: 'collection' | 'wantlist' | 'duplicates' }) {
     const buttonBaseClasses = "px-4 py-2 text-sm font-medium rounded-md";
     const activeButtonClasses = "bg-discogs-blue text-white";
     const inactiveButtonClasses = "bg-discogs-bg-light text-discogs-text-secondary";
@@ -84,6 +91,9 @@ export function HeaderSkeleton({ activeView }: { activeView: 'collection' | 'wan
                     </div>
                     <div className={clsx(buttonBaseClasses, { [activeButtonClasses]: activeView === 'wantlist', [inactiveButtonClasses]: activeView !== 'wantlist' })}>
                         Wantlist <span className="bg-discogs-border text-gray-200 text-xs font-bold ml-2 px-2 py-0.5 rounded-full">--</span>
+                    </div>
+                    <div className={clsx(buttonBaseClasses, { [activeButtonClasses]: activeView === 'duplicates', [inactiveButtonClasses]: activeView !== 'duplicates' })}>
+                        Duplicates <span className="bg-discogs-border text-gray-200 text-xs font-bold ml-2 px-2 py-0.5 rounded-full">--</span>
                     </div>
                 </nav>
                 <div className="bg-red-700 h-10 w-24 rounded-lg"></div>

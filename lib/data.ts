@@ -103,3 +103,27 @@ export async function getWantlistWithCache(): Promise<ProcessedWantlistItem[]> {
     await setInCache(cacheKey, freshData, CACHE_TTL_SECONDS);
     return freshData;
 }
+
+export function getCollectionDuplicates(collection: CollectionRelease[]): CollectionRelease[][] {
+    const masters = new Map<number, CollectionRelease[]>();
+    // Group releases by master_id
+    for (const release of collection) {
+        const masterId = release.basic_information.master_id;
+        // master_id is 0 if it's not part of a master release, so we ignore those
+        if (masterId > 0) {
+            if (!masters.has(masterId)) {
+                masters.set(masterId, []);
+            }
+            masters.get(masterId)!.push(release);
+        }
+    }
+
+    const duplicates: CollectionRelease[][] = [];
+    // Filter for groups with more than one release
+    for (const releases of masters.values()) {
+        if (releases.length > 1) {
+            duplicates.push(releases);
+        }
+    }
+    return duplicates;
+}

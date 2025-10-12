@@ -7,7 +7,7 @@ export default async function CollectionPage() {
   
   return (
     <AppLayout activeView="collection">
-      <AlbumViewer items={collection} />
+      <AlbumViewer items={collection} viewType="collection" />
     </AppLayout>
   );
 }

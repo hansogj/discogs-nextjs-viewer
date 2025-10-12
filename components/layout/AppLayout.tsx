@@ -1,18 +1,17 @@
 import { HeaderSkeleton } from "@/components/layout/Header";
-import { getCollectionWithCache, getWantlistWithCache } from "@/lib/data";
+import { getCollectionDuplicates, getCollectionWithCache, getWantlistWithCache } from "@/lib/data";
 import { getSession } from "@/lib/session";
 // FIX: Import React to resolve 'Cannot find namespace' error for React.ReactNode. This also fixes cascading errors in pages using this layout.
 import React, { Suspense } from "react";
-import GridSkeleton from "../GridSkeleton";
 import Header from "./Header";
 
 type AppLayoutProps = {
   children: React.ReactNode;
-  activeView: 'collection' | 'wantlist';
+  activeView: 'collection' | 'wantlist' | 'duplicates';
 };
 
 // This component fetches data required by the Header
-async function HeaderDataFetcher({ activeView }: { activeView: 'collection' | 'wantlist' }) {
+async function HeaderDataFetcher({ activeView }: { activeView: 'collection' | 'wantlist' | 'duplicates' }) {
   const session = await getSession();
   const user = session.user;
 
@@ -27,12 +26,15 @@ async function HeaderDataFetcher({ activeView }: { activeView: 'collection' | 'w
     getWantlistWithCache(),
   ]);
 
+  const duplicates = getCollectionDuplicates(collection);
+
   return (
     <Header 
       user={user} 
       activeView={activeView}
       collectionCount={collection.length}
       wantlistCount={wantlist.length}
+      duplicatesCount={duplicates.length}
     />
   );
 }
