@@ -1,5 +1,5 @@
 import { HeaderSkeleton } from "@/components/layout/Header";
-import { getCollectionDuplicates, getCollectionWithCache, getWantlistWithCache } from "@/lib/data";
+import { getHeaderData } from "@/lib/data";
 import { getSession } from "@/lib/session";
 // FIX: Import React to resolve 'Cannot find namespace' error for React.ReactNode. This also fixes cascading errors in pages using this layout.
 import React, { Suspense } from "react";
@@ -20,21 +20,15 @@ async function HeaderDataFetcher({ activeView }: { activeView: 'collection' | 'w
     return <header className="bg-discogs-bg-light p-4 shadow-lg border-b border-discogs-border" />;
   }
   
-  // We can fetch counts in parallel
-  const [collection, wantlist] = await Promise.all([
-    getCollectionWithCache(),
-    getWantlistWithCache(),
-  ]);
-
-  const duplicates = getCollectionDuplicates(collection);
+  const { collectionCount, wantlistCount, duplicatesCount } = await getHeaderData();
 
   return (
     <Header 
       user={user} 
       activeView={activeView}
-      collectionCount={collection.length}
-      wantlistCount={wantlist.length}
-      duplicatesCount={duplicates.length}
+      collectionCount={collectionCount}
+      wantlistCount={wantlistCount}
+      duplicatesCount={duplicatesCount}
     />
   );
 }

@@ -1,5 +1,5 @@
 import AppLayout from "@/components/layout/AppLayout";
-import { getCollectionWithCache, getCollectionDuplicates } from "@/lib/data";
+import { getHeaderData, getCollectionDuplicates } from "@/lib/data";
 import Grid from "@/components/Grid";
 import type { CollectionRelease } from "@/lib/types";
 
@@ -8,8 +8,9 @@ const getArtistName = (item: CollectionRelease): string => {
 };
 
 export default async function DuplicatesPage() {
-    const collection = await getCollectionWithCache();
-    const duplicateGroups = getCollectionDuplicates(collection);
+    // We need the full collection to find duplicates
+    const { fullCollectionForDuplicates } = await getHeaderData();
+    const duplicateGroups = getCollectionDuplicates(fullCollectionForDuplicates);
 
     return (
         <AppLayout activeView="duplicates">

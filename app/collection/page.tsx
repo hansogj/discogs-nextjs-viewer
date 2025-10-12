@@ -1,13 +1,18 @@
 import AppLayout from "@/components/layout/AppLayout";
-import { getCollectionWithCache } from "@/lib/data";
+import { getInitialCollection } from "@/lib/data";
 import AlbumViewer from "@/components/AlbumViewer";
+import type { Pagination } from "@/lib/types";
 
 export default async function CollectionPage() {
-  const collection = await getCollectionWithCache();
+  const { data: initialCollection, pagination } = await getInitialCollection();
   
   return (
     <AppLayout activeView="collection">
-      <AlbumViewer items={collection} viewType="collection" />
+      <AlbumViewer 
+        initialItems={initialCollection}
+        initialPagination={pagination} 
+        viewType="collection" 
+      />
     </AppLayout>
   );
 }
