@@ -1,4 +1,4 @@
-
+import 'server-only';
 import pLimit from 'p-limit';
 import type {
   DiscogsUser,
