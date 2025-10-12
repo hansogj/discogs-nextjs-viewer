@@ -1,18 +1,15 @@
 import AppLayout from '@/components/layout/AppLayout';
-import { getInitialCollection } from '@/lib/data';
+import { getCachedCollection } from '@/lib/data';
 import AlbumViewer from '@/components/AlbumViewer';
-import type { Pagination } from '@/lib/types';
+
+export const dynamic = 'force-dynamic'; // Ensures data is fetched from cache on every request
 
 export default async function CollectionPage() {
-  const { data: initialCollection, pagination } = await getInitialCollection();
+  const collection = await getCachedCollection();
 
   return (
     <AppLayout activeView="collection">
-      <AlbumViewer
-        initialItems={initialCollection}
-        initialPagination={pagination}
-        viewType="collection"
-      />
+      <AlbumViewer items={collection} viewType="collection" />
     </AppLayout>
   );
 }

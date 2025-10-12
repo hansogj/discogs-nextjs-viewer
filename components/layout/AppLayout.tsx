@@ -1,41 +1,27 @@
 import { HeaderSkeleton } from '@/components/layout/Header';
 import { getHeaderData } from '@/lib/data';
-import { getSession } from '@/lib/session';
 import React, { Suspense } from 'react';
-import Header from './Header';
+import AppContainer from './AppContainer';
 
 type AppLayoutProps = {
   children: React.ReactNode;
   activeView: 'collection' | 'wantlist' | 'duplicates';
 };
 
-// This component fetches data required by the Header
-async function HeaderDataFetcher({
-  activeView,
-}: {
-  activeView: 'collection' | 'wantlist' | 'duplicates';
-}) {
-  const session = await getSession();
-  const user = session.user;
-
-  if (!user) {
-    // This should not happen due to middleware, but as a safeguard:
-    return (
-      <header className="border-b border-discogs-border bg-discogs-bg-light p-4 shadow-lg" />
-    );
-  }
-
-  const { collectionCount, wantlistCount, duplicatesCount } =
+async function AppLayoutContent({ activeView, children }: AppLayoutProps) {
+  const { user, collectionCount, wantlistCount, duplicatesCount } =
     await getHeaderData();
 
   return (
-    <Header
+    <AppContainer
       user={user}
       activeView={activeView}
       collectionCount={collectionCount}
       wantlistCount={wantlistCount}
       duplicatesCount={duplicatesCount}
-    />
+    >
+      {children}
+    </AppContainer>
   );
 }
 
@@ -43,9 +29,9 @@ export default function AppLayout({ children, activeView }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-discogs-bg text-discogs-text">
       <Suspense fallback={<HeaderSkeleton activeView={activeView} />}>
-        <HeaderDataFetcher activeView={activeView} />
+        {/* FIX: Remove unused @ts-expect-error directive */}
+        <AppLayoutContent activeView={activeView}>{children}</AppLayoutContent>
       </Suspense>
-      <main className="container mx-auto">{children}</main>
     </div>
   );
 }
