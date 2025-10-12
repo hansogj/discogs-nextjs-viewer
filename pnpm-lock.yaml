@@ -23,6 +23,9 @@ importers:
       react-dom:
         specifier: ^18
         version: 18.3.1(react@18.3.1)
+      zod:
+        specifier: ^3.23.8
+        version: 3.23.8
     devDependencies:
       '@playwright/test':
         specifier: ^1.44.0
@@ -30,6 +33,9 @@ importers:
       '@testing-library/react':
         specifier: ^15.0.7
         version: 15.0.7(react@18.3.1)
+      '@types/dotenv':
+        specifier: ^8.2.0
+        version: 8.2.0
       '@types/node':
         specifier: ^20
         version: 20.12.12
@@ -45,6 +51,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.5
       eslint:
         specifier: ^8
         version: 8.57.0
@@ -142,6 +151,12 @@ packages:
       react: 18.3.1
     dev: true
 
+  '@types/dotenv@8.2.0':
+    resolution: {integrity: sha512-M2U5b97kk2lSW9j4w7yBklg+zpR2sP+MuEnANsT8mYwG6S4N2dYvmmQ0MQAo75YhJEUT+WHG3q512E08QPb25A==}
+    dependencies:
+      '@types/node': 20.12.12
+    dev: true
+
   '@types/node@20.12.12':
     resolution: {integrity: sha512-eWLD8T83CHYyBFZSBtabT2AHTmiwCFxKbXQpX3f51MygB639vN29Ue2e2XBs2Q3MkUp2XmwVd5o3m2xY80Iq/A==}
     dependencies:
@@ -200,6 +215,11 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eG2QDo Goh6gG523/lC+h3p5C99i3lMn722H/NUJ0e3z4e/k4/9yTmdr41CCgX3S497wP0dYx5fSMyg24PAg==}
     engines: {node: '>=6'}
+
+  dotenv@16.4.5:
+    resolution: {integrity: sha512-ZmdPaqqT+L2POeAgcsvSgAAKTKb+sBohFGkLTYAeggVUrgExpL4jT+7GdSg2a81ItdnbCAbDcMo2+StESw3p/A==}
+    engines: {node: '>=12'}
+    dev: true
 
   eslint-config-next@14.2.3(eslint@8.57.0)(typescript@5.4.5):
     resolution: {integrity: sha512-wYv1fVibETi5a1Fp1R9P9I8PUtYn70/t2/Y6o2pWt/T/gQnBlTwF0xU3O5bZi0tD/VjOQGOeOJRyU72WkXvPMA==}
@@ -485,3 +505,11 @@ packages:
       vite: 5.2.11
       vite-node: 1.6.0
     dev: true
+
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUimVL8S8n22kTykB2a+a2VBB7pW+DbJxJ8pBqLqt2H8D5j3AFsBvUTDCyle2IFEx7/Gj0rVCOJw==}
+    funding:
+      - type: open_collective
+        url: https://opencollective.com/zod
+      - type: github
+        url: https://github.com/sponsors/colinhacks
