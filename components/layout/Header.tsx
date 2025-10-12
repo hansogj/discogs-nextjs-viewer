@@ -113,7 +113,6 @@ export default function Header({
             Sync with Discogs
           </button>
           <button
-            {/* FIX: Use the local handleLogout function instead of a non-existent onLogout prop. */}
             onClick={handleLogout}
             className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-discogs-bg"
           >

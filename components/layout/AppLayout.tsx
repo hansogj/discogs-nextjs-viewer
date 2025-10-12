@@ -29,7 +29,6 @@ export default function AppLayout({ children, activeView }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-discogs-bg text-discogs-text">
       <Suspense fallback={<HeaderSkeleton activeView={activeView} />}>
-        {/* FIX: Remove unused @ts-expect-error directive */}
         <AppLayoutContent activeView={activeView}>{children}</AppLayoutContent>
       </Suspense>
     </div>
