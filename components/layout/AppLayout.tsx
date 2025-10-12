@@ -1,9 +1,10 @@
-import Header from "@/components/layout/Header";
+import { HeaderSkeleton } from "@/components/layout/Header";
 import { getCollectionWithCache, getWantlistWithCache } from "@/lib/data";
 import { getSession } from "@/lib/session";
 // FIX: Import React to resolve 'Cannot find namespace' error for React.ReactNode. This also fixes cascading errors in pages using this layout.
 import React, { Suspense } from "react";
 import GridSkeleton from "../GridSkeleton";
+import Header from "./Header";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -39,7 +40,7 @@ async function HeaderDataFetcher({ activeView }: { activeView: 'collection' | 'w
 export default function AppLayout({ children, activeView }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-discogs-bg text-discogs-text">
-      <Suspense fallback={<Header.Skeleton activeView={activeView} />}>
+      <Suspense fallback={<HeaderSkeleton activeView={activeView} />}>
         <HeaderDataFetcher activeView={activeView} />
       </Suspense>
       <main className="container mx-auto">
