@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -5,6 +6,7 @@ import Image from 'next/image';
 import Spinner from './Spinner';
 import { getRandomQuote } from '@/lib/quotes';
 import type { DiscogsUser } from '@/lib/types';
+import type { SyncProgress } from '@/lib/cache';
 
 const PLACEHOLDER_AVATAR_URL =
   "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3e%3crect width='100' height='100' fill='%231d1f24'/%3e%3ccircle cx='50' cy='40' r='15' fill='%23a0a0a0'/%3e%3cpath d='M25,90 A30,30 0 0,1 75,90 Z' fill='%23a0a0a0'/%3e%3c/svg%3e";
@@ -12,9 +14,10 @@ const PLACEHOLDER_AVATAR_URL =
 interface SyncModalProps {
   isOpen: boolean;
   user: DiscogsUser | null;
+  progress: SyncProgress | null;
 }
 
-const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user }) => {
+const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user, progress }) => {
   const [quote, setQuote] = useState(getRandomQuote());
 
   useEffect(() => {
@@ -33,6 +36,40 @@ const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user }) => {
   }
 
   const avatarUrl = user?.avatar_url || PLACEHOLDER_AVATAR_URL;
+
+  let message = 'Syncing with Discogs...';
+  let subMessage = 'This may take a few moments.';
+
+  if (progress) {
+    switch (progress.status) {
+      case 'starting':
+        message = 'Initiating Sync...';
+        subMessage = 'Getting ready to fetch your data.';
+        break;
+      case 'fetching':
+        const resourceName =
+          progress.resource === 'collection' ? 'Collection' : 'Wantlist';
+        message = `Fetching ${resourceName}...`;
+        if (progress.page && progress.pages && progress.pages > 1) {
+          subMessage = `Page ${progress.page} of ${progress.pages}`;
+        } else {
+          subMessage = 'Getting page information...';
+        }
+        break;
+      case 'processing':
+        message = 'Processing Data...';
+        subMessage = 'Fetching cover art for your wantlist.';
+        break;
+      case 'caching':
+        message = 'Finalizing...';
+        subMessage = 'Saving your data locally for super-fast access.';
+        break;
+      case 'error':
+        message = 'An Error Occurred';
+        subMessage = progress.message || 'Please try again.';
+        break;
+    }
+  }
 
   return (
     <div
@@ -62,12 +99,8 @@ const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user }) => {
           <div className="mx-auto mb-4 h-8 w-8">
             <Spinner size="md" />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-white">
-            Syncing with Discogs...
-          </h2>
-          <p className="mb-6 text-discogs-text-secondary">
-            Fetching your collection and wantlist. This may take a few moments.
-          </p>
+          <h2 className="mb-2 text-xl font-bold text-white">{message}</h2>
+          <p className="mb-6 text-discogs-text-secondary">{subMessage}</p>
           <blockquote className="flex min-h-[60px] items-center justify-center border-l-4 border-discogs-blue pl-4 italic text-discogs-text-secondary">
             <p>"{quote}"</p>
           </blockquote>
