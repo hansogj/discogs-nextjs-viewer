@@ -1,10 +1,10 @@
-import AppLayout from "@/components/layout/AppLayout";
-import GridSkeleton from "@/components/GridSkeleton";
+import AppLayout from '@/components/layout/AppLayout';
+import LoadingIndicator from '@/components/LoadingIndicator';
 
 export default function Loading() {
   return (
     <AppLayout activeView="collection">
-      <GridSkeleton />
+      <LoadingIndicator message="Loading your collection..." />
     </AppLayout>
   );
 }
