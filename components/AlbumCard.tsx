@@ -9,26 +9,37 @@ interface AlbumCardProps {
   imageUrl: string | null | undefined;
   title: string;
   artist: string;
+  discogsUrl: string;
 }
 
-const AlbumCard: React.FC<AlbumCardProps> = ({ imageUrl, title, artist }) => {
+const AlbumCard: React.FC<AlbumCardProps> = ({ imageUrl, title, artist, discogsUrl }) => {
   const imageToDisplay = imageUrl || PLACEHOLDER_IMAGE_URL;
 
   return (
-    <div className="group relative overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:shadow-2xl hover:scale-105 hover:shadow-glow-blue/30 transform">
-      <Image
-        src={imageToDisplay}
-        alt={`${artist} - ${title}`}
-        width={300}
-        height={300}
-        className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-110"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-      <div className="absolute bottom-0 left-0 p-4 w-full">
-        <h3 className="text-white font-bold text-base leading-tight drop-shadow-md truncate">{title}</h3>
-        <p className="text-gray-300 text-sm drop-shadow-md truncate">{artist}</p>
+    <a
+      href={discogsUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`View ${artist} - ${title} on Discogs`}
+      className="block h-full"
+    >
+      <div className="group relative h-full overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30 transform">
+        <Image
+          src={imageToDisplay}
+          alt={`${artist} - ${title}`}
+          width={300}
+          height={300}
+          className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-110"
+          placeholder="blur"
+          blurDataURL={PLACEHOLDER_IMAGE_URL}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+        <div className="absolute bottom-0 left-0 w-full p-4">
+          <h3 className="truncate text-base font-bold leading-tight text-white drop-shadow-md">{title}</h3>
+          <p className="truncate text-sm text-gray-300 drop-shadow-md">{artist}</p>
+        </div>
       </div>
-    </div>
+    </a>
   );
 };
 
