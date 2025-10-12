@@ -7,22 +7,45 @@ import SortControls, { type SortKey, type SortOrder } from './SortControls';
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
+  viewType: 'collection' | 'wantlist';
+  collectionItemsForFiltering?: CollectionRelease[];
 }
 
 const getArtistName = (item: CollectionRelease | ProcessedWantlistItem): string => {
     return item.basic_information.artists?.[0]?.name || 'Unknown Artist';
 };
 
-const AlbumViewer: React.FC<AlbumViewerProps> = ({ items }) => {
+const AlbumViewer: React.FC<AlbumViewerProps> = ({ items, viewType, collectionItemsForFiltering }) => {
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [showInCollectionOnly, setShowInCollectionOnly] = useState(false);
 
   const handleSortOrderChange = () => {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
   };
 
+  const collectionMasterIds = useMemo(() => {
+    if (viewType !== 'wantlist' || !collectionItemsForFiltering) return null;
+    const ids = new Set<number>();
+    for (const item of collectionItemsForFiltering) {
+        if (item.basic_information.master_id > 0) {
+            ids.add(item.basic_information.master_id);
+        }
+    }
+    return ids;
+  }, [collectionItemsForFiltering, viewType]);
+
   const sortedItems = useMemo(() => {
-    return [...items].sort((a, b) => {
+    let filteredItems = items;
+    
+    if (viewType === 'wantlist' && showInCollectionOnly && collectionMasterIds) {
+        filteredItems = items.filter(item => {
+            const masterId = item.basic_information.master_id;
+            return masterId > 0 && collectionMasterIds.has(masterId);
+        });
+    }
+
+    return [...filteredItems].sort((a, b) => {
         const aInfo = a.basic_information;
         const bInfo = b.basic_information;
         let comparison = 0;
@@ -35,7 +58,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ items }) => {
                 comparison = getArtistName(a).localeCompare(getArtistName(b));
                 break;
             case 'year':
-                // Treat year 0 as "unknown" and push it to the end
                 if (aInfo.year === 0 && bInfo.year !== 0) comparison = 1;
                 else if (aInfo.year !== 0 && bInfo.year === 0) comparison = -1;
                 else comparison = aInfo.year - bInfo.year;
@@ -43,7 +65,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ items }) => {
             case 'date_added':
                 comparison = new Date(a.date_added).getTime() - new Date(b.date_added).getTime();
                 break;
-            // The default case is technically unreachable with strong typing, but serves as a robust fallback.
             default:
                 comparison = new Date(a.date_added).getTime() - new Date(b.date_added).getTime();
                 break;
@@ -51,7 +72,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ items }) => {
 
         return sortOrder === 'asc' ? comparison : -comparison;
     });
-  }, [items, sortKey, sortOrder]);
+  }, [items, sortKey, sortOrder, showInCollectionOnly, collectionMasterIds, viewType]);
 
 
   return (
@@ -61,6 +82,13 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ items }) => {
         sortOrder={sortOrder}
         onSortKeyChange={setSortKey}
         onSortOrderChange={handleSortOrderChange}
+        filterOptions={
+            viewType === 'wantlist' ? {
+                isEnabled: showInCollectionOnly,
+                onToggle: () => setShowInCollectionOnly(prev => !prev),
+                label: "Show only items in collection"
+            } : undefined
+        }
       />
       <Grid items={sortedItems} />
     </>
