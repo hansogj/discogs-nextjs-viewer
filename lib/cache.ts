@@ -1,9 +1,6 @@
-
 import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
-// Fix: Explicitly import `process` to resolve type error for `process.cwd()`
-import process from 'process';
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
