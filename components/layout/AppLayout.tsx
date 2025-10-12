@@ -1,7 +1,8 @@
 import Header from "@/components/layout/Header";
 import { getCollectionWithCache, getWantlistWithCache } from "@/lib/data";
 import { getSession } from "@/lib/session";
-import { Suspense } from "react";
+// FIX: Import React to resolve 'Cannot find namespace' error for React.ReactNode. This also fixes cascading errors in pages using this layout.
+import React, { Suspense } from "react";
 import GridSkeleton from "../GridSkeleton";
 
 type AppLayoutProps = {
