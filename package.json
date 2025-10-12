@@ -2,7 +2,7 @@
   "name": "discogs-nextjs-viewer",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "pnpm@9.4.0",
+  "packageManager": "pnpm@10.13.1",
   "type": "module",
   "scripts": {
     "dev": "next dev",
