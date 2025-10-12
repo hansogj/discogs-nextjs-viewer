@@ -24,6 +24,11 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ initialItems, initialPaginati
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showInCollectionOnly, setShowInCollectionOnly] = useState(false);
 
+  // State for wantlist de-duplication
+  const [seenMasterIds, setSeenMasterIds] = useState(() => new Set(
+    viewType === 'wantlist' ? initialItems.map(it => it.basic_information.master_id).filter(id => id > 0) : []
+  ));
+
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const isInitialMount = useRef(true);
@@ -53,31 +58,60 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ initialItems, initialPaginati
     return items;
   }, [items, showInCollectionOnly, viewType, collectionMasterIds]);
 
-  const loadMoreItems = useCallback(async (currentPage: number) => {
+  const loadMoreItems = useCallback(async (currentPage: number, consecutiveEmptyFetches = 0) => {
     if (isLoading) return;
+
+    const MAX_EMPTY_FETCHES = 5; // Safety break for recursive fetches
+    if (consecutiveEmptyFetches >= MAX_EMPTY_FETCHES) {
+        console.warn("Stopped fetching wantlist after too many consecutive empty pages of duplicates.");
+        setHasNextPage(false);
+        return;
+    }
+
     setIsLoading(true);
 
     try {
         const action = viewType === 'collection' ? fetchCollectionPage : fetchWantlistPage;
-        const { data: newItems, pagination } = await action(currentPage, sortKey, sortOrder);
+        const { data, pagination } = await action(currentPage, sortKey, sortOrder);
+
+        let newItems: (CollectionRelease | ProcessedWantlistItem)[] = data as any;
         
-        // This check is important for sort changes, we replace items instead of appending
+        // De-duplicate wantlist items by master_id
+        if (viewType === 'wantlist') {
+            const uniqueNewItems = newItems.filter(item => {
+                const masterId = item.basic_information.master_id;
+                return !masterId || masterId <= 0 || !seenMasterIds.has(masterId);
+            });
+
+            const newMasterIds = uniqueNewItems.map(item => item.basic_information.master_id).filter(id => id > 0);
+            if (newMasterIds.length > 0) {
+              setSeenMasterIds(prev => new Set([...prev, ...newMasterIds]));
+            }
+            newItems = uniqueNewItems;
+        }
+
         if (currentPage === 1) {
-            setItems(newItems as (CollectionRelease | ProcessedWantlistItem)[]);
+            setItems(newItems);
         } else {
-            setItems(prev => [...prev, ...newItems as (CollectionRelease | ProcessedWantlistItem)[]]);
+            setItems(prev => [...prev, ...newItems]);
         }
         
         setPage(currentPage + 1);
         setHasNextPage(!!pagination.urls.next);
 
+        // If we fetched a page that only contained duplicates, and there are more pages, fetch the next one.
+        if (viewType === 'wantlist' && newItems.length === 0 && !!pagination.urls.next) {
+            loadMoreItems(currentPage + 1, consecutiveEmptyFetches + 1);
+            return; // Exit here to keep isLoading true until recursive call finishes
+        }
+
     } catch (error) {
         console.error("Failed to fetch more items:", error);
-        // Optionally set an error state here
-    } finally {
-        setIsLoading(false);
-    }
-  }, [isLoading, viewType, sortKey, sortOrder]);
+    } 
+    
+    setIsLoading(false);
+
+  }, [isLoading, viewType, sortKey, sortOrder, seenMasterIds]);
 
 
   // Effect for handling sort changes
@@ -86,23 +120,31 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({ initialItems, initialPaginati
         isInitialMount.current = false;
         return;
     }
-    // When sort changes, reset everything and fetch page 1
     setItems([]);
+    if (viewType === 'wantlist') {
+        setSeenMasterIds(new Set());
+    }
     setPage(1);
-    setHasNextPage(true);
+    setHasNextPage(true); // Assume there's a page 1
     loadMoreItems(1);
   }, [sortKey, sortOrder]);
 
 
   // Effect for setting up the IntersectionObserver
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !hasNextPage) {
+        // Disconnect observer if loading or no more pages
+        if (observerRef.current && loadMoreRef.current) {
+            observerRef.current.unobserve(loadMoreRef.current);
+        }
+        return;
+    }
     
     observerRef.current = new IntersectionObserver(entries => {
-        if (entries[0].isIntersecting && hasNextPage) {
+        if (entries[0].isIntersecting) {
             loadMoreItems(page);
         }
-    });
+    }, { rootMargin: '200px' });
 
     if (loadMoreRef.current) {
         observerRef.current.observe(loadMoreRef.current);
