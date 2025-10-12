@@ -1,10 +1,12 @@
-import { getIronSession, IronSessionData } from 'iron-session';
+// FIX: Remove 'IronSessionData' import and interface extension as it's not exported by newer versions of 'iron-session'.
+import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import type { DiscogsUser } from './types';
 
-export interface SessionData extends IronSessionData {
+export interface SessionData {
   token?: string;
   user?: DiscogsUser;
+  isLoggedIn?: boolean;
 }
 
 const sessionOptions = {
@@ -24,9 +26,7 @@ export async function getSession() {
   const session = await getIronSession<SessionData>(cookies(), sessionOptions);
 
   // Add a helper to check login status
-  if (!session.isLoggedIn) {
-      session.isLoggedIn = !!session.token && !!session.user;
-  }
+  session.isLoggedIn = !!session.token && !!session.user;
   
   return session;
 }

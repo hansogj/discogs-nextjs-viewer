@@ -4,9 +4,9 @@ import { getCollection, getWantlist, processWantlist as processWantlistWithApi }
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
 import path from 'path';
 import fs from 'fs/promises';
-// FIX: Import 'process' to provide type definitions for process.cwd().
 import process from 'process';
 
+// FIX: Imported `process` to provide types for `process.cwd()`.
 const CACHE_DIR = path.join(process.cwd(), '.next', 'cache', 'discogs');
 const CACHE_TTL_SECONDS = 60 * 60; // 1 hour
 
