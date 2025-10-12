@@ -7,40 +7,50 @@ const RATE_LIMIT_COUNT = 58;
 const RATE_LIMIT_PERIOD_MS = 60 * 1000; // 1 minute
 const requestTimestamps: number[] = [];
 
+// A promise chain to serialize access to the rate limiter logic, preventing race conditions.
+let rateLimiterPromise = Promise.resolve();
+
 /**
  * Ensures that the application does not exceed the Discogs API rate limit.
- * It checks recent request timestamps and waits if the limit has been reached.
+ * It serializes all requests through a promise chain to prevent race conditions
+ * when called concurrently (e.g., from Promise.all).
  */
 async function ensureRateLimit() {
-    // This loop ensures that after waiting, we re-check the condition
-    // before proceeding.
-    while (true) {
-        const now = Date.now();
+    // Capture the current promise in the chain.
+    const previous = rateLimiterPromise;
+    
+    // Create the next link in the chain, which will execute AFTER the previous one.
+    const next = previous.then(async () => {
+        // CRITICAL SECTION: Only one of these .then() callbacks
+        // will execute at a time.
+        let now = Date.now();
 
-        // Remove timestamps that are older than the rate limit period.
+        // Prune timestamps older than the rate limit period.
         while (requestTimestamps.length > 0 && requestTimestamps[0] < now - RATE_LIMIT_PERIOD_MS) {
             requestTimestamps.shift();
         }
 
-        if (requestTimestamps.length < RATE_LIMIT_COUNT) {
-            // We are under the limit, we can break the loop and proceed.
-            break;
+        // If we've hit the limit, wait until the oldest request expires.
+        if (requestTimestamps.length >= RATE_LIMIT_COUNT) {
+            const oldestTimestamp = requestTimestamps[0];
+            // Calculate time to wait until the oldest request is out of the window.
+            const timeToWait = (oldestTimestamp + RATE_LIMIT_PERIOD_MS) - now + 20; // +20ms buffer for safety
+
+            if (timeToWait > 0) {
+                console.log(`Discogs rate limit reached. Waiting for ${Math.ceil(timeToWait / 1000)}s...`);
+                await new Promise(r => setTimeout(r, timeToWait));
+            }
         }
+        
+        // Record the timestamp for this request.
+        requestTimestamps.push(Date.now());
+    });
 
-        // If we've reached this point, the limit has been hit.
-        // We need to wait until the oldest request is outside the 60-second window.
-        const oldestTimestamp = requestTimestamps[0];
-        const timeSinceOldestRequest = now - oldestTimestamp;
-        const waitTime = RATE_LIMIT_PERIOD_MS - timeSinceOldestRequest;
-
-        if (waitTime > 0) {
-            console.log(`Discogs rate limit reached. Waiting for ${Math.ceil(waitTime / 1000)}s...`);
-            await new Promise(resolve => setTimeout(resolve, waitTime));
-        }
-    }
-
-    // Add a timestamp for the new request we are about to make.
-    requestTimestamps.push(Date.now());
+    // Update the master promise to point to the new end of the chain.
+    rateLimiterPromise = next;
+    
+    // The caller awaits its link in the chain.
+    return next;
 }
 // --- End Rate Limiter ---
 
