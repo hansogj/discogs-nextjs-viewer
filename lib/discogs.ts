@@ -1,3 +1,4 @@
+
 import type {
   DiscogsUser,
   CollectionResponse,
@@ -154,17 +155,35 @@ async function fetchAllPaginatedData<T, R>(
   initialUrl: string,
   token: string,
   dataKey: keyof R,
+  resourceName: string,
+  onProgress?: (progress: {
+    page: number;
+    pages: number;
+    resource: string;
+  }) => void,
 ): Promise<T[]> {
   let allData: T[] = [];
   let nextUrl: string | undefined = initialUrl;
 
-  type PaginatedResponse = R & { pagination: { urls: { next?: string } } };
+  type PaginatedResponse = R & {
+    pagination: { page: number; pages: number; urls: { next?: string } };
+  };
 
   while (nextUrl) {
     const urlWithoutToken = nextUrl.replace(/token=[^&]+/, 'token=REDACTED');
     console.log(`[Discogs API] Fetching page: ${urlWithoutToken}`);
     const response: PaginatedResponse =
       await fetchDiscogsAPI<PaginatedResponse>(nextUrl, token);
+
+    if (onProgress && response.pagination) {
+      // Fire-and-forget the progress update
+      onProgress({
+        page: response.pagination.page,
+        pages: response.pagination.pages,
+        resource: resourceName,
+      });
+    }
+
     const data = response[dataKey] as T[] | undefined;
     if (data) {
       allData = [...allData, ...data];
@@ -177,24 +196,30 @@ async function fetchAllPaginatedData<T, R>(
 export async function getFullCollection(
   username: string,
   token: string,
+  onProgress?: (progress: any) => void,
 ): Promise<CollectionRelease[]> {
   const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?per_page=100`;
   return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
     url,
     token,
     'releases',
+    'collection',
+    onProgress,
   );
 }
 
 export async function getFullWantlist(
   username: string,
   token: string,
+  onProgress?: (progress: any) => void,
 ): Promise<WantlistRelease[]> {
   const url = `${API_BASE_URL}/users/${username}/wants?per_page=100`;
   return fetchAllPaginatedData<WantlistRelease, WantlistResponse>(
     url,
     token,
     'wants',
+    'wantlist',
+    onProgress,
   );
 }
 

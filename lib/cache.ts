@@ -1,11 +1,12 @@
+
 import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
+// Fix: Explicitly import `process` to resolve type error for `process.cwd()`
+import process from 'process';
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
-// FIX: Rely on the global `process` object from the Node.js environment.
-// The previous explicit import was causing a type conflict, leading to an error.
 const CACHE_DIR = path.join(process.cwd(), '.next', 'cache', 'discogs-data');
 
 // Ensure cache directory exists
@@ -26,6 +27,60 @@ function getCachePath(username: string, key: 'collection' | 'wantlist') {
   return path.join(CACHE_DIR, `${safeUsername}-${key}.json`);
 }
 
+function getProgressCachePath(username: string) {
+  const safeUsername = username.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  return path.join(CACHE_DIR, `${safeUsername}-sync-progress.json`);
+}
+
+// --- Sync Progress ---
+export interface SyncProgress {
+  status: 'starting' | 'fetching' | 'processing' | 'caching' | 'done' | 'error';
+  resource?: 'collection' | 'wantlist';
+  page?: number;
+  pages?: number;
+  message?: string;
+}
+
+export async function setSyncProgress(
+  username: string,
+  progress: SyncProgress,
+): Promise<void> {
+  await ensureCacheDir();
+  const filePath = getProgressCachePath(username);
+  try {
+    await fs.writeFile(filePath, JSON.stringify(progress), 'utf-8');
+  } catch (error) {
+    console.error('Failed to write sync progress:', error);
+  }
+}
+
+export async function getSyncProgress(
+  username: string,
+): Promise<SyncProgress | null> {
+  const filePath = getProgressCachePath(username);
+  try {
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(fileContent) as SyncProgress;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error('Failed to read sync progress:', error);
+    }
+    return null;
+  }
+}
+
+export async function clearSyncProgress(username: string): Promise<void> {
+  const filePath = getProgressCachePath(username);
+  try {
+    await fs.unlink(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+      console.error('Failed to clear sync progress file:', error);
+    }
+  }
+}
+
+// --- Main Data Cache ---
 export async function getCachedData<T>(
   username: string,
   key: 'collection' | 'wantlist',
@@ -52,7 +107,9 @@ export async function setCachedData(
   const filePath = getCachePath(username, key);
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-    console.log(`[Cache] Wrote ${data.length} items to ${key} cache for ${username}.`);
+    console.log(
+      `[Cache] Wrote ${data.length} items to ${key} cache for ${username}.`,
+    );
   } catch (error) {
     console.error(`Failed to write cache for ${key}:`, error);
   }
@@ -60,14 +117,18 @@ export async function setCachedData(
 
 export async function clearUserCache(username: string): Promise<void> {
   console.log(`[Cache] Clearing cache for user: ${username}`);
-  try {
-    await fs.unlink(getCachePath(username, 'collection'));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') console.error('Failed to clear collection cache:', error);
-  }
-  try {
-    await fs.unlink(getCachePath(username, 'wantlist'));
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') console.error('Failed to clear wantlist cache:', error);
-  }
+  const collectionPath = getCachePath(username, 'collection');
+  const wantlistPath = getCachePath(username, 'wantlist');
+
+  await Promise.all([
+    fs.unlink(collectionPath).catch((e) => {
+      if ((e as NodeJS.ErrnoException).code !== 'ENOENT')
+        console.error('Failed to clear collection cache:', e);
+    }),
+    fs.unlink(wantlistPath).catch((e) => {
+      if ((e as NodeJS.ErrnoException).code !== 'ENOENT')
+        console.error('Failed to clear wantlist cache:', e);
+    }),
+    clearSyncProgress(username),
+  ]);
 }
