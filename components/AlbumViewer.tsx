@@ -16,6 +16,7 @@ import { fetchCollectionPage, fetchWantlistPage } from '@/app/actions';
 import Grid from './Grid';
 import SortControls, { type SortKey, type SortOrder } from './SortControls';
 import Spinner from './Spinner';
+import LoadingIndicator from './LoadingIndicator';
 
 interface AlbumViewerProps {
   initialItems: (CollectionRelease | ProcessedWantlistItem)[];
@@ -30,7 +31,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   viewType,
   collectionItemsForFiltering,
 }) => {
-  // Memoize the processing of initial items to ensure wantlist is unique from the start.
   const { initialUniqueItems, initialSeenMasterIds } = useMemo(() => {
     if (viewType !== 'wantlist') {
       return {
@@ -42,7 +42,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     const seenIds = new Set<number>();
     for (const item of initialItems as ProcessedWantlistItem[]) {
       const masterId = item.basic_information.master_id;
-      // Rule: Item must have a master_id and it must not have been seen before.
       if (masterId > 0 && !seenIds.has(masterId)) {
         seenIds.add(masterId);
         uniqueItems.push(item);
@@ -52,15 +51,15 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   }, [initialItems, viewType]);
 
   const [items, setItems] = useState(initialUniqueItems);
-  const [page, setPage] = useState(2); // Start with the next page to fetch
+  const [page, setPage] = useState(2);
   const [hasNextPage, setHasNextPage] = useState(!!initialPagination.urls.next);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSorting, setIsSorting] = useState(false);
 
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showInCollectionOnly, setShowInCollectionOnly] = useState(false);
 
-  // Use the memoized set of master IDs for the initial state.
   const [seenMasterIds, setSeenMasterIds] = useState(initialSeenMasterIds);
 
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -97,13 +96,13 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     async (currentPage: number, consecutiveEmptyFetches = 0) => {
       if (isLoading) return;
 
-      const MAX_EMPTY_FETCHES = 5; // Safety break for recursive fetches
+      const MAX_EMPTY_FETCHES = 5;
       if (consecutiveEmptyFetches >= MAX_EMPTY_FETCHES) {
         console.warn(
           'Stopped fetching wantlist after too many consecutive empty pages of duplicates.',
         );
         setHasNextPage(false);
-        setIsLoading(false); // Ensure loading is reset
+        setIsLoading(false);
         return;
       }
 
@@ -121,18 +120,14 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         let newItems: (CollectionRelease | ProcessedWantlistItem)[] =
           data as any;
 
-        // De-duplicate wantlist items by master_id
         if (viewType === 'wantlist') {
           const uniqueNewItems = newItems.filter((item) => {
             const masterId = item.basic_information.master_id;
-            // Item must have a master ID and it must be one we haven't seen.
             return masterId > 0 && !seenMasterIds.has(masterId);
           });
-
           const newMasterIds = uniqueNewItems
             .map((item) => item.basic_information.master_id)
             .filter((id) => id > 0);
-
           if (newMasterIds.length > 0) {
             setSeenMasterIds((prev) => new Set([...prev, ...newMasterIds]));
           }
@@ -148,17 +143,17 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         setPage(currentPage + 1);
         setHasNextPage(!!pagination.urls.next);
 
-        // If we fetched a page that only contained duplicates, and there are more pages, fetch the next one.
         if (
           viewType === 'wantlist' &&
           newItems.length === 0 &&
           !!pagination.urls.next
         ) {
-          loadMoreItems(currentPage + 1, consecutiveEmptyFetches + 1);
-          return; // Exit here to keep isLoading true until recursive call finishes
+          await loadMoreItems(currentPage + 1, consecutiveEmptyFetches + 1);
+          return;
         }
       } catch (error) {
         console.error('Failed to fetch more items:', error);
+        setHasNextPage(false); // Stop fetching on error
       }
 
       setIsLoading(false);
@@ -172,19 +167,24 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       isInitialMount.current = false;
       return;
     }
-    setItems([]);
-    if (viewType === 'wantlist') {
-      setSeenMasterIds(new Set());
-    }
-    setPage(1);
-    setHasNextPage(true); // Assume there's a page 1
-    loadMoreItems(1);
+    const resortItems = async () => {
+      setIsSorting(true);
+      setItems([]);
+      if (viewType === 'wantlist') {
+        setSeenMasterIds(new Set<number>());
+      }
+      setPage(1);
+      setHasNextPage(true);
+      await loadMoreItems(1);
+      setIsSorting(false);
+    };
+    resortItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortKey, sortOrder]);
 
   // Effect for setting up the IntersectionObserver
   useEffect(() => {
-    if (isLoading || !hasNextPage) {
-      // Disconnect observer if loading or no more pages
+    if (isLoading || !hasNextPage || isSorting) {
       if (observerRef.current && loadMoreRef.current) {
         observerRef.current.unobserve(loadMoreRef.current);
       }
@@ -209,7 +209,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         observerRef.current.unobserve(loadMoreRef.current);
       }
     };
-  }, [isLoading, hasNextPage, page, loadMoreItems]);
+  }, [isLoading, hasNextPage, page, loadMoreItems, isSorting]);
 
   return (
     <>
@@ -228,14 +228,23 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
             : undefined
         }
       />
-      <Grid items={displayedItems} />
+      {isSorting ? (
+        <LoadingIndicator message={`Sorting your ${viewType}...`} />
+      ) : (
+        <Grid items={displayedItems} />
+      )}
 
       <div
         ref={loadMoreRef}
         className="flex h-20 items-center justify-center"
       >
-        {isLoading && <Spinner size="md" />}
-        {!hasNextPage && displayedItems.length > 0 && (
+        {isLoading && !isSorting && (
+          <div className="flex items-center space-x-3 text-discogs-text-secondary">
+            <Spinner size="md" />
+            <span>Loading more...</span>
+          </div>
+        )}
+        {!hasNextPage && !isSorting && displayedItems.length > 0 && (
           <p className="text-discogs-text-secondary">End of list.</p>
         )}
       </div>
