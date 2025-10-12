@@ -1,6 +1,6 @@
 # Discogs Collection Viewer (Next.js Version)
 
-This is a web application built with Next.js that allows you to view your Discogs record collection and wantlist. It uses the Discogs API for data and a simple in-memory cache for a fast and seamless experience during a session.
+This is a web application built with Next.js that allows you to view your Discogs record collection and wantlist. It uses the Discogs API for data and a local file-based cache for a fast and seamless experience across sessions.
 
 ## Features
 
@@ -8,7 +8,7 @@ This is a web application built with Next.js that allows you to view your Discog
 - **Server-Side Rendering (SSR)**: Fast initial page loads.
 - **Dedicated Routes**: Separate, shareable pages for `/collection` and `/wantlist`.
 - **Secure Authentication**: User sessions are managed with encrypted, HTTP-only cookies.
-- **In-Memory Caching**: Fetched data from Discogs is cached in memory for near-instant subsequent loads within a session.
+- **File-based Caching**: Fetched data from Discogs is cached in the local filesystem (`.next/cache/`) to prevent hitting API rate limits and for near-instant loads across server restarts.
 - **Modern Dark UI**: A sleek, "Discogs-ish" dark mode interface.
 - **Comprehensive Testing**: Includes unit tests with Vitest and end-to-end tests with Playwright.
 
