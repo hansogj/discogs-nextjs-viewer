@@ -15,6 +15,7 @@ const sessionOptions = {
     cookieOptions: {
         secure: process.env.NODE_ENV === 'production',
         httpOnly: true,
+        maxAge: 60 * 30, // Expire session after 30 minutes of inactivity
     },
 };
 
