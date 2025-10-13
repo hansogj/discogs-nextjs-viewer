@@ -1,15 +1,17 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
 import { getRandomQuote } from '@/lib/quotes';
+import type { Quote } from '@/lib/quotes';
 
 interface LoadingIndicatorProps {
   message: string;
 }
 
 const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ message }) => {
-  const [quote, setQuote] = useState('');
+  const [quote, setQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
     // Set initial quote and then change it periodically if the component stays mounted for long
@@ -30,8 +32,11 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ message }) => {
       <Spinner size="md" />
       <p className="mt-4 text-lg font-semibold text-discogs-text">{message}</p>
       {quote && (
-        <blockquote className="mt-4 max-w-sm border-l-4 border-discogs-border pl-4 italic text-discogs-text-secondary">
-          <p>"{quote}"</p>
+        <blockquote className="mt-4 max-w-sm border-l-4 border-discogs-border p-4 italic text-discogs-text-secondary">
+          <p>"{quote.quote}"</p>
+          <cite className="mt-2 block text-right text-sm not-italic text-discogs-text-secondary/80">
+            &mdash; {quote.author}
+          </cite>
         </blockquote>
       )}
     </div>

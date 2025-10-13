@@ -7,6 +7,7 @@ import Spinner from './Spinner';
 import { getRandomQuote } from '@/lib/quotes';
 import type { DiscogsUser } from '@/lib/types';
 import type { SyncProgress } from '@/lib/cache';
+import type { Quote } from '@/lib/quotes';
 
 const PLACEHOLDER_AVATAR_URL =
   "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3e%3crect width='100' height='100' fill='%231d1f24'/%3e%3ccircle cx='50' cy='40' r='15' fill='%23a0a0a0'/%3e%3cpath d='M25,90 A30,30 0 0,1 75,90 Z' fill='%23a0a0a0'/%3e%3c/svg%3e";
@@ -18,7 +19,7 @@ interface SyncModalProps {
 }
 
 const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user, progress }) => {
-  const [quote, setQuote] = useState(getRandomQuote());
+  const [quote, setQuote] = useState<Quote>(getRandomQuote());
 
   useEffect(() => {
     if (isOpen) {
@@ -101,8 +102,11 @@ const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user, progress }) => {
           </div>
           <h2 className="mb-2 text-xl font-bold text-white">{message}</h2>
           <p className="mb-6 text-discogs-text-secondary">{subMessage}</p>
-          <blockquote className="flex min-h-[60px] items-center justify-center border-l-4 border-discogs-blue pl-4 italic text-discogs-text-secondary">
-            <p>"{quote}"</p>
+          <blockquote className="flex min-h-[80px] flex-col items-center justify-center border-l-4 border-discogs-blue p-4 italic text-discogs-text-secondary">
+            <p>"{quote.quote}"</p>
+            <cite className="mt-2 block w-full text-right text-sm not-italic text-discogs-text-secondary/80">
+              &mdash; {quote.author}
+            </cite>
           </blockquote>
         </div>
       </div>
