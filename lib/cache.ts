@@ -2,11 +2,12 @@ import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
 import type { CollectionRelease, ProcessedWantlistItem } from './types';
-// Fix: Import `process` to correctly type the global for Node.js environments.
-import { process } from 'process';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
-const CACHE_DIR = path.join(process.cwd(), '.next', 'cache', 'discogs-data');
+// Fix: Replace `path.join(process.cwd(), ...)` with `path.resolve(...)` to avoid a TypeScript type error
+// where `process.cwd` is not found on the `Process` type due to conflicting global type definitions.
+// `path.resolve` with a relative path will resolve it against the current working directory, achieving the same result.
+const CACHE_DIR = path.resolve('./.next/cache/discogs-data');
 
 // Ensure cache directory exists
 async function ensureCacheDir() {
@@ -42,7 +43,7 @@ export interface SyncProgress {
 }
 
 export async function setSyncProgress(
-  username: string,
+  username:string,
   progress: SyncProgress,
 ): Promise<void> {
   await ensureCacheDir();
