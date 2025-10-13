@@ -6,7 +6,12 @@ import type {
   ProcessedWantlistItem,
 } from '@/lib/types';
 import Grid from './Grid';
-import SortControls, { type SortKey, type SortOrder } from './SortControls';
+import SortControls, {
+  type SortKey,
+  type SortOrder,
+  type View,
+} from './SortControls';
+import AlbumList from './AlbumList';
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
@@ -22,6 +27,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
+  const [view, setView] = useState<View>('grid');
 
   const handleSortOrderChange = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -87,12 +93,16 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           break;
         case 'title':
         default:
-          compareA = aInfo.title.replace(/^(the|a|an)\s+/i, '').toLocaleLowerCase();
-          compareB = bInfo.title.replace(/^(the|a|an)\s+/i, '').toLocaleLowerCase();
+          compareA = aInfo.title
+            .replace(/^(the|a|an)\s+/i, '')
+            .toLocaleLowerCase();
+          compareB = bInfo.title
+            .replace(/^(the|a|an)\s+/i, '')
+            .toLocaleLowerCase();
       }
 
       const direction = sortOrder === 'asc' ? 1 : -1;
-      
+
       if (typeof compareA === 'string' && typeof compareB === 'string') {
         return compareA.localeCompare(compareB) * direction;
       }
@@ -117,6 +127,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         sortOrder={sortOrder}
         onSortKeyChange={setSortKey}
         onSortOrderChange={handleSortOrderChange}
+        view={view}
+        onViewChange={setView}
         filterOptions={
           viewType === 'wantlist'
             ? {
@@ -136,8 +148,10 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
             Try syncing with Discogs to load your data.
           </p>
         </div>
-      ) : (
+      ) : view === 'grid' ? (
         <Grid items={sortedAndFilteredItems} />
+      ) : (
+        <AlbumList items={sortedAndFilteredItems} />
       )}
     </>
   );
