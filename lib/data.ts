@@ -37,13 +37,9 @@ export async function getCachedWantlist(): Promise<ProcessedWantlistItem[]> {
   return data ?? [];
 }
 
-export async function getCachedUserProfile(): Promise<DiscogsUserProfile | null> {
-  const { user } = await getAuthenticatedUser();
-  const data = await getCachedData<DiscogsUserProfile>(
-    user.username,
-    'profile',
-  );
-  return data;
+export async function getUserProfile(): Promise<DiscogsUserProfile | null> {
+  const session = await getSession();
+  return session.userProfile ?? null;
 }
 
 // Fetches all data needed for the header from the cache
