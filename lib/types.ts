@@ -44,6 +44,7 @@ export interface CollectionRelease {
   date_added: string;
   rating: number;
   basic_information: BasicInformation;
+  folder_id: number;
 }
 
 export interface WantlistRelease {
