@@ -14,7 +14,8 @@ async function ensureCacheDir() {
     await fs.mkdir(CACHE_DIR, { recursive: true });
   } catch (error) {
     // This can fail if multiple requests try to create it at once, which is fine.
-    if ((error as NodeJS.ErrnoException).code !== 'EEXIST') {
+    // @ts-ignore
+    if ((error as { code?: string }).code !== 'EEXIST') {
       console.error('Failed to create cache directory:', error);
     }
   }
@@ -61,7 +62,8 @@ export async function getSyncProgress(
     const fileContent = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(fileContent) as SyncProgress;
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    // @ts-ignore
+    if ((error as { code?: string }).code !== 'ENOENT') {
       console.error('Failed to read sync progress:', error);
     }
     return null;
@@ -73,7 +75,8 @@ export async function clearSyncProgress(username: string): Promise<void> {
   try {
     await fs.unlink(filePath);
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    // @ts-ignore
+    if ((error as { code?: string }).code !== 'ENOENT') {
       console.error('Failed to clear sync progress file:', error);
     }
   }
@@ -90,7 +93,8 @@ export async function getCachedData<T>(
     return JSON.parse(fileContent) as T;
   } catch (error) {
     // If file doesn't exist (ENOENT), it's a cache miss, which is normal.
-    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+    // @ts-ignore
+    if ((error as { code?: string }).code !== 'ENOENT') {
       console.error(`Failed to read cache for ${key}:`, error);
     }
     return null;
@@ -121,11 +125,13 @@ export async function clearUserCache(username: string): Promise<void> {
 
   await Promise.all([
     fs.unlink(collectionPath).catch((e) => {
-      if ((e as NodeJS.ErrnoException).code !== 'ENOENT')
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear collection cache:', e);
     }),
     fs.unlink(wantlistPath).catch((e) => {
-      if ((e as NodeJS.ErrnoException).code !== 'ENOENT')
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear wantlist cache:', e);
     }),
     clearSyncProgress(username),

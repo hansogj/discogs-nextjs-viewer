@@ -13,6 +13,7 @@ async function AppLayoutContent({ activeView, children }: AppLayoutProps) {
     await getHeaderData();
 
   return (
+    // FIX: Pass children to AppContainer to satisfy AppContainerProps type
     <AppContainer
       user={user}
       activeView={activeView}
@@ -28,6 +29,7 @@ async function AppLayoutContent({ activeView, children }: AppLayoutProps) {
 export default function AppLayout({ children, activeView }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-discogs-bg text-discogs-text">
+      {/* FIX: Pass children to AppLayoutContent to satisfy AppLayoutProps type */}
       <Suspense fallback={<HeaderSkeleton activeView={activeView} />}>
         <AppLayoutContent activeView={activeView}>{children}</AppLayoutContent>
       </Suspense>
