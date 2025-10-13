@@ -29,8 +29,8 @@ async function AppLayoutContent({ activeView, children }: AppLayoutProps) {
 export default function AppLayout({ children, activeView }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-discogs-bg text-discogs-text">
-      {/* FIX: Pass children to AppLayoutContent to satisfy the AppLayoutProps type, which requires the 'children' property. */}
       <Suspense fallback={<HeaderSkeleton activeView={activeView} />}>
+        {/* FIX: Pass children to AppLayoutContent to satisfy the AppLayoutProps type, which requires the 'children' property. */}
         <AppLayoutContent activeView={activeView}>{children}</AppLayoutContent>
       </Suspense>
     </div>

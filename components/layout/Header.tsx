@@ -87,37 +87,78 @@ export default function Header({
         <nav className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
           <Link
             href="/collection"
-            className={clsx(buttonBaseClasses, {
-              [activeButtonClasses]: activeView === 'collection',
-              [inactiveButtonClasses]: activeView !== 'collection',
-            })}
+            className={clsx(
+              buttonBaseClasses,
+              'flex items-center gap-2', // Added for icon layout
+              {
+                [activeButtonClasses]: activeView === 'collection',
+                [inactiveButtonClasses]: activeView !== 'collection',
+              },
+            )}
           >
-            Collection
-            <span className="ml-2 rounded-full bg-discogs-border px-2 py-0.5 text-xs font-bold text-discogs-text">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M19.5846 20.5964C18.8055 20.5964 18.1719 19.9628 18.1719 19.1837V4.41267C18.1719 3.63359 18.8055 3 19.5846 3C20.3636 3 20.9972 3.63359 20.9972 4.41267V19.1837C20.9972 19.9628 20.3636 20.5964 19.5846 20.5964Z" />
+              <path d="M15.858 20.5964C15.0789 20.5964 14.4453 19.9628 14.4453 19.1837V4.41267C14.4453 3.63359 15.0789 3 15.858 3C16.6371 3 17.2707 3.63359 17.2707 4.41267V19.1837C17.2707 19.9628 16.6371 20.5964 15.858 20.5964Z" />
+              <path d="M12.1236 20.5964C11.3445 20.5964 10.7109 19.9628 10.7109 19.1837V4.41267C10.7109 3.63359 11.3445 3 12.1236 3C12.9027 3 13.5363 3.63359 13.5363 4.41267V19.1837C13.5363 19.9628 12.9027 20.5964 12.1236 20.5964Z" />
+              <path d="M3.41022 20.1624C3.25167 20.1624 3.09016 20.1369 2.93517 20.0799C2.20063 19.8168 1.82059 19.0092 2.08305 18.2747L7.06454 4.36827C7.3276 3.63373 8.13518 3.25369 8.86973 3.51616C9.60427 3.77862 9.98431 4.5868 9.72185 5.32134L4.74036 19.2278C4.53134 19.8044 3.98978 20.1618 3.41022 20.1618V20.1624Z" />
+            </svg>
+            <span>Collection</span>
+            <span className="rounded-full bg-discogs-border px-2 py-0.5 text-xs font-bold text-discogs-text">
               {collectionCount}
             </span>
           </Link>
           <Link
             href="/wantlist"
-            className={clsx(buttonBaseClasses, {
-              [activeButtonClasses]: activeView === 'wantlist',
-              [inactiveButtonClasses]: activeView !== 'wantlist',
-            })}
+            className={clsx(
+              buttonBaseClasses,
+              'flex items-center gap-2', // Added for icon layout
+              {
+                [activeButtonClasses]: activeView === 'wantlist',
+                [inactiveButtonClasses]: activeView !== 'wantlist',
+              },
+            )}
           >
-            Wantlist
-            <span className="ml-2 rounded-full bg-discogs-border px-2 py-0.5 text-xs font-bold text-discogs-text">
+            <svg
+              viewBox="0 0 20 12"
+              className="h-5 w-5"
+              fill="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path d="M17.7747 6.00033C16.7485 4.40696 15.4622 3.21515 13.9157 2.42489C14.3275 3.12705 14.5334 3.88668 14.5334 4.70378C14.5334 5.95306 14.0895 7.02161 13.2017 7.90942C12.3138 8.79723 11.2453 9.24113 9.99601 9.24113C8.74673 9.24113 7.67818 8.79723 6.79037 7.90942C5.90256 7.02161 5.45866 5.95306 5.45866 4.70378C5.45866 3.88668 5.66454 3.12705 6.07631 2.42489C4.5302 3.21477 3.24386 4.40658 2.21729 6.00033C3.11531 7.3846 4.24114 8.48679 5.59478 9.30692C6.94842 10.127 8.41531 10.5373 9.99545 10.5377C11.5756 10.5381 13.0425 10.1278 14.3961 9.30692C15.7498 8.48604 16.8756 7.38384 17.7736 6.00033H17.7747ZM10.4826 2.11125C10.4826 1.97626 10.4354 1.8615 10.3409 1.76698C10.2463 1.67245 10.1316 1.62518 9.99658 1.62518C9.15263 1.62518 8.42855 1.9273 7.82432 2.53152C7.2201 3.13574 6.91799 3.85983 6.91799 4.70378C6.91799 4.83876 6.96525 4.95352 7.05978 5.04805C7.15431 5.14258 7.26906 5.18984 7.40405 5.18984C7.53904 5.18984 7.65379 5.14258 7.74832 5.04805C7.84285 4.95352 7.89011 4.83876 7.89011 4.70378C7.89011 4.123 8.096 3.62672 8.50776 3.21496C8.91953 2.80319 9.4158 2.59731 9.99658 2.59731C10.1316 2.59731 10.2463 2.55005 10.3409 2.45552C10.4354 2.36099 10.4826 2.24623 10.4826 2.11125ZM19.0713 6.00033C19.0713 6.22984 19.0038 6.46276 18.8688 6.69908C17.9235 8.25199 16.6525 9.49598 15.0557 10.4311C13.459 11.3661 11.7726 11.8337 9.99658 11.8337C8.22058 11.8337 6.5342 11.3644 4.93743 10.4259C3.34066 9.48747 2.06964 8.24518 1.12435 6.69908C0.989368 6.46276 0.921875 6.22984 0.921875 6.00033C0.921875 5.77081 0.989368 5.53789 1.12435 5.30157C2.06964 3.75547 3.34066 2.51318 4.93743 1.57471C6.5342 0.63623 8.22058 0.166992 9.99658 0.166992C11.7726 0.166992 13.459 0.63623 15.0557 1.57471C16.6525 2.51318 17.9235 3.75547 18.8688 5.30157C19.0038 5.53789 19.0713 5.77081 19.0713 6.00033Z" />
+            </svg>
+            <span>Wantlist</span>
+            <span className="rounded-full bg-discogs-border px-2 py-0.5 text-xs font-bold text-discogs-text">
               {wantlistCount}
             </span>
           </Link>
           <Link
             href="/duplicates"
-            className={clsx(buttonBaseClasses, {
-              [activeButtonClasses]: activeView === 'duplicates',
-              [inactiveButtonClasses]: activeView !== 'duplicates',
-            })}
+            className={clsx(
+              buttonBaseClasses,
+              'flex items-center gap-2', // Added for icon layout
+              {
+                [activeButtonClasses]: activeView === 'duplicates',
+                [inactiveButtonClasses]: activeView !== 'duplicates',
+              },
+            )}
           >
-            Duplicates
-            <span className="ml-2 rounded-full bg-discogs-border px-2 py-0.5 text-xs font-bold text-discogs-text">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M22 7h-2v1h3v1h-4V7c0-.55.45-1 1-1h2V5h-3V4h3c.55 0 1 .45 1 1v1c0 .55-.45 1-1 1M5.88 20h2.66l3.4-5.42h.12l3.4 5.42h2.66l-4.65-7.27L17.81 6h-2.68l-3.07 4.99h-.12L8.85 6H6.19l4.32 6.73z" />
+            </svg>
+            <span>Duplicates</span>
+            <span className="rounded-full bg-discogs-border px-2 py-0.5 text-xs font-bold text-discogs-text">
               {duplicatesCount}
             </span>
           </Link>
