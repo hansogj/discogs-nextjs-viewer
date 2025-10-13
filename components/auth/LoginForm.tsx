@@ -27,7 +27,7 @@ export default function LoginForm() {
 
     if (response.ok) {
       startTransition(() => {
-        router.refresh();
+        router.replace('/collection');
       });
     } else {
       const data = await response.json();
