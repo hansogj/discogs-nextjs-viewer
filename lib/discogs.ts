@@ -18,22 +18,29 @@ const RATE_LIMIT_COUNT = 58;
 const RATE_LIMIT_PERIOD_MS = 60 * 1000; // 1 minute
 const requestTimestamps: number[] = [];
 
-// A promise chain to serialize access to the rate limiter logic, preventing race conditions.
-let rateLimiterPromise = Promise.resolve();
+/**
+ * Creates a function that executes promises in sequence, not in parallel.
+ * This is crucial for atomically updating the rate limiter state.
+ */
+const createSerializedExecutor = () => {
+  let lastPromise: Promise<any> = Promise.resolve();
+  return (fn: () => Promise<void>) => {
+    // Chain the new function call off the last promise.
+    // `lastPromise.then(fn)` ensures `fn` only runs after the previous promise is resolved.
+    lastPromise = lastPromise.then(fn, fn); // Also run on rejection to not halt the queue
+    return lastPromise;
+  };
+};
+
+const serializedRateCheck = createSerializedExecutor();
 
 /**
  * Ensures that the application does not exceed the Discogs API rate limit.
- * It serializes all requests through a promise chain to prevent race conditions
- * when called concurrently (e.g., from Promise.all).
+ * It uses a serialized promise executor to prevent race conditions when multiple
+ * requests are fired concurrently.
  */
-async function ensureRateLimit() {
-  // Capture the current promise in the chain.
-  const previous = rateLimiterPromise;
-
-  // Create the next link in the chain, which will execute AFTER the previous one.
-  const next = previous.then(async () => {
-    // CRITICAL SECTION: Only one of these .then() callbacks
-    // will execute at a time.
+function ensureRateLimit() {
+  return serializedRateCheck(async () => {
     let now = Date.now();
 
     // Prune timestamps older than the rate limit period.
@@ -49,7 +56,7 @@ async function ensureRateLimit() {
       const oldestTimestamp = requestTimestamps[0];
       // Calculate time to wait until the oldest request is out of the window.
       const timeToWait =
-        oldestTimestamp + RATE_LIMIT_PERIOD_MS - now + 20; // +20ms buffer for safety
+        oldestTimestamp + RATE_LIMIT_PERIOD_MS - now + 100; // Increased buffer for safety
 
       if (timeToWait > 0) {
         console.log(
@@ -61,15 +68,9 @@ async function ensureRateLimit() {
       }
     }
 
-    // Record the timestamp for this request.
+    // Record the timestamp for this request *after* any potential waiting.
     requestTimestamps.push(Date.now());
   });
-
-  // Update the master promise to point to the new end of the chain.
-  rateLimiterPromise = next;
-
-  // The caller awaits its link in the chain.
-  return next;
 }
 // --- End Rate Limiter ---
 
