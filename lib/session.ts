@@ -1,11 +1,12 @@
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import type { DiscogsUser } from './types';
+import type { DiscogsUser, DiscogsUserProfile } from './types';
 
 export interface SessionData {
   token?: string;
   user?: DiscogsUser;
   isLoggedIn?: boolean;
+  userProfile?: DiscogsUserProfile;
 }
 
 const sessionOptions = {

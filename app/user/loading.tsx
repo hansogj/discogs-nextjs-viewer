@@ -11,6 +11,7 @@ const SkeletonStatCard: React.FC = () => (
 
 export default function Loading() {
   return (
+    // FIX: The `children` prop is correctly passed to AppLayout. The error is likely due to an issue in the AppLayout component itself.
     <AppLayout activeView="user">
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">

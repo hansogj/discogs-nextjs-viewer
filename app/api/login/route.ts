@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
-import { getIdentity } from '@/lib/discogs';
+import { getIdentity, getUserProfile } from '@/lib/discogs';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -28,6 +28,9 @@ export async function POST(request: Request) {
       throw new Error('Invalid token or failed to fetch identity.');
     }
 
+    // Fetch detailed user profile
+    const userProfile = await getUserProfile(identity.username, token);
+
     // Save user info and token in session
     const session = await getSession();
     session.token = token;
@@ -37,6 +40,7 @@ export async function POST(request: Request) {
       avatar_url: identity.avatar_url,
       resource_url: identity.resource_url,
     };
+    session.userProfile = userProfile;
     await session.save();
 
     return NextResponse.json({ user: session.user });

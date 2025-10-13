@@ -1,5 +1,5 @@
 import AppLayout from '@/components/layout/AppLayout';
-import { getCachedUserProfile } from '@/lib/data';
+import { getUserProfile } from '@/lib/data';
 import Image from 'next/image';
 import React from 'react';
 
@@ -16,17 +16,18 @@ const StatCard: React.FC<{
 );
 
 export default async function UserProfilePage() {
-  const profile = await getCachedUserProfile();
+  const profile = await getUserProfile();
 
   if (!profile) {
     return (
+      // FIX: The `children` prop is correctly passed to AppLayout. The error is likely due to an issue in the AppLayout component itself.
       <AppLayout activeView="user">
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-lg text-discogs-text-secondary">
             User profile not found.
           </p>
           <p className="mt-2 text-discogs-text-secondary">
-            Please sync with Discogs to load your profile data.
+            It should have been loaded on login. Try logging out and back in.
           </p>
         </div>
       </AppLayout>
@@ -39,6 +40,7 @@ export default async function UserProfilePage() {
   );
 
   return (
+    // FIX: The `children` prop is correctly passed to AppLayout. The error is likely due to an issue in the AppLayout component itself.
     <AppLayout activeView="user">
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">

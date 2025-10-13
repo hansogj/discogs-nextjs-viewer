@@ -26,7 +26,7 @@ async function ensureCacheDir() {
   }
 }
 
-type CacheKey = 'collection' | 'wantlist' | 'profile';
+type CacheKey = 'collection' | 'wantlist';
 
 function getCachePath(username: string, key: CacheKey) {
   // Sanitize username to create a valid filename
@@ -111,7 +111,7 @@ export async function getCachedData<T>(
 export async function setCachedData(
   username: string,
   key: CacheKey,
-  data: CollectionRelease[] | ProcessedWantlistItem[] | DiscogsUserProfile,
+  data: CollectionRelease[] | ProcessedWantlistItem[],
 ): Promise<void> {
   await ensureCacheDir();
   const filePath = getCachePath(username, key);
@@ -130,7 +130,6 @@ export async function clearUserCache(username: string): Promise<void> {
   console.log(`[Cache] Clearing cache for user: ${username}`);
   const collectionPath = getCachePath(username, 'collection');
   const wantlistPath = getCachePath(username, 'wantlist');
-  const profilePath = getCachePath(username, 'profile');
 
   await Promise.all([
     fs.unlink(collectionPath).catch((e) => {
@@ -142,11 +141,6 @@ export async function clearUserCache(username: string): Promise<void> {
       // @ts-ignore
       if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear wantlist cache:', e);
-    }),
-    fs.unlink(profilePath).catch((e) => {
-      // @ts-ignore
-      if ((e as { code?: string }).code !== 'ENOENT')
-        console.error('Failed to clear profile cache:', e);
     }),
     clearSyncProgress(username),
   ]);
