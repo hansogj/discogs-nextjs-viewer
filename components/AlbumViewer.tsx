@@ -21,7 +21,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [showInCollectionOnly, setShowInCollectionOnly] = useState(false);
+  const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
 
   const handleSortOrderChange = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -56,10 +56,11 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const sortedAndFilteredItems = useMemo(() => {
     let itemsToDisplay = viewType === 'wantlist' ? uniqueWantlistItems : items;
 
-    if (viewType === 'wantlist' && showInCollectionOnly) {
+    if (viewType === 'wantlist' && showOnlyInCollection) {
       itemsToDisplay = itemsToDisplay.filter((item) => {
         const masterId = item.basic_information.master_id;
-        return masterId > 0 && !collectionMasterIds.has(masterId);
+        // Inverted logic: show only items that ARE in the collection
+        return masterId > 0 && collectionMasterIds.has(masterId);
       });
     }
 
@@ -104,7 +105,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     uniqueWantlistItems,
     sortKey,
     sortOrder,
-    showInCollectionOnly,
+    showOnlyInCollection,
     viewType,
     collectionMasterIds,
   ]);
@@ -119,9 +120,9 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         filterOptions={
           viewType === 'wantlist'
             ? {
-                isEnabled: showInCollectionOnly,
-                onToggle: () => setShowInCollectionOnly((prev) => !prev),
-                label: 'Hide items in collection',
+                isEnabled: showOnlyInCollection,
+                onToggle: () => setShowOnlyInCollection((prev) => !prev),
+                label: 'Show only items in collection',
               }
             : undefined
         }
