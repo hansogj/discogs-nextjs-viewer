@@ -5,6 +5,7 @@ import type {
   CollectionRelease,
   ProcessedWantlistItem,
   DiscogsUser,
+  DiscogsUserProfile,
 } from './types';
 
 async function getAuthenticatedUser(): Promise<{
@@ -34,6 +35,15 @@ export async function getCachedWantlist(): Promise<ProcessedWantlistItem[]> {
     'wantlist',
   );
   return data ?? [];
+}
+
+export async function getCachedUserProfile(): Promise<DiscogsUserProfile | null> {
+  const { user } = await getAuthenticatedUser();
+  const data = await getCachedData<DiscogsUserProfile>(
+    user.username,
+    'profile',
+  );
+  return data;
 }
 
 // Fetches all data needed for the header from the cache

@@ -5,7 +5,7 @@ import AppContainer from './AppContainer';
 
 type AppLayoutProps = {
   children: React.ReactNode;
-  activeView: 'collection' | 'wantlist' | 'duplicates';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
 };
 
 async function AppLayoutContent({ activeView, children }: AppLayoutProps) {

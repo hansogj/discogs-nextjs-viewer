@@ -5,6 +5,28 @@ export interface DiscogsUser {
   avatar_url: string;
 }
 
+export interface DiscogsUserProfile {
+  id: number;
+  username: string;
+  name?: string;
+  profile?: string;
+  location?: string;
+  home_page?: string;
+  registered: string;
+  rank: number;
+  num_pending: number;
+  num_for_sale: number;
+  num_collection: number;
+  num_wantlist: number;
+  num_lists: number;
+  releases_contributed: number;
+  releases_rated: number;
+  rating_avg: number;
+  avatar_url: string;
+  uri: string;
+  resource_url: string;
+}
+
 export interface BasicInformation {
   id: number;
   master_id: number;
