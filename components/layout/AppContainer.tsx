@@ -13,7 +13,7 @@ import type { SyncProgress } from '@/lib/cache';
 
 interface AppContainerProps {
   children: React.ReactNode;
-  activeView: 'collection' | 'wantlist' | 'duplicates';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
   user: DiscogsUser;
   collectionCount: number;
   wantlistCount: number;

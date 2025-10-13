@@ -8,6 +8,7 @@ import type {
   WantlistRelease,
   MasterRelease,
   ProcessedWantlistItem,
+  DiscogsUserProfile,
 } from './types';
 
 // --- Discogs API Rate Limiter ---
@@ -150,6 +151,14 @@ async function fetchDiscogsAPI<T>(url: string, token: string): Promise<T> {
 
 export async function getIdentity(token: string): Promise<DiscogsUser> {
   return fetchDiscogsAPI<DiscogsUser>(`${API_BASE_URL}/oauth/identity`, token);
+}
+
+export async function getUserProfile(
+  username: string,
+  token: string,
+): Promise<DiscogsUserProfile> {
+  const url = `${API_BASE_URL}/users/${username}`;
+  return fetchDiscogsAPI<DiscogsUserProfile>(url, token);
 }
 
 async function fetchAllPaginatedData<T, R>(

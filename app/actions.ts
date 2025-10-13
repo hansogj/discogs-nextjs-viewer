@@ -5,6 +5,7 @@ import { getSession } from '@/lib/session';
 import {
   getFullCollection,
   getFullWantlist,
+  getUserProfile,
   processWantlist as processWantlistWithApi,
 } from '@/lib/discogs';
 import {
@@ -85,6 +86,14 @@ export async function syncAllData(): Promise<{
     const processedWantlist = await processWantlistWithApi(wantlist, token);
     console.log('[Action] Finished processing wantlist.');
 
+    console.log('[Action] Fetching user profile...');
+    await setSyncProgress(user.username, {
+      status: 'fetching',
+      message: 'Fetching your user profile...',
+    });
+    const userProfile = await getUserProfile(user.username, token);
+    console.log('[Action] Fetched user profile.');
+
     console.log('[Action] Writing data to cache...');
     await setSyncProgress(user.username, {
       status: 'caching',
@@ -92,6 +101,7 @@ export async function syncAllData(): Promise<{
     });
     await setCachedData(user.username, 'collection', collection);
     await setCachedData(user.username, 'wantlist', processedWantlist);
+    await setCachedData(user.username, 'profile', userProfile);
     console.log('[Action] Caching complete.');
 
     await clearSyncProgress(user.username); // Clean up progress file

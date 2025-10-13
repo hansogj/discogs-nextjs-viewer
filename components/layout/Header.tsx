@@ -3,13 +3,13 @@
 import type { DiscogsUser } from '@/lib/types';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import React from 'react';
 
 interface HeaderProps {
   user: DiscogsUser;
-  activeView: 'collection' | 'wantlist' | 'duplicates';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
   collectionCount: number;
   wantlistCount: number;
   duplicatesCount: number;
@@ -27,6 +27,8 @@ export default function Header({
   onClearCache,
 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const isUserPage = pathname === '/user';
 
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' });
@@ -46,24 +48,40 @@ export default function Header({
     <header className="sticky top-0 z-50 border-b border-discogs-border bg-discogs-bg/80 p-4 shadow-lg backdrop-blur-sm">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Image
-            src={user.avatar_url || PLACEHOLDER_AVATAR_URL}
-            alt={user.username}
-            width={48}
-            height={48}
-            className="h-12 w-12 rounded-full border-2 border-discogs-blue"
-          />
-          <div>
-            <p className="font-semibold text-white">{user.username}</p>
-            <a
-              href={`https://www.discogs.com/user/${user.username}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-discogs-text-secondary hover:text-discogs-blue"
-            >
-              View on Discogs
-            </a>
-          </div>
+          <Link
+            href="/user"
+            className={clsx(
+              'group flex items-center space-x-4 rounded-lg p-2 transition-colors duration-200 -m-2',
+              isUserPage ? 'bg-discogs-bg-light' : 'hover:bg-discogs-bg-light',
+            )}
+          >
+            <Image
+              src={user.avatar_url || PLACEHOLDER_AVATAR_URL}
+              alt={user.username}
+              width={48}
+              height={48}
+              className={clsx(
+                'h-12 w-12 rounded-full border-2 transition-colors duration-200',
+                isUserPage
+                  ? 'border-white'
+                  : 'border-discogs-blue group-hover:border-white',
+              )}
+            />
+            <div>
+              <p className="font-semibold text-white group-hover:text-discogs-blue">
+                {user.username}
+              </p>
+              <a
+                href={`https://www.discogs.com/user/${user.username}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="text-sm text-discogs-text-secondary hover:text-discogs-blue"
+              >
+                View on Discogs
+              </a>
+            </div>
+          </Link>
         </div>
 
         <nav className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
@@ -145,7 +163,7 @@ export default function Header({
 export function HeaderSkeleton({
   activeView,
 }: {
-  activeView: 'collection' | 'wantlist' | 'duplicates';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
 }) {
   const buttonBaseClasses =
     'focus:outline-none rounded-md px-4 py-2 text-sm font-medium';

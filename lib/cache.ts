@@ -1,7 +1,11 @@
 import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
-import type { CollectionRelease, ProcessedWantlistItem } from './types';
+import type {
+  CollectionRelease,
+  DiscogsUserProfile,
+  ProcessedWantlistItem,
+} from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
 // Fix: Replace `path.join(process.cwd(), ...)` with `path.resolve(...)` to avoid a TypeScript type error
@@ -22,7 +26,9 @@ async function ensureCacheDir() {
   }
 }
 
-function getCachePath(username: string, key: 'collection' | 'wantlist') {
+type CacheKey = 'collection' | 'wantlist' | 'profile';
+
+function getCachePath(username: string, key: CacheKey) {
   // Sanitize username to create a valid filename
   const safeUsername = username.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   return path.join(CACHE_DIR, `${safeUsername}-${key}.json`);
@@ -43,7 +49,7 @@ export interface SyncProgress {
 }
 
 export async function setSyncProgress(
-  username:string,
+  username: string,
   progress: SyncProgress,
 ): Promise<void> {
   await ensureCacheDir();
@@ -86,7 +92,7 @@ export async function clearSyncProgress(username: string): Promise<void> {
 // --- Main Data Cache ---
 export async function getCachedData<T>(
   username: string,
-  key: 'collection' | 'wantlist',
+  key: CacheKey,
 ): Promise<T | null> {
   const filePath = getCachePath(username, key);
   try {
@@ -104,15 +110,16 @@ export async function getCachedData<T>(
 
 export async function setCachedData(
   username: string,
-  key: 'collection' | 'wantlist',
-  data: CollectionRelease[] | ProcessedWantlistItem[],
+  key: CacheKey,
+  data: CollectionRelease[] | ProcessedWantlistItem[] | DiscogsUserProfile,
 ): Promise<void> {
   await ensureCacheDir();
   const filePath = getCachePath(username, key);
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+    const itemCount = Array.isArray(data) ? data.length : 1;
     console.log(
-      `[Cache] Wrote ${data.length} items to ${key} cache for ${username}.`,
+      `[Cache] Wrote ${itemCount} item(s) to ${key} cache for ${username}.`,
     );
   } catch (error) {
     console.error(`Failed to write cache for ${key}:`, error);
@@ -123,6 +130,7 @@ export async function clearUserCache(username: string): Promise<void> {
   console.log(`[Cache] Clearing cache for user: ${username}`);
   const collectionPath = getCachePath(username, 'collection');
   const wantlistPath = getCachePath(username, 'wantlist');
+  const profilePath = getCachePath(username, 'profile');
 
   await Promise.all([
     fs.unlink(collectionPath).catch((e) => {
@@ -134,6 +142,11 @@ export async function clearUserCache(username: string): Promise<void> {
       // @ts-ignore
       if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear wantlist cache:', e);
+    }),
+    fs.unlink(profilePath).catch((e) => {
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
+        console.error('Failed to clear profile cache:', e);
     }),
     clearSyncProgress(username),
   ]);
