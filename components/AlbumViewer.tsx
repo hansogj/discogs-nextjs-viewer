@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
-  ReleaseDetails,
+  Folder,
 } from '@/lib/types';
 import Grid from './Grid';
 import SortControls, {
@@ -13,23 +13,38 @@ import SortControls, {
   type View,
 } from './SortControls';
 import AlbumList from './AlbumList';
+import FilterSidebar from './FilterSidebar';
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
   viewType: 'collection' | 'wantlist';
   collectionItemsForFiltering?: CollectionRelease[];
+  folders: Folder[];
 }
 
 const AlbumViewer: React.FC<AlbumViewerProps> = ({
   items,
   viewType,
   collectionItemsForFiltering,
+  folders,
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
   const [view, setView] = useState<View>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter states
+  const [selectedArtists, setSelectedArtists] = useState<Set<string>>(
+    new Set(),
+  );
+  const [selectedFormats, setSelectedFormats] = useState<Set<string>>(
+    new Set(),
+  );
+  const [selectedYears, setSelectedYears] = useState<Set<number>>(new Set());
+  const [selectedFolders, setSelectedFolders] = useState<Set<number>>(
+    new Set(),
+  );
 
   const handleSortOrderChange = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -63,6 +78,35 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
 
   const sortedAndFilteredItems = useMemo(() => {
     let itemsToDisplay = viewType === 'wantlist' ? uniqueWantlistItems : items;
+
+    // --- Sidebar Filtering ---
+    itemsToDisplay = itemsToDisplay.filter((item) => {
+      const info = item.basic_information;
+      const artistName = info.artists?.[0]?.name;
+      const formatName = info.formats?.[0]?.name;
+      const year = info.year;
+      const folderId = 'folder_id' in item ? item.folder_id : -1;
+
+      if (
+        selectedArtists.size > 0 &&
+        (!artistName || !selectedArtists.has(artistName))
+      )
+        return false;
+      if (
+        selectedFormats.size > 0 &&
+        (!formatName || !selectedFormats.has(formatName))
+      )
+        return false;
+      if (selectedYears.size > 0 && (!year || !selectedYears.has(year)))
+        return false;
+      if (
+        selectedFolders.size > 0 &&
+        (folderId === -1 || !selectedFolders.has(folderId))
+      )
+        return false;
+
+      return true;
+    });
 
     // --- Search Filtering ---
     if (searchQuery.trim() !== '') {
@@ -155,45 +199,109 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     viewType,
     collectionMasterIds,
     searchQuery,
+    selectedArtists,
+    selectedFormats,
+    selectedYears,
+    selectedFolders,
   ]);
 
-  return (
-    <>
-      <SortControls
-        sortKey={sortKey}
-        sortOrder={sortOrder}
-        onSortKeyChange={setSortKey}
-        onSortOrderChange={handleSortOrderChange}
-        view={view}
-        onViewChange={setView}
-        searchQuery={searchQuery}
-        onSearchQueryChange={setSearchQuery}
-        viewType={viewType}
-        filterOptions={
-          viewType === 'wantlist'
-            ? {
-                isEnabled: showOnlyInCollection,
-                onToggle: () => setShowOnlyInCollection((prev) => !prev),
-                label: 'Show only items in collection',
-              }
-            : undefined
+  const activeFilters = {
+    artists: selectedArtists,
+    formats: selectedFormats,
+    years: selectedYears,
+    folders: selectedFolders,
+  };
+
+  const onFilterChange = (
+    type: 'artists' | 'formats' | 'years' | 'folders',
+    value: string | number,
+    isSelected: boolean,
+  ) => {
+    const updater = (setter: React.Dispatch<React.SetStateAction<Set<any>>>) => {
+      setter((prev) => {
+        const newSet = new Set(prev);
+        if (isSelected) {
+          newSet.add(value);
+        } else {
+          newSet.delete(value);
         }
-      />
-      {items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-lg text-discogs-text-secondary">
-            Your {viewType} is empty.
-          </p>
-          <p className="mt-2 text-discogs-text-secondary">
-            Try syncing with Discogs to load your data.
-          </p>
-        </div>
-      ) : view === 'grid' ? (
-        <Grid items={sortedAndFilteredItems} />
-      ) : (
-        <AlbumList items={sortedAndFilteredItems} />
-      )}
-    </>
+        return newSet;
+      });
+    };
+
+    switch (type) {
+      case 'artists':
+        updater(setSelectedArtists);
+        break;
+      case 'formats':
+        updater(setSelectedFormats);
+        break;
+      case 'years':
+        updater(setSelectedYears);
+        break;
+      case 'folders':
+        updater(setSelectedFolders);
+        break;
+    }
+  };
+
+  const onFilterClear = (
+    type: 'artists' | 'formats' | 'years' | 'folders' | 'all',
+  ) => {
+    if (type === 'artists' || type === 'all') setSelectedArtists(new Set());
+    if (type === 'formats' || type === 'all') setSelectedFormats(new Set());
+    if (type === 'years' || type === 'all') setSelectedYears(new Set());
+    if (type === 'folders' || type === 'all') setSelectedFolders(new Set());
+  };
+
+  return (
+    <div className="flex flex-col p-4 lg:flex-row lg:gap-6">
+      <aside className="w-full flex-shrink-0 lg:w-72">
+        <FilterSidebar
+          items={items}
+          folders={viewType === 'collection' ? folders : []}
+          activeFilters={activeFilters}
+          onFilterChange={onFilterChange}
+          onFilterClear={onFilterClear}
+        />
+      </aside>
+      <div className="mt-6 min-w-0 flex-1 lg:mt-0">
+        <SortControls
+          sortKey={sortKey}
+          sortOrder={sortOrder}
+          onSortKeyChange={setSortKey}
+          onSortOrderChange={handleSortOrderChange}
+          view={view}
+          onViewChange={setView}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
+          viewType={viewType}
+          filterOptions={
+            viewType === 'wantlist'
+              ? {
+                  isEnabled: showOnlyInCollection,
+                  onToggle: () => setShowOnlyInCollection((prev) => !prev),
+                  label: 'Show only items in collection',
+                }
+              : undefined
+          }
+        />
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <p className="text-lg text-discogs-text-secondary">
+              Your {viewType} is empty.
+            </p>
+            <p className="mt-2 text-discogs-text-secondary">
+              Try syncing with Discogs to load your data.
+            </p>
+          </div>
+        ) : view === 'grid' ? (
+          <Grid items={sortedAndFilteredItems} />
+        ) : (
+          <AlbumList items={sortedAndFilteredItems} />
+        )}
+      </div>
+    </div>
   );
 };
 

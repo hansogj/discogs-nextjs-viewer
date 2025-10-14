@@ -4,6 +4,7 @@ import fs from 'fs/promises';
 import type {
   CollectionRelease,
   DiscogsUserProfile,
+  Folder,
   ProcessedWantlistItem,
 } from './types';
 
@@ -26,7 +27,7 @@ async function ensureCacheDir() {
   }
 }
 
-type CacheKey = 'collection' | 'wantlist';
+type CacheKey = 'collection' | 'wantlist' | 'folders';
 
 function getCachePath(username: string, key: CacheKey) {
   // Sanitize username to create a valid filename
@@ -117,7 +118,7 @@ export async function getCachedData<T>(
 export async function setCachedData(
   username: string,
   key: CacheKey,
-  data: CollectionRelease[] | ProcessedWantlistItem[],
+  data: CollectionRelease[] | ProcessedWantlistItem[] | Folder[],
 ): Promise<void> {
   await ensureCacheDir();
   const filePath = getCachePath(username, key);
@@ -136,6 +137,7 @@ export async function clearUserCache(username: string): Promise<void> {
   console.log(`[Cache] Clearing cache for user: ${username}`);
   const collectionPath = getCachePath(username, 'collection');
   const wantlistPath = getCachePath(username, 'wantlist');
+  const foldersPath = getCachePath(username, 'folders');
 
   await Promise.all([
     fs.unlink(collectionPath).catch((e) => {
@@ -147,6 +149,11 @@ export async function clearUserCache(username: string): Promise<void> {
       // @ts-ignore
       if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear wantlist cache:', e);
+    }),
+    fs.unlink(foldersPath).catch((e) => {
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
+        console.error('Failed to clear folders cache:', e);
     }),
     clearSyncProgress(username),
   ]);

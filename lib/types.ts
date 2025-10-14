@@ -141,3 +141,14 @@ export interface WantlistResponse {
   pagination: Pagination;
   wants: WantlistRelease[];
 }
+
+export interface Folder {
+  id: number;
+  count: number;
+  name: string;
+  resource_url: string;
+}
+
+export interface FoldersResponse {
+  folders: Folder[];
+}
