@@ -8,6 +8,12 @@ const nextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'gravatar.com',
+        port: '',
+        pathname: '/avatar/**',
+      },
     ],
   },
   webpack: (config) => {

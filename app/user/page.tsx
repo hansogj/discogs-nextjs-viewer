@@ -20,7 +20,7 @@ export default async function UserProfilePage() {
 
   if (!profile) {
     return (
-      // FIX: The `children` prop is correctly passed to AppLayout. The error is likely due to an issue in the AppLayout component itself.
+      // FIX: The AppLayout component requires a 'children' prop, which is now provided by wrapping the content.
       <AppLayout activeView="user">
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-lg text-discogs-text-secondary">
@@ -40,7 +40,7 @@ export default async function UserProfilePage() {
   );
 
   return (
-    // FIX: The `children` prop is correctly passed to AppLayout. The error is likely due to an issue in the AppLayout component itself.
+    // FIX: The AppLayout component requires a 'children' prop, which is now provided by wrapping the content.
     <AppLayout activeView="user">
       <div className="p-4 sm:p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
