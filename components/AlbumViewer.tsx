@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
+  ReleaseDetails,
 } from '@/lib/types';
 import Grid from './Grid';
 import SortControls, {
@@ -28,6 +29,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
   const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
   const [view, setView] = useState<View>('grid');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSortOrderChange = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -62,6 +64,39 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const sortedAndFilteredItems = useMemo(() => {
     let itemsToDisplay = viewType === 'wantlist' ? uniqueWantlistItems : items;
 
+    // --- Search Filtering ---
+    if (searchQuery.trim() !== '') {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      itemsToDisplay = itemsToDisplay.filter((item) => {
+        const info = item.basic_information;
+        const details = item.details;
+
+        const check = (str: string | undefined | null) =>
+          str?.toLowerCase().includes(lowercasedQuery);
+        const checkArr = (arr: string[] | undefined) =>
+          arr?.some((s) => s.toLowerCase().includes(lowercasedQuery));
+
+        if (check(info.title)) return true;
+        if (info.year?.toString().includes(lowercasedQuery)) return true;
+        if (info.artists?.some((a) => check(a.name))) return true;
+        if (info.labels?.some((l) => check(l.name) || check(l.catno)))
+          return true;
+        if (info.formats?.some((f) => check(f.name) || checkArr(f.descriptions)))
+          return true;
+
+        if (details) {
+          if (details.extraartists?.some((a) => check(a.name) || check(a.role)))
+            return true;
+          if (checkArr(details.genres)) return true;
+          if (checkArr(details.styles)) return true;
+          if (check(details.notes)) return true;
+        }
+
+        return false;
+      });
+    }
+
+    // --- Other Filtering ---
     if (viewType === 'wantlist' && showOnlyInCollection) {
       itemsToDisplay = itemsToDisplay.filter((item) => {
         const masterId = item.basic_information.master_id;
@@ -70,6 +105,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       });
     }
 
+    // --- Sorting ---
     return [...itemsToDisplay].sort((a, b) => {
       const aInfo = a.basic_information;
       const bInfo = b.basic_information;
@@ -118,6 +154,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     showOnlyInCollection,
     viewType,
     collectionMasterIds,
+    searchQuery,
   ]);
 
   return (
@@ -129,6 +166,9 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         onSortOrderChange={handleSortOrderChange}
         view={view}
         onViewChange={setView}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
+        viewType={viewType}
         filterOptions={
           viewType === 'wantlist'
             ? {

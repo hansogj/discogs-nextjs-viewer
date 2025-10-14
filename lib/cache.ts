@@ -42,9 +42,15 @@ function getProgressCachePath(username: string) {
 // --- Sync Progress ---
 export interface SyncProgress {
   status: 'starting' | 'fetching' | 'processing' | 'caching' | 'done' | 'error';
-  resource?: 'collection' | 'wantlist';
+  resource?:
+    | 'collection'
+    | 'wantlist'
+    | 'collection_details'
+    | 'wantlist_details';
   page?: number;
   pages?: number;
+  processed?: number;
+  total?: number;
   message?: string;
 }
 

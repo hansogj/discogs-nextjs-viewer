@@ -60,6 +60,22 @@ export interface BasicInformation {
   }[];
 }
 
+export interface ExtraArtist {
+  name: string;
+  role: string;
+}
+
+export interface ReleaseDetails {
+  extraartists?: ExtraArtist[];
+  notes?: string;
+  styles?: string[];
+  genres?: string[];
+}
+
+export interface FullRelease extends ReleaseDetails {
+  id: number;
+}
+
 export interface CollectionRelease {
   id: number;
   instance_id: number;
@@ -67,6 +83,7 @@ export interface CollectionRelease {
   rating: number;
   basic_information: BasicInformation;
   folder_id: number;
+  details?: ReleaseDetails;
 }
 
 export interface WantlistRelease {
@@ -75,6 +92,7 @@ export interface WantlistRelease {
   rating: number;
   date_added: string;
   basic_information: BasicInformation;
+  details?: ReleaseDetails;
 }
 
 export interface MasterRelease {
