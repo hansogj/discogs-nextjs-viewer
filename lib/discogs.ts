@@ -1,3 +1,4 @@
+'use server';
 import 'server-only';
 import pLimit from 'p-limit';
 import type {
@@ -344,6 +345,7 @@ export async function processWantlist(
           return {
             ...want,
             master_cover_image: masterImage,
+            master_year: master.year,
           };
         } catch (error) {
           console.error(

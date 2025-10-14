@@ -1,5 +1,9 @@
 import AppLayout from '@/components/layout/AppLayout';
-import { getCachedCollection, getCollectionDuplicates } from '@/lib/data';
+import {
+  getCachedCollection,
+  getCollectionDuplicates,
+  getCachedFolders,
+} from '@/lib/data';
 import type { CollectionRelease } from '@/lib/types';
 import AlbumListItem from '@/components/AlbumListItem';
 
@@ -10,7 +14,10 @@ const getArtistName = (item: CollectionRelease): string => {
 };
 
 export default async function DuplicatesPage() {
-  const collection = await getCachedCollection();
+  const [collection, folders] = await Promise.all([
+    getCachedCollection(),
+    getCachedFolders(),
+  ]);
   const duplicateGroups = getCollectionDuplicates(collection);
 
   return (
@@ -49,6 +56,7 @@ export default async function DuplicatesPage() {
                       <AlbumListItem
                         key={release.instance_id}
                         item={release}
+                        folders={folders}
                       />
                     ))}
                   </ul>

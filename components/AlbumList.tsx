@@ -1,12 +1,17 @@
 import React from 'react';
-import type { CollectionRelease, ProcessedWantlistItem } from '@/lib/types';
+import type {
+  CollectionRelease,
+  ProcessedWantlistItem,
+  Folder,
+} from '@/lib/types';
 import AlbumListItem from './AlbumListItem';
 
 interface AlbumListProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
+  folders: Folder[];
 }
 
-const AlbumList: React.FC<AlbumListProps> = ({ items }) => {
+const AlbumList: React.FC<AlbumListProps> = ({ items, folders }) => {
   if (!items || items.length === 0) {
     return (
       <p className="mt-10 text-center text-discogs-text-secondary">
@@ -23,7 +28,7 @@ const AlbumList: React.FC<AlbumListProps> = ({ items }) => {
           className="animate-slide-up"
           style={{ animationDelay: `${index * 20}ms` }}
         >
-          <AlbumListItem item={item} />
+          <AlbumListItem item={item} folders={folders} />
         </div>
       ))}
     </div>

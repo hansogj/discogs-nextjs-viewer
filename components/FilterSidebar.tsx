@@ -51,12 +51,18 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       if (formatName) {
         formats.set(formatName, (formats.get(formatName) || 0) + 1);
       }
-      const year = item.basic_information.year;
+      const year =
+        'master_year' in item && item.master_year
+          ? item.master_year
+          : item.basic_information.year;
       if (year) {
         years.set(year, (years.get(year) || 0) + 1);
       }
       if ('folder_id' in item) {
-        itemFolders.set(item.folder_id, (itemFolders.get(item.folder_id) || 0) + 1);
+        itemFolders.set(
+          item.folder_id,
+          (itemFolders.get(item.folder_id) || 0) + 1,
+        );
       }
     }
 
@@ -111,7 +117,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               label={name}
               count={count}
               checked={activeFilters.artists.has(name)}
-              onChange={(e) => onFilterChange('artists', name, e.target.checked)}
+              onChange={(e) =>
+                onFilterChange('artists', name, e.target.checked)
+              }
             />
           ))}
         </FilterGroup>
@@ -130,7 +138,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               label={name}
               count={count}
               checked={activeFilters.formats.has(name)}
-              onChange={(e) => onFilterChange('formats', name, e.target.checked)}
+              onChange={(e) =>
+                onFilterChange('formats', name, e.target.checked)
+              }
             />
           ))}
         </FilterGroup>
