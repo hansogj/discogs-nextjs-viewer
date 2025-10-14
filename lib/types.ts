@@ -115,10 +115,12 @@ export interface MasterRelease {
     id: number;
     resource_url: string;
   }[];
+  year: number;
 }
 
 export interface ProcessedWantlistItem extends WantlistRelease {
   master_cover_image: string;
+  master_year?: number;
 }
 
 export interface Pagination {

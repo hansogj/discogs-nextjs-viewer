@@ -4,6 +4,7 @@ import type {
   CollectionRelease,
   ProcessedWantlistItem,
   BasicInformation,
+  Folder,
 } from '@/lib/types';
 
 const PLACEHOLDER_IMAGE_URL =
@@ -29,6 +30,7 @@ type Item = CollectionRelease | ProcessedWantlistItem;
 
 interface AlbumListItemProps {
   item: Item;
+  folders: Folder[];
 }
 
 const DetailItem: React.FC<{
@@ -46,7 +48,7 @@ const DetailItem: React.FC<{
   );
 };
 
-const AlbumListItem: React.FC<AlbumListItemProps> = ({ item }) => {
+const AlbumListItem: React.FC<AlbumListItemProps> = ({ item, folders }) => {
   const { basic_information: info } = item;
   const discogsUrl = `https://www.discogs.com/release/${info.id}`;
   const imageUrl =
@@ -55,6 +57,14 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({ item }) => {
   const labelInfo = info.labels?.[0];
   const labelParts = [labelInfo?.name, labelInfo?.catno].filter(Boolean);
   const labelString = labelParts.length > 0 ? labelParts.join(' - ') : undefined;
+
+  const folderMap = new Map(folders.map((f) => [f.id, f.name]));
+  const folderName =
+    'folder_id' in item ? folderMap.get(item.folder_id) : undefined;
+  const year =
+    'master_year' in item && item.master_year
+      ? item.master_year
+      : info.year || undefined;
 
   return (
     <div className="flex space-x-4 rounded-lg border border-discogs-border/50 bg-discogs-bg p-3 transition-colors hover:bg-discogs-border/30">
@@ -93,16 +103,14 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({ item }) => {
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3 md:grid-cols-4">
           <DetailItem label="Label" value={labelString} />
           <DetailItem label="Format" value={formatMedia(info.formats)} />
-          <DetailItem label="Year" value={info.year || undefined} />
+          <DetailItem label="Year" value={year} />
           {'date_added' in item && (
             <DetailItem
               label="Added"
               value={new Date(item.date_added).toLocaleDateString()}
             />
           )}
-          {'folder_id' in item && (
-            <DetailItem label="Folder ID" value={item.folder_id} />
-          )}
+          {'folder_id' in item && <DetailItem label="Folder" value={folderName} />}
         </div>
       </div>
     </div>

@@ -84,7 +84,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       const info = item.basic_information;
       const artistName = info.artists?.[0]?.name;
       const formatName = info.formats?.[0]?.name;
-      const year = info.year;
+      const year =
+        'master_year' in item && item.master_year ? item.master_year : info.year;
       const folderId = 'folder_id' in item ? item.folder_id : -1;
 
       if (
@@ -162,8 +163,10 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           compareB = bInfo.artists?.[0]?.name.toLocaleLowerCase() || '';
           break;
         case 'year':
-          compareA = aInfo.year || 0;
-          compareB = bInfo.year || 0;
+          compareA =
+            'master_year' in a && a.master_year ? a.master_year : aInfo.year || 0;
+          compareB =
+            'master_year' in b && b.master_year ? b.master_year : bInfo.year || 0;
           break;
         case 'date_added':
           const dateA = 'date_added' in a ? a.date_added : 0;
@@ -298,7 +301,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         ) : view === 'grid' ? (
           <Grid items={sortedAndFilteredItems} />
         ) : (
-          <AlbumList items={sortedAndFilteredItems} />
+          <AlbumList items={sortedAndFilteredItems} folders={folders} />
         )}
       </div>
     </div>
