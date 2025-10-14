@@ -9,6 +9,8 @@ import type {
   MasterRelease,
   ProcessedWantlistItem,
   DiscogsUserProfile,
+  FullRelease,
+  ReleaseDetails,
 } from './types';
 
 // --- Discogs API Rate Limiter ---
@@ -240,6 +242,71 @@ export async function getMasterRelease(
 ): Promise<MasterRelease> {
   const url = `${API_BASE_URL}/masters/${masterId}`;
   return fetchDiscogsAPI<MasterRelease>(url, token);
+}
+
+export async function getRelease(
+  releaseId: number,
+  token: string,
+): Promise<FullRelease> {
+  const url = `${API_BASE_URL}/releases/${releaseId}`;
+  return fetchDiscogsAPI<FullRelease>(url, token);
+}
+
+export async function fetchAndAddDetailsToReleases<
+  T extends { id: number; basic_information: { id: number } },
+>(
+  items: T[],
+  token: string,
+  resourceName: 'collection_details' | 'wantlist_details',
+  onProgress: (progress: {
+    processed: number;
+    total: number;
+    resource: string;
+  }) => void,
+): Promise<(T & { details?: ReleaseDetails })[]> {
+  const limit = pLimit(10);
+  let processedCount = 0;
+  const total = items.length;
+
+  const itemsWithDetailsPromises = items.map((item) =>
+    limit(async () => {
+      try {
+        // Use basic_information.id, which is the release ID. The top-level `id` for wantlist is the want ID.
+        const details: FullRelease = await getRelease(
+          item.basic_information.id,
+          token,
+        );
+        processedCount++;
+        onProgress({
+          processed: processedCount,
+          total,
+          resource: resourceName,
+        });
+        return {
+          ...item,
+          details: {
+            extraartists: details.extraartists,
+            notes: details.notes,
+            styles: details.styles,
+            genres: details.genres,
+          },
+        };
+      } catch (error) {
+        console.error(
+          `Failed to fetch details for release ${item.basic_information.id}`,
+          error,
+        );
+        processedCount++;
+        onProgress({
+          processed: processedCount,
+          total,
+          resource: resourceName,
+        });
+        return item; // return original on error
+      }
+    }),
+  );
+  return Promise.all(itemsWithDetailsPromises);
 }
 
 export async function processWantlist(

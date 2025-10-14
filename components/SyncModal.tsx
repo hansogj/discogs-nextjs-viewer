@@ -58,8 +58,21 @@ const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user, progress }) => {
         }
         break;
       case 'processing':
-        message = 'Processing Data...';
-        subMessage = 'Fetching cover art for your wantlist.';
+        if (progress.resource?.endsWith('_details')) {
+          const resource =
+            progress.resource === 'collection_details'
+              ? 'Collection'
+              : 'Wantlist';
+          message = `Fetching Details for ${resource}...`;
+          if (progress.processed && progress.total) {
+            subMessage = `${progress.processed} of ${progress.total} releases`;
+          } else {
+            subMessage = 'This may take a while for large libraries...';
+          }
+        } else {
+          message = 'Processing Data...';
+          subMessage = 'Fetching cover art for your wantlist.';
+        }
         break;
       case 'caching':
         message = 'Finalizing...';

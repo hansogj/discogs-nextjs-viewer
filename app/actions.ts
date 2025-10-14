@@ -3,6 +3,7 @@
 
 import { getSession } from '@/lib/session';
 import {
+  fetchAndAddDetailsToReleases,
   getFullCollection,
   getFullWantlist,
   processWantlist as processWantlistWithApi,
@@ -38,6 +39,20 @@ export async function syncAllData(): Promise<{
       resource: progress.resource as 'collection' | 'wantlist',
       page: progress.page,
       pages: progress.pages,
+    });
+  };
+
+  const detailsProgressCallback = (progress: {
+    processed: number;
+    total: number;
+    resource: string;
+  }) => {
+    setSyncProgress(user.username, {
+      status: 'processing',
+      resource:
+        progress.resource as 'collection_details' | 'wantlist_details',
+      processed: progress.processed,
+      total: progress.total,
     });
   };
 
@@ -77,12 +92,35 @@ export async function syncAllData(): Promise<{
     );
     console.log(`[Action] Fetched ${wantlist.length} wantlist items.`);
 
+    // --- Fetch Details ---
+    console.log('[Action] Fetching details for collection...');
+    const collectionWithDetails = await fetchAndAddDetailsToReleases(
+      collection,
+      token,
+      'collection_details',
+      detailsProgressCallback,
+    );
+    console.log('[Action] Finished fetching collection details.');
+
+    console.log('[Action] Fetching details for wantlist...');
+    const wantlistWithDetails = await fetchAndAddDetailsToReleases(
+      wantlist,
+      token,
+      'wantlist_details',
+      detailsProgressCallback,
+    );
+    console.log('[Action] Finished fetching wantlist details.');
+    // --- End Fetch Details ---
+
     console.log('[Action] Processing wantlist images...');
     await setSyncProgress(user.username, {
       status: 'processing',
       message: 'Processing wantlist images...',
     });
-    const processedWantlist = await processWantlistWithApi(wantlist, token);
+    const processedWantlist = await processWantlistWithApi(
+      wantlistWithDetails,
+      token,
+    );
     console.log('[Action] Finished processing wantlist.');
 
     console.log('[Action] Writing data to cache...');
@@ -90,7 +128,7 @@ export async function syncAllData(): Promise<{
       status: 'caching',
       message: 'Saving data locally...',
     });
-    await setCachedData(user.username, 'collection', collection);
+    await setCachedData(user.username, 'collection', collectionWithDetails);
     await setCachedData(user.username, 'wantlist', processedWantlist);
     console.log('[Action] Caching complete.');
 
