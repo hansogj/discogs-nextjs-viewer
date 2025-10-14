@@ -186,9 +186,11 @@ async function fetchAllPaginatedData<T, R>(
     pages: number;
     resource: string;
   }) => void,
-): Promise<T[]> {
+  stopAtDate?: string,
+): Promise<{ items: T[]; fullFetch: boolean }> {
   let allData: T[] = [];
   let nextUrl: string | undefined = initialUrl;
+  let stoppedEarly = false;
 
   type PaginatedResponse = R & {
     pagination: { page: number; pages: number; urls: { next?: string } };
@@ -210,26 +212,46 @@ async function fetchAllPaginatedData<T, R>(
     }
 
     const data = response[dataKey] as T[] | undefined;
-    if (data) {
-      allData = [...allData, ...data];
+    if (data && data.length > 0) {
+      if (stopAtDate) {
+        // This assumes T has date_added. The callers (collection/wantlist) do.
+        const itemsWithDate = data as (T & { date_added: string })[];
+        const stopIndex = itemsWithDate.findIndex(
+          (item) => new Date(item.date_added) <= new Date(stopAtDate),
+        );
+
+        if (stopIndex !== -1) {
+          const newItems = itemsWithDate.slice(0, stopIndex);
+          allData.push(...(newItems as T[]));
+          stoppedEarly = true;
+          break; // Exit the while loop
+        }
+      }
+      // If no stop date or stop date not found on this page
+      allData.push(...data);
+    } else {
+      break;
     }
     nextUrl = response.pagination?.urls?.next;
   }
-  return allData;
+  return { items: allData, fullFetch: !stoppedEarly };
 }
 
 export async function getFullCollection(
   username: string,
   token: string,
   onProgress?: (progress: any) => void,
-): Promise<CollectionRelease[]> {
-  const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?per_page=100`;
+  lastSyncDate?: string,
+): Promise<{ items: CollectionRelease[]; fullFetch: boolean }> {
+  // IMPORTANT: The API needs `sort=added&sort_order=desc` for incremental sync to work
+  const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?sort=added&sort_order=desc&per_page=100`;
   return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
     url,
     token,
     'releases',
     'collection',
     onProgress,
+    lastSyncDate,
   );
 }
 
@@ -237,14 +259,17 @@ export async function getFullWantlist(
   username: string,
   token: string,
   onProgress?: (progress: any) => void,
-): Promise<WantlistRelease[]> {
-  const url = `${API_BASE_URL}/users/${username}/wants?per_page=100`;
+  lastSyncDate?: string,
+): Promise<{ items: WantlistRelease[]; fullFetch: boolean }> {
+  // IMPORTANT: The API needs `sort=added&sort_order=desc` for incremental sync to work
+  const url = `${API_BASE_URL}/users/${username}/wants?sort=added&sort_order=desc&per_page=100`;
   return fetchAllPaginatedData<WantlistRelease, WantlistResponse>(
     url,
     token,
     'wants',
     'wantlist',
     onProgress,
+    lastSyncDate,
   );
 }
 
@@ -276,6 +301,7 @@ export async function fetchAndAddDetailsToReleases<
     resource: string;
   }) => void,
 ): Promise<(T & { details?: ReleaseDetails })[]> {
+  if (items.length === 0) return [];
   const limit = pLimit(10);
   let processedCount = 0;
   const total = items.length;
@@ -325,6 +351,7 @@ export async function processWantlist(
   wantlist: WantlistRelease[],
   token: string,
 ): Promise<ProcessedWantlistItem[]> {
+  if (wantlist.length === 0) return [];
   // Set a concurrency limit to avoid overwhelming the Discogs API,
   // even with the rate limiter in place. This provides a more robust
   // way to handle the burst of requests from processing the wantlist.
