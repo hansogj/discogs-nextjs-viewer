@@ -11,6 +11,8 @@ import type {
   DiscogsUserProfile,
   FullRelease,
   ReleaseDetails,
+  FoldersResponse,
+  Folder,
 } from './types';
 
 // --- Discogs API Rate Limiter ---
@@ -154,6 +156,15 @@ async function fetchDiscogsAPI<T>(url: string, token: string): Promise<T> {
 
 export async function getIdentity(token: string): Promise<DiscogsUser> {
   return fetchDiscogsAPI<DiscogsUser>(`${API_BASE_URL}/oauth/identity`, token);
+}
+
+export async function getFolders(
+  username: string,
+  token: string,
+): Promise<Folder[]> {
+  const url = `${API_BASE_URL}/users/${username}/collection/folders`;
+  const response = await fetchDiscogsAPI<FoldersResponse>(url, token);
+  return response.folders;
 }
 
 export async function getUserProfile(

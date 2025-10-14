@@ -4,6 +4,7 @@
 import { getSession } from '@/lib/session';
 import {
   fetchAndAddDetailsToReleases,
+  getFolders,
   getFullCollection,
   getFullWantlist,
   processWantlist as processWantlistWithApi,
@@ -92,6 +93,10 @@ export async function syncAllData(): Promise<{
     );
     console.log(`[Action] Fetched ${wantlist.length} wantlist items.`);
 
+    console.log('[Action] Fetching folders...');
+    const folders = await getFolders(user.username, token);
+    console.log(`[Action] Fetched ${folders.length} folders.`);
+
     // --- Fetch Details ---
     console.log('[Action] Fetching details for collection...');
     const collectionWithDetails = await fetchAndAddDetailsToReleases(
@@ -130,6 +135,7 @@ export async function syncAllData(): Promise<{
     });
     await setCachedData(user.username, 'collection', collectionWithDetails);
     await setCachedData(user.username, 'wantlist', processedWantlist);
+    await setCachedData(user.username, 'folders', folders);
     console.log('[Action] Caching complete.');
 
     await clearSyncProgress(user.username); // Clean up progress file

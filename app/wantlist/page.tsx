@@ -16,6 +16,7 @@ export default async function WantlistPage() {
         items={wantlist}
         collectionItemsForFiltering={collection}
         viewType="wantlist"
+        folders={[]}
       />
     </AppLayout>
   );
