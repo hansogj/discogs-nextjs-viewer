@@ -3,9 +3,9 @@ import path from 'path';
 import fs from 'fs/promises';
 import type {
   CollectionRelease,
-  DiscogsUserProfile,
   Folder,
   ProcessedWantlistItem,
+  SyncInfo,
 } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
@@ -38,6 +38,41 @@ function getCachePath(username: string, key: CacheKey) {
 function getProgressCachePath(username: string) {
   const safeUsername = username.replace(/[^a-z0-9]/gi, '_').toLowerCase();
   return path.join(CACHE_DIR, `${safeUsername}-sync-progress.json`);
+}
+
+function getSyncInfoCachePath(username: string) {
+  const safeUsername = username.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  return path.join(CACHE_DIR, `${safeUsername}-sync-info.json`);
+}
+
+// --- Sync Info ---
+export async function getSyncInfo(
+  username: string,
+): Promise<SyncInfo | null> {
+  const filePath = getSyncInfoCachePath(username);
+  try {
+    const fileContent = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(fileContent) as SyncInfo;
+  } catch (error) {
+    // @ts-ignore
+    if ((error as { code?: string }).code !== 'ENOENT') {
+      console.error('Failed to read sync info:', error);
+    }
+    return null;
+  }
+}
+
+export async function setSyncInfo(
+  username: string,
+  info: SyncInfo,
+): Promise<void> {
+  await ensureCacheDir();
+  const filePath = getSyncInfoCachePath(username);
+  try {
+    await fs.writeFile(filePath, JSON.stringify(info), 'utf-8');
+  } catch (error) {
+    console.error('Failed to write sync info:', error);
+  }
 }
 
 // --- Sync Progress ---
@@ -138,6 +173,7 @@ export async function clearUserCache(username: string): Promise<void> {
   const collectionPath = getCachePath(username, 'collection');
   const wantlistPath = getCachePath(username, 'wantlist');
   const foldersPath = getCachePath(username, 'folders');
+  const syncInfoPath = getSyncInfoCachePath(username);
 
   await Promise.all([
     fs.unlink(collectionPath).catch((e) => {
@@ -154,6 +190,11 @@ export async function clearUserCache(username: string): Promise<void> {
       // @ts-ignore
       if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear folders cache:', e);
+    }),
+    fs.unlink(syncInfoPath).catch((e) => {
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
+        console.error('Failed to clear sync info cache:', e);
     }),
     clearSyncProgress(username),
   ]);

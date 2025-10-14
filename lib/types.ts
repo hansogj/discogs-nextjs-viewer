@@ -154,3 +154,8 @@ export interface Folder {
 export interface FoldersResponse {
   folders: Folder[];
 }
+
+export interface SyncInfo {
+  collectionLastAdded?: string;
+  wantlistLastAdded?: string;
+}
