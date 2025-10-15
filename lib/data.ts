@@ -12,12 +12,18 @@ import type {
 async function getAuthenticatedUser(): Promise<{
   user: DiscogsUser;
   token: string;
+  userProfile: DiscogsUserProfile | null;
 }> {
   const session = await getSession();
   if (!session.isLoggedIn || !session.user || !session.token) {
     throw new Error('Not authenticated');
   }
-  return { user: session.user, token: session.token };
+  // Return the full profile as well
+  return {
+    user: session.user,
+    token: session.token,
+    userProfile: session.userProfile ?? null,
+  };
 }
 
 export async function getCachedCollection(): Promise<CollectionRelease[]> {
@@ -49,13 +55,24 @@ export async function getCachedFolders(): Promise<Folder[]> {
   return data ?? [];
 }
 
-// Fetches all data needed for the header from the cache
+// Fetches all data needed for the header
 export async function getHeaderData() {
-  const { user } = await getAuthenticatedUser();
+  // Now fetches userProfile as well
+  const { user, userProfile } = await getAuthenticatedUser();
   const [collection, wantlist] = await Promise.all([
     getCachedCollection(),
     getCachedWantlist(),
   ]);
+
+  // Use the detailed user profile for the header if it exists, ensuring consistency.
+  const headerUser: DiscogsUser = userProfile
+    ? {
+        id: userProfile.id,
+        username: userProfile.username,
+        avatar_url: userProfile.avatar_url,
+        resource_url: userProfile.resource_url,
+      }
+    : user;
 
   // Deduplicate wantlist by master_id for an accurate count
   const uniqueWantlistMasterIds = new Set<number>();
@@ -68,7 +85,7 @@ export async function getHeaderData() {
   const duplicates = getCollectionDuplicates(collection);
 
   return {
-    user,
+    user: headerUser,
     collectionCount: collection.length,
     wantlistCount: uniqueWantlistMasterIds.size,
     duplicatesCount: duplicates.length,
