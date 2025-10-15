@@ -1,3 +1,4 @@
+
 export interface DiscogsUser {
   id: number;
   username: string;
@@ -84,6 +85,7 @@ export interface CollectionRelease {
   basic_information: BasicInformation;
   folder_id: number;
   details?: ReleaseDetails;
+  master_year?: number;
 }
 
 export interface WantlistRelease {

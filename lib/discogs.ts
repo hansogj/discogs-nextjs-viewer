@@ -1,3 +1,4 @@
+
 'use server';
 import 'server-only';
 import pLimit from 'p-limit';
@@ -390,4 +391,57 @@ export async function processWantlist(
   );
 
   return Promise.all(processedItemsPromises);
+}
+
+export async function addMasterInfoToCollection(
+  collection: CollectionRelease[],
+  token: string,
+  onProgress: (progress: {
+    processed: number;
+    total: number;
+    resource: string;
+  }) => void,
+): Promise<CollectionRelease[]> {
+  if (collection.length === 0) return [];
+  const limit = pLimit(10);
+  let processedCount = 0;
+  const total = collection.length;
+
+  const reportProgress = () => {
+    processedCount++;
+    onProgress({
+      processed: processedCount,
+      total,
+      resource: 'collection_masters',
+    });
+  };
+
+  const itemsWithMasterInfoPromises = collection.map((item) =>
+    limit(async () => {
+      if (item.basic_information.master_id > 0) {
+        try {
+          const master = await getMasterRelease(
+            item.basic_information.master_id,
+            token,
+          );
+          reportProgress();
+          return {
+            ...item,
+            master_year: master.year,
+          };
+        } catch (error) {
+          console.error(
+            `Failed to fetch master for release ${item.basic_information.id}`,
+            error,
+          );
+          reportProgress(); // report progress even on failure
+          return item;
+        }
+      } else {
+        reportProgress();
+        return item; // return original if no master_id
+      }
+    }),
+  );
+  return Promise.all(itemsWithMasterInfoPromises);
 }

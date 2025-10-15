@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       throw new Error('Invalid token or failed to fetch identity.');
     }
 
-    // Fetch detailed user profile
+    // Fetch detailed user profile to get the most accurate data
     const userProfile = await getUserProfile(identity.username, token);
 
     // Save user info and token in session
@@ -37,7 +37,8 @@ export async function POST(request: Request) {
     session.user = {
       id: identity.id,
       username: identity.username,
-      avatar_url: identity.avatar_url,
+      // Use the avatar from the detailed profile for consistency
+      avatar_url: userProfile.avatar_url,
       resource_url: identity.resource_url,
     };
     session.userProfile = userProfile;
