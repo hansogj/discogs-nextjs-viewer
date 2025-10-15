@@ -1,3 +1,4 @@
+
 import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
@@ -82,7 +83,8 @@ export interface SyncProgress {
     | 'collection'
     | 'wantlist'
     | 'collection_details'
-    | 'wantlist_details';
+    | 'wantlist_details'
+    | 'collection_masters';
   page?: number;
   pages?: number;
   processed?: number;

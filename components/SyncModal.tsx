@@ -69,6 +69,13 @@ const SyncModal: React.FC<SyncModalProps> = ({ isOpen, user, progress }) => {
           } else {
             subMessage = 'This may take a while for large libraries...';
           }
+        } else if (progress.resource === 'collection_masters') {
+          message = 'Processing Collection...';
+          if (progress.processed && progress.total) {
+            subMessage = `Getting master release year ${progress.processed} of ${progress.total}`;
+          } else {
+            subMessage = 'Fetching master release years...';
+          }
         } else {
           message = 'Processing Data...';
           subMessage = 'Fetching cover art for your wantlist.';

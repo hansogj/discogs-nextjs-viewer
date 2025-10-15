@@ -3,6 +3,7 @@
 
 import { getSession } from '@/lib/session';
 import {
+  addMasterInfoToCollection,
   fetchAndAddDetailsToReleases,
   getFolders,
   getFullCollection,
@@ -10,13 +11,13 @@ import {
   processWantlist as processWantlistWithApi,
 } from '@/lib/discogs';
 import {
-  setCachedData,
-  clearUserCache,
-  setSyncProgress,
   clearSyncProgress,
-  getSyncInfo,
-  setSyncInfo,
+  clearUserCache,
   getCachedData,
+  getSyncInfo,
+  setCachedData,
+  setSyncInfo,
+  setSyncProgress,
 } from '@/lib/cache';
 import { revalidatePath } from 'next/cache';
 import type {
@@ -59,7 +60,10 @@ export async function syncAllData(): Promise<{
     setSyncProgress(user.username, {
       status: 'processing',
       resource:
-        progress.resource as 'collection_details' | 'wantlist_details',
+        progress.resource as
+          | 'collection_details'
+          | 'wantlist_details'
+          | 'collection_masters',
       processed: progress.processed,
       total: progress.total,
     });
@@ -125,6 +129,16 @@ export async function syncAllData(): Promise<{
       detailsProgressCallback,
     );
 
+    // Fetch master release year for new collection items
+    console.log(
+      '[Action] Fetching master release year for new collection items...',
+    );
+    const collectionWithMasterInfo = await addMasterInfoToCollection(
+      collectionWithDetails,
+      token,
+      detailsProgressCallback,
+    );
+
     console.log('[Action] Fetching details for new wantlist items...');
     const wantlistWithDetails = await fetchAndAddDetailsToReleases(
       newWantlistItems,
@@ -152,7 +166,7 @@ export async function syncAllData(): Promise<{
           user.username,
           'collection',
         )) ?? [];
-    const finalCollection = [...collectionWithDetails, ...oldCollection];
+    const finalCollection = [...collectionWithMasterInfo, ...oldCollection];
 
     const oldWantlist = wantlistFullFetch
       ? []
