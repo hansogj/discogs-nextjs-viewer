@@ -1,16 +1,17 @@
 import { type NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { getMiddlewareSession } from '@/lib/middleware-session';
 
 export const config = {
   matcher: ['/collection', '/wantlist', '/duplicates', '/user'],
 };
 
 export async function middleware(req: NextRequest) {
-  const session = await getSession();
+  const res = NextResponse.next();
+  const session = await getMiddlewareSession(req, res);
 
   if (!session.isLoggedIn) {
     return NextResponse.redirect(new URL('/', req.url));
   }
 
-  return NextResponse.next();
+  return res;
 }

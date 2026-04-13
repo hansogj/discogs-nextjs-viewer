@@ -18,6 +18,7 @@ This is a web application built with Next.js that allows you to view your Discog
 
 -   [Node.js](https://nodejs.org/) (version 18 or later)
 -   [pnpm](https://pnpm.io/installation)
+-   [Docker](https://www.docker.com/get-started) (for running Redis)
 -   A [Discogs](https://www.discogs.com) account.
 
 ### 1. Installation
@@ -32,49 +33,97 @@ pnpm install
 
 ### 2. Environment Variables
 
-You need to set up environment variables for the Discogs API and session security.
+You need to set up environment variables for the Discogs API, Redis connection, and session security. These variables will be used by the application directly or passed to Docker containers when using `docker compose`.
 
-First, create a `.env.local` file in the root of the project by copying the example file:
+First, create a `.env` file in the root of the project by copying the example file:
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 
-Now, fill in the values in `.env.local`:
+Now, fill in the values in `.env`:
 
-#### Discogs Personal Access Token
+#### Discogs API Keys
+
+These are required for the application to fetch your Discogs collection and wantlist.
 
 1.  Go to your Discogs account settings: [Settings > Developers](https://www.discogs.com/settings/developers).
-2.  Click "Generate new token" and give it a name.
-3.  Copy the generated token. This token is required for the Playwright E2E tests to run successfully.
+2.  Create a new application or use an existing one.
+3.  Copy your **Consumer Key** and **Consumer Secret**.
 
 ```env
-# .env.local
+# .env
 
-# Used by Playwright for end-to-end testing login flow
-E2E_DISCOGS_TOKEN="your_discogs_personal_access_token"
+DISCOGS_API_KEY="your_discogs_consumer_key"
+DISCOGS_API_SECRET="your_discogs_consumer_secret"
 ```
 
 #### Auth Secret
 
-This is a secret password used to encrypt the session cookie. Generate a long, random string (at least 32 characters). You can use a password generator or an online tool.
+This is a secret key used to encrypt the session cookie. Generate a long, random string (at least 32 characters). You can use `openssl rand -hex 32` in your terminal.
 
 ```env
-# .env.local
+# .env
 
-# A long, secret string used to encrypt the session cookie (at least 32 characters)
 AUTH_SECRET="your_super_secret_password_for_cookie_encryption"
+```
+
+#### Redis Password
+
+This password is used by the Docker Compose setup for the Redis container. It should match the password set in `REDIS_URL`.
+
+```env
+# .env
+
+REDIS_PASSWORD="yourpassword" # Or a strong, secret password
+```
+
+#### Redis URL
+
+The application uses Redis for caching and managing the sync queue. The `docker-compose.yml` (located in the `compose/` directory) sets up a Redis instance as a service named `cache`. This URL points to that internal Docker service, using the `REDIS_PASSWORD` for authentication.
+
+```env
+# .env
+
+REDIS_URL="redis://:${REDIS_PASSWORD}@cache:6379"
 ```
 
 ### 3. Running the Application
 
-To start the development server:
+This application can be started using `docker compose` from within the `compose/` directory. This will build the necessary images, start the Redis database, the Next.js web server, and the background worker.
+
+#### 3.1. Build and Run Services with Docker Compose
+
+Ensure Docker is running, then navigate to the `compose/` directory and execute:
 
 ```bash
-pnpm dev
+cd compose
+docker compose --env-file ../.env up --build -d
+# Go back to the project root after starting services
+cd ..
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
+-   `--build`: Builds the Docker images before starting the containers.
+-   `-d`: Runs the containers in detached mode (in the background).
+
+-   `--build`: Builds the Docker images before starting the containers.
+-   `-d`: Runs the containers in detached mode (in the background).
+
+#### 3.2. Access the Application
+
+Once the services are up, the web application will be accessible at [http://localhost:3000](http://localhost:3000) in your browser.
+
+To view logs from all services, run:
+
+```bash
+docker compose logs -f
+```
+
+To stop the services, run:
+
+```bash
+docker compose down
+```
 
 ## Running Tests
 

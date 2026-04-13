@@ -23,6 +23,8 @@ const nextConfig = {
     config.resolve.alias['#async_hooks'] = 'async_hooks';
     return config;
   },
+  // Add turbopack config to silence the warning and potentially resolve build issues
+  turbopack: {}, 
 };
 
 export default nextConfig;

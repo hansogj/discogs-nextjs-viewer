@@ -22,34 +22,33 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
   const imageToDisplay = imageUrl || PLACEHOLDER_IMAGE_URL;
 
   return (
-    <a
-      href={discogsUrl}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={`View ${artist} - ${title} on Discogs`}
-      className="block h-full"
-    >
-      <div className="group relative h-full transform overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30">
-        <Image
-          src={imageToDisplay}
-          alt={`${artist} - ${title}`}
-          width={300}
-          height={300}
-          className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-110"
-          placeholder="blur"
-          blurDataURL={PLACEHOLDER_IMAGE_URL}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
-        <div className="absolute bottom-0 left-0 w-full p-4">
-          <h3 className="truncate text-base font-bold leading-tight text-white drop-shadow-md">
-            {title}
-          </h3>
-          <p className="truncate text-sm text-gray-300 drop-shadow-md">
-            {artist}
-          </p>
-        </div>
+    <div className="group relative h-full transform overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30">
+      <Image
+        src={imageToDisplay}
+        alt={`${artist} - ${title}`}
+        width={300}
+        height={300}
+        className="aspect-square w-full object-cover transition-transform duration-300 group-hover:scale-110"
+        placeholder="blur"
+        blurDataURL={PLACEHOLDER_IMAGE_URL}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
+      <div className="absolute bottom-0 left-0 w-full p-4">
+        <h3 className="truncate text-base font-bold leading-tight text-white drop-shadow-md">
+          {title}
+        </h3>
+        <p className="truncate text-sm text-gray-300 drop-shadow-md">
+          {artist}
+        </p>
       </div>
-    </a>
+      <a
+        href={discogsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="absolute inset-0"
+        aria-label={`View ${artist} - ${title} on Discogs`}
+      ></a>
+    </div>
   );
 };
 

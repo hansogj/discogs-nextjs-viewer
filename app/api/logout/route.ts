@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { getIronSession } from 'iron-session';
 import { clearUserCache } from '@/lib/cache';
+import { cookies } from 'next/headers';
+import { sessionOptions, SessionData } from '@/lib/session-options';
 
 export async function POST() {
-  const session = await getSession();
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
   if (session.user?.username) {
     try {
       await clearUserCache(session.user.username);

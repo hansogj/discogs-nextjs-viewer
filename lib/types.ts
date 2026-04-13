@@ -86,6 +86,10 @@ export interface CollectionRelease {
   folder_id: number;
   details?: ReleaseDetails;
   master_year?: number;
+  notes?: {
+    field_id: number;
+    value: string;
+  }[];
 }
 
 export interface WantlistRelease {
@@ -99,7 +103,7 @@ export interface WantlistRelease {
 
 export interface MasterRelease {
   id: number;
-  images: {
+    images: {
     type: string;
     uri: string;
     resource_url: string;
@@ -160,4 +164,44 @@ export interface FoldersResponse {
 export interface SyncInfo {
   collectionLastAdded?: string;
   wantlistLastAdded?: string;
+}
+
+export interface SessionData {
+  user?: DiscogsUser | DiscogsUserProfile;
+  token?: string;
+  accessToken?: string;
+  accessTokenSecret?: string;
+  oauthRequestToken?: string;
+  oauthRequestTokenSecret?: string;
+  userProfile?: DiscogsUserProfile;
+  isLoggedIn?: boolean;
+}
+
+export interface CustomField {
+  id: number;
+  name: string;
+  type: 'dropdown' | 'textarea';
+  public: boolean;
+  options?: string[];
+}
+
+export interface CustomFieldsResponse {
+  fields: CustomField[];
+}
+
+// SyncProgress interface updated to include 'progress' property
+export interface SyncProgress {
+  status: 'starting' | 'fetching' | 'processing' | 'caching' | 'done' | 'error';
+  resource?:
+    | 'collection'
+    | 'wantlist'
+    | 'collection_details'
+    | 'wantlist_details'
+    | 'collection_masters';
+  page?: number;
+  pages?: number;
+  processed?: number;
+  total?: number;
+  message?: string;
+  progress?: number; // Added progress property
 }

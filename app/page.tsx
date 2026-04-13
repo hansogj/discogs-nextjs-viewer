@@ -1,11 +1,18 @@
-import { getSession } from '@/lib/session';
+import { getIronSession } from 'iron-session';
 import { redirect } from 'next/navigation';
-import LoginForm from '@/components/auth/LoginForm';
+import Login from '@/components/Login';
+import { cookies } from 'next/headers';
+import { sessionOptions, SessionData } from '@/lib/session-options';
+
+export const dynamic = 'force-dynamic';
 
 export default async function LoginPage() {
-  const session = await getSession();
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  
+  const isTokenLoggedIn = !!session.token && !!session.user;
+  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
-  if (session.isLoggedIn) {
+  if (isTokenLoggedIn || isOAuthLoggedIn) {
     redirect('/collection');
   }
 
@@ -16,12 +23,11 @@ export default async function LoginPage() {
           Discogs Viewer
         </h1>
         <p className="mb-8 text-center text-discogs-text-secondary">
-          Enter your Personal Access Token to continue.
+          Connect your Discogs account to view your collection and wantlist.
         </p>
-        <LoginForm />
+        <Login /> {/* Use the new Login component */}
         <p className="mt-6 text-center text-xs text-discogs-text-secondary/70">
-          You can generate a token in your Discogs account under Settings &gt;
-          Developers.
+          This application uses Discogs OAuth to securely access your data.
         </p>
       </div>
     </main>

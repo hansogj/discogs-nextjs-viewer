@@ -1,106 +1,125 @@
-
-'use server';
-import 'server-only';
+import crypto from 'crypto';
+import OAuth from 'oauth-1.0a';
 import pLimit from 'p-limit';
-import type {
-  DiscogsUser,
-  CollectionResponse,
-  WantlistResponse,
-  CollectionRelease,
-  WantlistRelease,
-  MasterRelease,
-  ProcessedWantlistItem,
-  DiscogsUserProfile,
+import type { 
+  DiscogsUser, 
+  DiscogsUserProfile, 
+  Folder, 
+  CustomFieldsResponse, 
+  CollectionRelease, 
+  WantlistRelease, 
+  MasterRelease, 
+  ProcessedWantlistItem, 
+  Pagination, 
+  CollectionResponse, 
+  WantlistResponse, 
+  FoldersResponse, 
+  SyncInfo, 
+  CustomField, 
+  SyncProgress, 
+  ReleaseDetails, 
+  BasicInformation,
   FullRelease,
-  ReleaseDetails,
-  FoldersResponse,
-  Folder,
 } from './types';
 
-// --- Discogs API Rate Limiter ---
-// Discogs allows 60 requests per minute for authenticated users.
-// We'll be conservative and limit it to 58 to avoid edge cases.
-const RATE_LIMIT_COUNT = 58;
-const RATE_LIMIT_PERIOD_MS = 60 * 1000; // 1 minute
-const requestTimestamps: number[] = [];
-
-/**
- * Creates a function that executes promises in sequence, not in parallel.
- * This is crucial for atomically updating the rate limiter state.
- */
-const createSerializedExecutor = () => {
-  let lastPromise: Promise<any> = Promise.resolve();
-  return (fn: () => Promise<void>) => {
-    // Chain the new function call off the last promise.
-    // `lastPromise.then(fn)` ensures `fn` only runs after the previous promise is resolved.
-    lastPromise = lastPromise.then(fn, fn); // Also run on rejection to not halt the queue
-    return lastPromise;
-  };
-};
-
-const serializedRateCheck = createSerializedExecutor();
-
-/**
- * Ensures that the application does not exceed the Discogs API rate limit.
- * It uses a serialized promise executor to prevent race conditions when multiple
- * requests are fired concurrently.
- */
-function ensureRateLimit() {
-  return serializedRateCheck(async () => {
-    let now = Date.now();
-
-    // Prune timestamps older than the rate limit period.
-    while (
-      requestTimestamps.length > 0 &&
-      requestTimestamps[0] < now - RATE_LIMIT_PERIOD_MS
-    ) {
-      requestTimestamps.shift();
-    }
-
-    // If we've hit the limit, wait until the oldest request expires.
-    if (requestTimestamps.length >= RATE_LIMIT_COUNT) {
-      const oldestTimestamp = requestTimestamps[0];
-      // Calculate time to wait until the oldest request is out of the window.
-      const timeToWait =
-        oldestTimestamp + RATE_LIMIT_PERIOD_MS - now + 100; // Increased buffer for safety
-
-      if (timeToWait > 0) {
-        console.log(
-          `Discogs rate limit reached. Waiting for ${Math.ceil(
-            timeToWait / 1000,
-          )}s...`,
-        );
-        await new Promise((r) => setTimeout(r, timeToWait));
-      }
-    }
-
-    // Record the timestamp for this request *after* any potential waiting.
-    requestTimestamps.push(Date.now());
-  });
-}
-// --- End Rate Limiter ---
 
 const API_BASE_URL = 'https://api.discogs.com';
+const DISCOGS_REQUEST_TOKEN_URL = 'https://api.discogs.com/oauth/request_token';
+const DISCOGS_ACCESS_TOKEN_URL = 'https://api.discogs.com/oauth/access_token';
+const DISCOGS_AUTHORIZE_URL = 'https://www.discogs.com/oauth/authorize';
 
-const getAuthHeader = (token: string) => ({
+if (!process.env.DISCOGS_CONSUMER_KEY || !process.env.DISCOGS_CONSUMER_SECRET) {
+  throw new Error('Missing DISCOGS_CONSUMER_KEY or DISCOGS_CONSUMER_SECRET environment variables.');
+}
+
+const oauth = new OAuth({
+  consumer: {
+    key: process.env.DISCOGS_CONSUMER_KEY,
+    secret: process.env.DISCOGS_CONSUMER_SECRET,
+  },
+  signature_method: 'HMAC-SHA1',
+  hash_function(base_string, key) {
+    return crypto.createHmac('sha1', key).update(base_string).digest('base64');
+  },
+});
+
+export type OAuthTokens = {
+  oauth_token: string;
+  oauth_token_secret: string;
+};
+
+export type DiscogsAuth = string | OAuthTokens;
+
+// Simple rate limiter implementation
+let lastRequestTime = 0;
+async function ensureRateLimit() {
+  const now = Date.now();
+  const timeSinceLastRequest = now - lastRequestTime;
+  // Discogs limit is 60/min, so roughly 1s per request.
+  // We use 1.1s to be safe.
+  if (timeSinceLastRequest < 1100) {
+    const waitTime = 1100 - timeSinceLastRequest;
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+  }
+  lastRequestTime = Date.now();
+}
+
+// Original getAuthHeader, now only for plain tokens.
+const getAuthHeaderPlainToken = (token: string) => ({
   Authorization: `Discogs token=${token}`,
   'User-Agent': 'DiscogsNextJSViewer/1.0', // Discogs requires a User-Agent
 });
 
+// New getAuthHeader for OAuth.
+const getAuthHeaderOAuth = (
+  url: string,
+  method: string,
+  oauthToken?: OAuthTokens,
+) => {
+  const token = oauthToken
+    ? {
+        key: oauthToken.oauth_token,
+        secret: oauthToken.oauth_token_secret,
+      }
+    : undefined;
+  const authorization = oauth.toHeader(
+    oauth.authorize({ url, method }, token),
+  );
+  return {
+    ...authorization,
+    'User-Agent': 'DiscogsNextJSViewer/1.0',
+  };
+};
+
 const MAX_RETRIES = 3;
 const INITIAL_BACKOFF_MS = 2000; // Start with a 2-second delay
 
-async function fetchDiscogsAPI<T>(url: string, token: string): Promise<T> {
+type FetchDiscogsAPIParams = {
+  url: string;
+  method?: string;
+  auth?: DiscogsAuth;
+};
+
+async function fetchDiscogsAPI<T>(params: FetchDiscogsAPIParams): Promise<T> {
+  const { url, method = 'GET', auth } = params;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    // Wait for rate limiter before each attempt
     await ensureRateLimit();
 
     try {
+      let headers: HeadersInit;
+      if (typeof auth === 'object' && auth !== null && 'oauth_token' in auth) {
+        headers = getAuthHeaderOAuth(url, method, auth);
+      } else if (typeof auth === 'string') {
+        headers = getAuthHeaderPlainToken(auth);
+      } else {
+        throw new Error('No authentication token provided for Discogs API call.');
+      }
+
       const response = await fetch(url, {
-        headers: getAuthHeader(token),
-        // Caching is now handled by our file system cache, so don't use Next.js fetch cache here.
+        headers,
+        method,
         cache: 'no-store',
       });
 
@@ -108,36 +127,52 @@ async function fetchDiscogsAPI<T>(url: string, token: string): Promise<T> {
         return response.json() as Promise<T>;
       }
 
-      // Retry on 5xx server errors, as they are often transient
-      if (response.status >= 500 && response.status < 600) {
+      // Retry on 5xx server errors, 429 (Rate Limit), or a 401 (sometimes transient auth issues)
+      if (
+        (response.status >= 500 && response.status < 600) ||
+        response.status === 429 ||
+        response.status === 401
+      ) {
+        const isRateLimit = response.status === 429;
         lastError = new Error(
-          `Discogs API server error: ${response.status} ${response.statusText} on ${url}`,
+          `Discogs API ${
+            isRateLimit ? 'rate limit' : 'server'
+          } error: ${response.status} ${response.statusText} on ${url}`,
         );
-        const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+
+        let delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+
+        if (isRateLimit) {
+          const retryAfter = response.headers.get('Retry-After');
+          if (retryAfter) {
+            const seconds = parseInt(retryAfter, 10);
+            if (!isNaN(seconds)) {
+              delay = seconds * 1000;
+            }
+          }
+        }
+
         console.warn(
           `[Discogs API] Attempt ${
             attempt + 1
-          }/${MAX_RETRIES} failed with server error ${
-            response.status
+          }/${MAX_RETRIES} failed with ${
+            isRateLimit ? 'rate limit' : `error ${response.status}`
           }. Retrying in ${delay / 1000}s...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue; // Go to next attempt
       }
 
-      // For any other non-ok status (like 4xx), throw immediately, don't retry
       throw new Error(
         `Discogs API error: ${response.status} ${response.statusText} on ${url}`,
       );
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      // If it's a non-retryable API error thrown from above, re-throw it to exit the loop.
       if (lastError.message.startsWith('Discogs API error:')) {
         throw lastError;
       }
 
-      // For network errors, log and prepare for retry
       const delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
       console.warn(
         `[Discogs API] Attempt ${
@@ -150,36 +185,116 @@ async function fetchDiscogsAPI<T>(url: string, token: string): Promise<T> {
     }
   }
 
-  // If loop finishes, all retries have failed.
   throw (
     lastError || new Error(`[Discogs API] All attempts to fetch ${url} failed.`)
   );
 }
 
-export async function getIdentity(token: string): Promise<DiscogsUser> {
-  return fetchDiscogsAPI<DiscogsUser>(`${API_BASE_URL}/oauth/identity`, token);
+// OAuth-specific functions
+export async function getDiscogsRequestToken(callbackUrl: string) {
+  const request_data = {
+    url: DISCOGS_REQUEST_TOKEN_URL,
+    method: 'GET',
+    data: { oauth_callback: callbackUrl },
+  };
+  const fetchResult = await fetch(request_data.url, {
+    method: request_data.method,
+    headers: oauth.toHeader(oauth.authorize(request_data)) as unknown as Record<string, string>,
+  });
+  if (!fetchResult.ok) {
+    const errorText = await fetchResult.text();
+    throw new Error(`Failed to fetch request token: ${fetchResult.status} ${fetchResult.statusText}. Body: ${errorText}`);
+  }
+  const text = await fetchResult.text();
+  const params = new URLSearchParams(text);
+  const token = params.get('oauth_token') || '';
+  const tokenSecret = params.get('oauth_token_secret') || '';
+  if (!token || !tokenSecret) {
+    throw new Error('Failed to parse oauth_token or oauth_token_secret from response.');
+  }
+  return {
+    oauth_token: token,
+    oauth_token_secret: tokenSecret,
+  };
+}
+
+export async function getDiscogsAuthorizeUrl(oauth_token: string) {
+  return `${DISCOGS_AUTHORIZE_URL}?oauth_token=${oauth_token}`;
+}
+
+export async function getDiscogsAccessToken(
+  requestToken: string,
+  requestTokenSecret: string,
+  oauthVerifier: string,
+): Promise<OAuthTokens> {
+  const request_data = {
+    url: DISCOGS_ACCESS_TOKEN_URL,
+    method: 'POST',
+    data: { oauth_verifier: oauthVerifier },
+  };
+  const token = {
+    key: requestToken,
+    secret: requestTokenSecret,
+  };
+  const fetchResult = await fetch(request_data.url, {
+    method: request_data.method,
+    headers: oauth.toHeader(oauth.authorize(request_data, token)) as unknown as Record<string, string>,
+  });
+  if (!fetchResult.ok) {
+      const errorText = await fetchResult.text();
+      throw new Error(`Failed to fetch access token: ${fetchResult.status} ${fetchResult.statusText}. Body: ${errorText}`);
+  }
+  const text = await fetchResult.text();
+  const params = new URLSearchParams(text);
+  const accessToken = params.get('oauth_token') || '';
+  const accessTokenSecret = params.get('oauth_token_secret') || '';
+
+  if (!accessToken || !accessTokenSecret) {
+      throw new Error('Failed to parse oauth_token or oauth_token_secret from access token response.');
+  }
+
+  return {
+    oauth_token: accessToken,
+    oauth_token_secret: accessTokenSecret,
+  };
+}
+
+// All existing API calls need to be updated to use the new fetchDiscogsAPI signature
+// For now, I'll keep the `token` parameter for existing functions as `plainToken` for compatibility,
+// but they should eventually be updated to accept an `OAuthTokens` object.
+
+export async function getIdentity(auth: DiscogsAuth): Promise<DiscogsUser> {
+  return fetchDiscogsAPI<DiscogsUser>({ url: `${API_BASE_URL}/oauth/identity`, auth });
 }
 
 export async function getFolders(
   username: string,
-  token: string,
+  auth: DiscogsAuth,
 ): Promise<Folder[]> {
   const url = `${API_BASE_URL}/users/${username}/collection/folders`;
-  const response = await fetchDiscogsAPI<FoldersResponse>(url, token);
+  const response = await fetchDiscogsAPI<FoldersResponse>({ url, auth });
   return response.folders;
+}
+
+export async function getCustomFields(
+  username: string,
+  auth: DiscogsAuth,
+): Promise<CustomFieldsResponse> {
+  const url = `${API_BASE_URL}/users/${username}/collection/fields`;
+  return fetchDiscogsAPI<CustomFieldsResponse>({ url, auth });
 }
 
 export async function getUserProfile(
   username: string,
-  token: string,
+  auth: DiscogsAuth,
 ): Promise<DiscogsUserProfile> {
   const url = `${API_BASE_URL}/users/${username}`;
-  return fetchDiscogsAPI<DiscogsUserProfile>(url, token);
+  return fetchDiscogsAPI<DiscogsUserProfile>({ url, auth });
 }
 
 async function fetchAllPaginatedData<T, R>(
   initialUrl: string,
-  token: string,
+  auth: DiscogsAuth,
   dataKey: keyof R,
   resourceName: string,
   onProgress?: (progress: {
@@ -188,6 +303,7 @@ async function fetchAllPaginatedData<T, R>(
     resource: string;
   }) => void,
   stopAtDate?: string,
+  limit?: number,
 ): Promise<{ items: T[]; fullFetch: boolean }> {
   let allData: T[] = [];
   let nextUrl: string | undefined = initialUrl;
@@ -197,14 +313,13 @@ async function fetchAllPaginatedData<T, R>(
     pagination: { page: number; pages: number; urls: { next?: string } };
   };
 
-  while (nextUrl) {
+  while (nextUrl && (!limit || allData.length < limit)) {
     const urlWithoutToken = nextUrl.replace(/token=[^&]+/, 'token=REDACTED');
     console.log(`[Discogs API] Fetching page: ${urlWithoutToken}`);
     const response: PaginatedResponse =
-      await fetchDiscogsAPI<PaginatedResponse>(nextUrl, token);
+      await fetchDiscogsAPI<PaginatedResponse>({ url: nextUrl, auth });
 
     if (onProgress && response.pagination) {
-      // Fire-and-forget the progress update
       onProgress({
         page: response.pagination.page,
         pages: response.pagination.pages,
@@ -214,9 +329,9 @@ async function fetchAllPaginatedData<T, R>(
 
     const data = response[dataKey] as T[] | undefined;
     if (data && data.length > 0) {
+      const itemsToAdd = limit ? data.slice(0, limit - allData.length) : data;
       if (stopAtDate) {
-        // This assumes T has date_added. The callers (collection/wantlist) do.
-        const itemsWithDate = data as (T & { date_added: string })[];
+        const itemsWithDate = itemsToAdd as (T & { date_added: string })[];
         const stopIndex = itemsWithDate.findIndex(
           (item) => new Date(item.date_added) <= new Date(stopAtDate),
         );
@@ -225,11 +340,10 @@ async function fetchAllPaginatedData<T, R>(
           const newItems = itemsWithDate.slice(0, stopIndex);
           allData.push(...(newItems as T[]));
           stoppedEarly = true;
-          break; // Exit the while loop
+          break;
         }
       }
-      // If no stop date or stop date not found on this page
-      allData.push(...data);
+      allData.push(...itemsToAdd);
     } else {
       break;
     }
@@ -240,61 +354,63 @@ async function fetchAllPaginatedData<T, R>(
 
 export async function getFullCollection(
   username: string,
-  token: string,
+  auth: DiscogsAuth,
   onProgress?: (progress: any) => void,
   lastSyncDate?: string,
+  limit?: number,
 ): Promise<{ items: CollectionRelease[]; fullFetch: boolean }> {
-  // IMPORTANT: The API needs `sort=added&sort_order=desc` for incremental sync to work
   const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?sort=added&sort_order=desc&per_page=100`;
   return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
     url,
-    token,
+    auth,
     'releases',
     'collection',
     onProgress,
     lastSyncDate,
+    limit,
   );
 }
 
 export async function getFullWantlist(
   username: string,
-  token: string,
+  auth: DiscogsAuth,
   onProgress?: (progress: any) => void,
   lastSyncDate?: string,
+  limit?: number,
 ): Promise<{ items: WantlistRelease[]; fullFetch: boolean }> {
-  // IMPORTANT: The API needs `sort=added&sort_order=desc` for incremental sync to work
   const url = `${API_BASE_URL}/users/${username}/wants?sort=added&sort_order=desc&per_page=100`;
   return fetchAllPaginatedData<WantlistRelease, WantlistResponse>(
     url,
-    token,
+    auth,
     'wants',
     'wantlist',
     onProgress,
     lastSyncDate,
+    limit,
   );
 }
 
 export async function getMasterRelease(
   masterId: number,
-  token: string,
+  auth: DiscogsAuth,
 ): Promise<MasterRelease> {
   const url = `${API_BASE_URL}/masters/${masterId}`;
-  return fetchDiscogsAPI<MasterRelease>(url, token);
+  return fetchDiscogsAPI<MasterRelease>({ url, auth });
 }
 
 export async function getRelease(
   releaseId: number,
-  token: string,
+  auth: DiscogsAuth,
 ): Promise<FullRelease> {
   const url = `${API_BASE_URL}/releases/${releaseId}`;
-  return fetchDiscogsAPI<FullRelease>(url, token);
+  return fetchDiscogsAPI<FullRelease>({ url, auth });
 }
 
 export async function fetchAndAddDetailsToReleases<
   T extends { id: number; basic_information: { id: number } },
 >(
   items: T[],
-  token: string,
+  auth: DiscogsAuth,
   resourceName: 'collection_details' | 'wantlist_details',
   onProgress: (progress: {
     processed: number;
@@ -302,18 +418,16 @@ export async function fetchAndAddDetailsToReleases<
     resource: string;
   }) => void,
 ): Promise<(T & { details?: ReleaseDetails })[]> {
-  if (items.length === 0) return [];
-  const limit = pLimit(10);
+  const limit = pLimit(1);
   let processedCount = 0;
   const total = items.length;
 
   const itemsWithDetailsPromises = items.map((item) =>
     limit(async () => {
       try {
-        // Use basic_information.id, which is the release ID. The top-level `id` for wantlist is the want ID.
         const details: FullRelease = await getRelease(
           item.basic_information.id,
-          token,
+          auth,
         );
         processedCount++;
         onProgress({
@@ -341,7 +455,7 @@ export async function fetchAndAddDetailsToReleases<
           total,
           resource: resourceName,
         });
-        return item; // return original on error
+        return item;
       }
     }),
   );
@@ -350,22 +464,18 @@ export async function fetchAndAddDetailsToReleases<
 
 export async function processWantlist(
   wantlist: WantlistRelease[],
-  token: string,
+  auth: DiscogsAuth,
 ): Promise<ProcessedWantlistItem[]> {
   if (wantlist.length === 0) return [];
-  // Set a concurrency limit to avoid overwhelming the Discogs API,
-  // even with the rate limiter in place. This provides a more robust
-  // way to handle the burst of requests from processing the wantlist.
-  const limit = pLimit(10);
+  const limit = pLimit(2);
 
   const processedItemsPromises = wantlist.map((want) =>
     limit(async () => {
-      // Only fetch master if there's a master ID
       if (want.basic_information.master_id > 0) {
         try {
           const master = await getMasterRelease(
             want.basic_information.master_id,
-            token,
+            auth,
           );
           const masterImage =
             master.images?.find((img) => img.type === 'primary')?.uri ||
@@ -382,7 +492,6 @@ export async function processWantlist(
           );
         }
       }
-      // Fallback for items with no master or if fetch fails
       return {
         ...want,
         master_cover_image: want.basic_information.cover_image,
@@ -395,7 +504,7 @@ export async function processWantlist(
 
 export async function addMasterInfoToCollection(
   collection: CollectionRelease[],
-  token: string,
+  auth: DiscogsAuth,
   onProgress: (progress: {
     processed: number;
     total: number;
@@ -403,7 +512,7 @@ export async function addMasterInfoToCollection(
   }) => void,
 ): Promise<CollectionRelease[]> {
   if (collection.length === 0) return [];
-  const limit = pLimit(10);
+  const limit = pLimit(2);
   let processedCount = 0;
   const total = collection.length;
 
@@ -422,7 +531,7 @@ export async function addMasterInfoToCollection(
         try {
           const master = await getMasterRelease(
             item.basic_information.master_id,
-            token,
+            auth,
           );
           reportProgress();
           return {

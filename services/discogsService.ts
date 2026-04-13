@@ -6,7 +6,8 @@ import type {
   WantlistRelease,
   MasterRelease,
   ProcessedWantlistItem,
-} from '../types';
+  CustomFieldsResponse,
+} from '../lib/types';
 
 const API_BASE_URL = 'https://api.discogs.com';
 
@@ -54,7 +55,7 @@ export async function getCollection(
   username: string,
   token: string,
 ): Promise<CollectionRelease[]> {
-  const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?sort=added&sort_order=desc&per_page=100`;
+  const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?sort=added&sort_order=desc&per_page=100&include_fields=true`;
   return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
     url,
     token,
@@ -124,4 +125,12 @@ export async function processWantlist(
   );
 
   return Promise.all(processedItemsPromises);
+}
+
+export async function getCustomFields(
+  username: string,
+  token: string,
+): Promise<CustomFieldsResponse> {
+  const url = `${API_BASE_URL}/users/${username}/collection/fields`;
+  return fetchDiscogsAPI<CustomFieldsResponse>(url, token);
 }

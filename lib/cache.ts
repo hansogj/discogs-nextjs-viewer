@@ -1,5 +1,4 @@
 
-import 'server-only';
 import path from 'path';
 import fs from 'fs/promises';
 import type {
@@ -7,6 +6,7 @@ import type {
   Folder,
   ProcessedWantlistItem,
   SyncInfo,
+  CustomField,
 } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
@@ -28,7 +28,7 @@ async function ensureCacheDir() {
   }
 }
 
-type CacheKey = 'collection' | 'wantlist' | 'folders';
+type CacheKey = 'collection' | 'wantlist' | 'folders' | 'custom_fields';
 
 function getCachePath(username: string, key: CacheKey) {
   // Sanitize username to create a valid filename
@@ -76,6 +76,19 @@ export async function setSyncInfo(
   }
 }
 
+export async function clearSyncInfo(username: string): Promise<void> {
+  const filePath = getSyncInfoCachePath(username);
+  try {
+    await fs.unlink(filePath);
+    console.log(`[Cache] Cleared sync info for ${username}.`);
+  } catch (error) {
+    // @ts-ignore
+    if ((error as { code?: string }).code !== 'ENOENT') {
+      console.error('Failed to clear sync info file:', error);
+    }
+  }
+}
+
 // --- Sync Progress ---
 export interface SyncProgress {
   status: 'starting' | 'fetching' | 'processing' | 'caching' | 'done' | 'error';
@@ -90,6 +103,7 @@ export interface SyncProgress {
   processed?: number;
   total?: number;
   message?: string;
+  progress?: number;
 }
 
 export async function setSyncProgress(
@@ -98,10 +112,18 @@ export async function setSyncProgress(
 ): Promise<void> {
   await ensureCacheDir();
   const filePath = getProgressCachePath(username);
+  const tempFilePath = `${filePath}.tmp-${Date.now()}`;
   try {
-    await fs.writeFile(filePath, JSON.stringify(progress), 'utf-8');
+    await fs.writeFile(tempFilePath, JSON.stringify(progress), 'utf-8');
+    await fs.rename(tempFilePath, filePath); // Atomically replace the old file
   } catch (error) {
     console.error('Failed to write sync progress:', error);
+    // Clean up temporary file if rename fails
+    try {
+      await fs.unlink(tempFilePath);
+    } catch (cleanupError) {
+      console.error('Failed to clean up temporary sync progress file:', cleanupError);
+    }
   }
 }
 
@@ -155,7 +177,7 @@ export async function getCachedData<T>(
 export async function setCachedData(
   username: string,
   key: CacheKey,
-  data: CollectionRelease[] | ProcessedWantlistItem[] | Folder[],
+  data: CollectionRelease[] | ProcessedWantlistItem[] | Folder[] | CustomField[],
 ): Promise<void> {
   await ensureCacheDir();
   const filePath = getCachePath(username, key);
@@ -175,6 +197,7 @@ export async function clearUserCache(username: string): Promise<void> {
   const collectionPath = getCachePath(username, 'collection');
   const wantlistPath = getCachePath(username, 'wantlist');
   const foldersPath = getCachePath(username, 'folders');
+  const customFieldsPath = getCachePath(username, 'custom_fields');
   const syncInfoPath = getSyncInfoCachePath(username);
 
   await Promise.all([
@@ -193,6 +216,11 @@ export async function clearUserCache(username: string): Promise<void> {
       if ((e as { code?: string }).code !== 'ENOENT')
         console.error('Failed to clear folders cache:', e);
     }),
+    fs.unlink(customFieldsPath).catch((e) => {
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
+        console.error('Failed to clear custom_fields cache:', e);
+    }),
     fs.unlink(syncInfoPath).catch((e) => {
       // @ts-ignore
       if ((e as { code?: string }).code !== 'ENOENT')
@@ -201,3 +229,4 @@ export async function clearUserCache(username: string): Promise<void> {
     clearSyncProgress(username),
   ]);
 }
+

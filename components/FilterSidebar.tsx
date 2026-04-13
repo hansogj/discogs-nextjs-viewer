@@ -5,6 +5,7 @@ import type {
   CollectionRelease,
   ProcessedWantlistItem,
   Folder,
+  CustomField,
 } from '@/lib/types';
 import FilterGroup from './FilterGroup';
 
@@ -18,15 +19,16 @@ interface FilterSidebarProps {
     formats: Set<string>;
     years: Set<number>;
     folders: Set<number>;
+    composers: Set<string>;
+    customFields: Record<string, Set<string>>;
   };
   onFilterChange: (
-    type: 'artists' | 'formats' | 'years' | 'folders',
+    type: string,
     value: string | number,
     checked: boolean,
   ) => void;
-  onFilterClear: (
-    type: 'artists' | 'formats' | 'years' | 'folders' | 'all',
-  ) => void;
+  onFilterClear: (type: string) => void;
+  customFields: CustomField[];
 }
 
 const FilterSidebar: React.FC<FilterSidebarProps> = ({
@@ -35,12 +37,23 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   activeFilters,
   onFilterChange,
   onFilterClear,
+  customFields,
 }) => {
   const filterData = useMemo(() => {
     const artists = new Map<string, number>();
     const formats = new Map<string, number>();
-    const years = new Map<number, number>();
+    const years = new Map<string, number>();
     const itemFolders = new Map<number, number>();
+    const composers = new Map<string, number>();
+    const customFieldValues: Record<string, Map<string, number>> = {};
+
+    if (customFields) {
+      for (const field of customFields) {
+        if (field.type === 'dropdown') {
+          customFieldValues[field.name] = new Map<string, number>();
+        }
+      }
+    }
 
     for (const item of items) {
       const artistName = item.basic_information.artists?.[0]?.name;
@@ -56,13 +69,35 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
           ? item.master_year
           : item.basic_information.year;
       if (year) {
-        years.set(year, (years.get(year) || 0) + 1);
+        const yearString = String(year); // Convert to string
+        years.set(yearString, (years.get(yearString) || 0) + 1);
       }
       if ('folder_id' in item) {
         itemFolders.set(
           item.folder_id,
           (itemFolders.get(item.folder_id) || 0) + 1,
         );
+      }
+      if (item.details?.extraartists) {
+        for (const artist of item.details.extraartists) {
+          if (artist.role === 'Composed By') {
+            composers.set(artist.name, (composers.get(artist.name) || 0) + 1);
+          }
+        }
+      }
+      if (customFields) {
+        for (const field of customFields) {
+          if (field.type === 'dropdown') {
+            const note = (item as CollectionRelease).notes?.find(
+              (n) => n.field_id === field.id,
+            );
+            if (note) {
+              const map = customFieldValues[field.name];
+              const value = note.value.trim();
+              map.set(value, (map.get(value) || 0) + 1);
+            }
+          }
+        }
       }
     }
 
@@ -72,24 +107,42 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const sortedFormats = Array.from(formats.entries()).sort((a, b) =>
       a[0].localeCompare(b[0]),
     );
-    const sortedYears = Array.from(years.entries()).sort((a, b) => b[0] - a[0]); // Descending year
+    const sortedYears = Array.from(years.entries()).sort((a, b) => parseInt(b[0]) - parseInt(a[0])); // Descending year
+    const sortedComposers = Array.from(composers.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0]),
+    );
+    const sortedCustomFields: Record<string, [string, number][]> = {};
+    for (const fieldName in customFieldValues) {
+      sortedCustomFields[fieldName] = Array.from(
+        customFieldValues[fieldName].entries(),
+      ).sort((a, b) => a[0].localeCompare(b[0]));
+    }
 
     const folderMap = new Map(folders.map((f) => [f.id, f.name]));
     const sortedFolders = Array.from(itemFolders.entries())
-      .map(([id, count]) => ({
-        id,
-        name: folderMap.get(id) || `Folder ${id}`,
-        count,
-      }))
+      .map(([id, count]) => {
+        let name = folderMap.get(id);
+        if (id === 1 || name === '*') {
+          name = 'Uncategorized';
+        }
+        return {
+          id,
+          name: name || `Folder ${id}`,
+          count,
+        };
+      })
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    return {
+    const result = {
       artists: sortedArtists,
       formats: sortedFormats,
       years: sortedYears,
       folders: sortedFolders,
+      composers: sortedComposers,
+      customFields: sortedCustomFields,
     };
-  }, [items, folders]);
+    return result;
+  }, [items, folders, customFields]);
 
   return (
     <div className="sticky top-24 space-y-4">
@@ -125,6 +178,54 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         </FilterGroup>
       )}
 
+      {filterData.composers.length > 0 && (
+        <FilterGroup
+          title="Composer"
+          onClear={() => onFilterClear('composers')}
+          selectedCount={activeFilters.composers.size}
+        >
+          {filterData.composers.map(([name, count]) => (
+            <FilterCheckbox
+              key={name}
+              id={`composer-${name}`}
+              label={name}
+              count={count}
+              checked={activeFilters.composers.has(name)}
+              onChange={(e) =>
+                onFilterChange('composers', name, e.target.checked)
+              }
+            />
+          ))}
+        </FilterGroup>
+      )}
+
+      {customFields && customFields.map((field) =>
+        field.type === 'dropdown' &&
+        filterData.customFields[field.name]?.length > 0 ? (
+          <FilterGroup
+            key={field.id}
+            title={field.name}
+            onClear={() => onFilterClear(field.name)}
+            selectedCount={activeFilters.customFields[field.name]?.size || 0}
+          >
+            {filterData.customFields[field.name].map(([name, count]) => (
+              <FilterCheckbox
+                key={name}
+                id={`custom-${field.id}-${name}`}
+                label={name}
+                count={count}
+                checked={
+                  activeFilters.customFields[field.name]?.has(name) || false
+                }
+                onChange={(e) =>
+                  onFilterChange(field.name, name, e.target.checked)
+                }
+              />
+            ))}
+          </FilterGroup>
+        ) : null,
+      )}
+
       {filterData.formats.length > 0 && (
         <FilterGroup
           title="Format"
@@ -158,8 +259,10 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               id={`year-${year}`}
               label={String(year)}
               count={count}
-              checked={activeFilters.years.has(year)}
-              onChange={(e) => onFilterChange('years', year, e.target.checked)}
+              checked={activeFilters.years.has(parseInt(year, 10))}
+              onChange={(e) =>
+                onFilterChange('years', parseInt(year, 10), e.target.checked)
+              }
             />
           ))}
         </FilterGroup>

@@ -5,6 +5,7 @@ import type {
   CollectionRelease,
   ProcessedWantlistItem,
   Folder,
+  CustomField,
 } from '@/lib/types';
 import Grid from './Grid';
 import SortControls, {
@@ -20,6 +21,7 @@ interface AlbumViewerProps {
   viewType: 'collection' | 'wantlist';
   collectionItemsForFiltering?: CollectionRelease[];
   folders: Folder[];
+  customFields: CustomField[];
 }
 
 const AlbumViewer: React.FC<AlbumViewerProps> = ({
@@ -27,6 +29,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   viewType,
   collectionItemsForFiltering,
   folders,
+  customFields,
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -45,6 +48,12 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [selectedFolders, setSelectedFolders] = useState<Set<number>>(
     new Set(),
   );
+  const [selectedComposers, setSelectedComposers] = useState<Set<string>>(
+    new Set(),
+  );
+  const [selectedCustomFields, setSelectedCustomFields] = useState<
+    Record<string, Set<string>>
+  >({});
 
   const handleSortOrderChange = () => {
     setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
@@ -87,10 +96,19 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       const year =
         'master_year' in item && item.master_year ? item.master_year : info.year;
       const folderId = 'folder_id' in item ? item.folder_id : -1;
+      const composers =
+        item.details?.extraartists
+          ?.filter((artist) => artist.role === 'Composed By')
+          .map((artist) => artist.name) || [];
 
       if (
         selectedArtists.size > 0 &&
         (!artistName || !selectedArtists.has(artistName))
+      )
+        return false;
+      if (
+        selectedComposers.size > 0 &&
+        !composers.some((composer) => selectedComposers.has(composer))
       )
         return false;
       if (
@@ -105,6 +123,18 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         (folderId === -1 || !selectedFolders.has(folderId))
       )
         return false;
+
+      for (const field of customFields) {
+        const selectedOptions = selectedCustomFields[field.name];
+        if (selectedOptions && selectedOptions.size > 0) {
+          const itemValue = (item as CollectionRelease).notes?.find(
+            (n) => n.field_id === field.id,
+          )?.value;
+          if (!itemValue || !selectedOptions.has(itemValue)) {
+            return false;
+          }
+        }
+      }
 
       return true;
     });
@@ -206,6 +236,9 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     selectedFormats,
     selectedYears,
     selectedFolders,
+    selectedComposers,
+    selectedCustomFields,
+    customFields,
   ]);
 
   const activeFilters = {
@@ -213,10 +246,12 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     formats: selectedFormats,
     years: selectedYears,
     folders: selectedFolders,
+    composers: selectedComposers,
+    customFields: selectedCustomFields,
   };
 
   const onFilterChange = (
-    type: 'artists' | 'formats' | 'years' | 'folders',
+    type: 'artists' | 'formats' | 'years' | 'folders' | 'composers' | string,
     value: string | number,
     isSelected: boolean,
   ) => {
@@ -229,6 +264,21 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           newSet.delete(value);
         }
         return newSet;
+      });
+    };
+
+    const customFieldUpdater = (fieldName: string) => {
+      setSelectedCustomFields((prev) => {
+        const newSet = new Set(prev[fieldName]);
+        if (isSelected) {
+          newSet.add(value as string);
+        } else {
+          newSet.delete(value as string);
+        }
+        return {
+          ...prev,
+          [fieldName]: newSet,
+        };
       });
     };
 
@@ -245,16 +295,27 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       case 'folders':
         updater(setSelectedFolders);
         break;
+      case 'composers':
+        updater(setSelectedComposers);
+        break;
+      default:
+        customFieldUpdater(type);
     }
   };
 
   const onFilterClear = (
-    type: 'artists' | 'formats' | 'years' | 'folders' | 'all',
+    type: 'artists' | 'formats' | 'years' | 'folders' | 'composers' | 'all' | string,
   ) => {
     if (type === 'artists' || type === 'all') setSelectedArtists(new Set());
     if (type === 'formats' || type === 'all') setSelectedFormats(new Set());
     if (type === 'years' || type === 'all') setSelectedYears(new Set());
     if (type === 'folders' || type === 'all') setSelectedFolders(new Set());
+    if (type === 'composers' || type === 'all') setSelectedComposers(new Set());
+    if (type === 'all') {
+      setSelectedCustomFields({});
+    } else {
+      setSelectedCustomFields((prev) => ({ ...prev, [type]: new Set() }));
+    }
   };
 
   return (
@@ -266,6 +327,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           activeFilters={activeFilters}
           onFilterChange={onFilterChange}
           onFilterClear={onFilterClear}
+          customFields={customFields}
         />
       </aside>
       <div className="mt-6 min-w-0 flex-1 lg:mt-0">

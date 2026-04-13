@@ -2,8 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
 
-// Read from default ".env.local" file.
-dotenv.config({ path: path.resolve('.', '.env.local') });
+// Read from default ".env" file.
+dotenv.config({ path: path.resolve('.', '.env') });
 
 export default defineConfig({
   testDir: './tests/e2e',

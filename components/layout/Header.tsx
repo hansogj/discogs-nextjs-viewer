@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import React from 'react';
+import type { SyncProgress } from '@/lib/cache'; // Import SyncProgress type
 
 interface HeaderProps {
   user: DiscogsUser;
@@ -15,6 +16,8 @@ interface HeaderProps {
   duplicatesCount: number;
   onSync: () => void;
   onClearCache: () => void;
+  isSyncing: boolean; // New prop
+  syncProgress: SyncProgress | null; // New prop
 }
 
 export default function Header({
@@ -25,6 +28,8 @@ export default function Header({
   duplicatesCount,
   onSync,
   onClearCache,
+  isSyncing, // Destructure new prop
+  syncProgress, // Destructure new prop
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -33,6 +38,31 @@ export default function Header({
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' });
     router.refresh(); // This will re-trigger the middleware, which will redirect to the login page.
+  };
+
+  const getProgressMessage = (progress: SyncProgress): string => {
+    switch (progress.status) {
+      case 'starting':
+        return progress.message || 'Starting synchronization...';
+      case 'fetching':
+        if (progress.resource && progress.page && progress.pages) {
+          return `Fetching ${progress.resource} (page ${progress.page} of ${progress.pages})`;
+        }
+        return `Fetching ${progress.resource || 'data'}...`;
+      case 'processing':
+        if (progress.resource && progress.processed && progress.total) {
+          return `Processing ${progress.resource} (${progress.processed}/${progress.total} items)`;
+        }
+        return `Processing ${progress.resource || 'data'}...`;
+      case 'caching':
+        return progress.message || 'Saving data locally...';
+      case 'done':
+        return progress.message || 'Synchronization complete!';
+      case 'error':
+        return progress.message || 'Synchronization failed!';
+      default:
+        return 'Synchronization in progress...';
+    }
   };
 
   const buttonBaseClasses =
@@ -48,8 +78,9 @@ export default function Header({
     <header className="sticky top-0 z-50 border-b border-discogs-border bg-discogs-bg/80 p-4 shadow-lg backdrop-blur-sm">
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <Link
-            href="/user"
+          <div
+            onClick={() => router.push('/user')}
+            style={{ cursor: 'pointer' }}
             className={clsx(
               'group flex items-center space-x-4 rounded-lg p-2 transition-colors duration-200 -m-2',
               isUserPage ? 'bg-discogs-bg-light' : 'hover:bg-discogs-bg-light',
@@ -81,7 +112,21 @@ export default function Header({
                 View on Discogs
               </a>
             </div>
-          </Link>
+          </div>
+          {isSyncing && syncProgress && (
+            <div className="ml-4 flex items-center space-x-2 text-discogs-blue">
+              <svg className="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span className="text-sm font-medium">
+                {getProgressMessage(syncProgress)}
+              </span>
+              {syncProgress.progress !== undefined && (
+                <span className="text-xs">{Math.round(syncProgress.progress)}%</span>
+              )}
+            </div>
+          )}
         </div>
 
         <nav className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
@@ -167,9 +212,15 @@ export default function Header({
         <div className="flex items-center space-x-2">
           <button
             onClick={onSync}
-            className="rounded-lg bg-green-600 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:ring-offset-discogs-bg"
+            disabled={isSyncing} // Disable when syncing
+            className={clsx(
+              "px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg",
+              isSyncing
+                ? "bg-gray-500 text-gray-300 cursor-not-allowed" // Disabled style
+                : "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
+            )}
           >
-            Sync with Discogs
+            {isSyncing ? 'Syncing...' : 'Sync with Discogs'}
           </button>
           <button
             onClick={handleLogout}
@@ -195,6 +246,7 @@ export default function Header({
               />
             </svg>
           </button>
+
         </div>
       </div>
     </header>

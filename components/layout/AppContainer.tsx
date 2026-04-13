@@ -5,7 +5,6 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from './Header';
-import SyncModal from '../SyncModal';
 import ErrorMessage from '../ErrorMessage';
 import { syncAllData, clearCacheAction } from '@/app/actions';
 import type { DiscogsUser } from '@/lib/types';
@@ -38,35 +37,31 @@ export default function AppContainer({
     setSyncError(null);
     setSyncProgress({ status: 'starting', message: 'Initiating sync...' });
 
+    await syncAllData();
+
     // Polling interval reference
     const pollInterval = setInterval(async () => {
       try {
         const res = await fetch('/api/sync-progress');
         if (res.ok) {
-          const progress: SyncProgress = await res.json();
-          if (progress.status) {
+          const progress = await res.json();
+          if (progress.status === 'completed' || progress.status === 'failed') {
+            clearInterval(pollInterval);
+            setIsSyncing(false);
+            setSyncProgress(null);
+            router.refresh();
+          } else if (progress.status) {
             setSyncProgress(progress);
           }
         }
       } catch (e) {
         console.error('Polling for sync progress failed', e);
+        clearInterval(pollInterval);
+        setIsSyncing(false);
+        setSyncProgress(null);
+        setSyncError('Failed to get sync progress.');
       }
-    }, 1500);
-
-    // Call server action
-    const result = await syncAllData();
-
-    // Stop polling
-    clearInterval(pollInterval);
-    setIsSyncing(false);
-    setSyncProgress(null);
-
-    if (result.success) {
-      // Refresh the page to load new data from cache
-      router.refresh();
-    } else {
-      setSyncError(result.message ?? 'An unknown error occurred during sync.');
-    }
+    }, 2000);
   };
 
   const handleClearCache = async () => {
@@ -90,8 +85,9 @@ export default function AppContainer({
         duplicatesCount={duplicatesCount}
         onSync={handleSync}
         onClearCache={handleClearCache}
+        isSyncing={isSyncing}
+        syncProgress={syncProgress}
       />
-      <SyncModal isOpen={isSyncing} user={user} progress={syncProgress} />
       <main className="container mx-auto">
         {syncError && (
           <div className="p-4">
@@ -106,3 +102,5 @@ export default function AppContainer({
     </>
   );
 }
+
+

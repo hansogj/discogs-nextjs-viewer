@@ -1,0 +1,62 @@
+services:
+  # Redis cache and queue service
+  cache:
+    image: redis:7.4-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 20 1 --loglevel warning --requirepass "${REDIS_PASSWORD}"
+    volumes:
+      - cache:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js web application
+  web:
+    build:
+      context: .. # Dockerfile is in the parent directory
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET}
+      REDIS_URL: ${REDIS_URL}
+      DISCOGS_CONSUMER_KEY: ${DISCOGS_CONSUMER_KEY}
+      DISCOGS_CONSUMER_SECRET: ${DISCOGS_CONSUMER_SECRET}
+      DISCOGS_CALLBACK_URL: ${DISCOGS_CALLBACK_URL}
+      NODE_ENV: development
+    #volumes:
+    #  - ..:/app # Mount parent directory as /app
+    #  - /app/node_modules # Ensure node_modules are not overwritten by host volume
+    command: pnpm dev
+    depends_on:
+      cache:
+        condition: service_healthy # Wait for Redis to be healthy
+
+  # BullMQ worker for background tasks
+  worker:
+    build:
+      context: .. # Dockerfile is in the parent directory
+      dockerfile: Dockerfile
+    environment:
+      AUTH_SECRET: ${AUTH_SECRET}
+      REDIS_URL: ${REDIS_URL}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      DISCOGS_CONSUMER_KEY: ${DISCOGS_CONSUMER_KEY}
+      DISCOGS_CONSUMER_SECRET: ${DISCOGS_CONSUMER_SECRET}
+      DISCOGS_CALLBACK_URL: ${DISCOGS_CALLBACK_URL}
+      NODE_ENV: development
+    #volumes:
+    #  - ..:/app # Mount parent directory as /app
+    #  - /app/node_modules # Ensure node_modules are not overwritten by host volume
+    command: pnpm dev:worker
+    depends_on:
+      cache:
+        condition: service_healthy # Wait for Redis to be healthy
+
+volumes:
+  cache:
+    driver: local

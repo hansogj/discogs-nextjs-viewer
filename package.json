@@ -5,7 +5,8 @@
   "packageManager": "pnpm@10.13.1",
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0 --webpack",
+    "dev:worker": "tsx worker.ts",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -17,12 +18,18 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "bullmq": "^5.66.5",
     "clsx": "^2.1.1",
-    "iron-session": "^8.0.1",
-    "next": "14.2.3",
+    "ioredis": "^5.10.1",
+    "iron-session": "^8.0.4",
+    "next": "^16.1.2",
+    "oauth-1.0a": "^2.2.6",
     "p-limit": "4.0.0",
     "react": "^18",
     "react-dom": "^18",
+    "redis": "^5.10.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.34.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -35,6 +42,7 @@
     "@types/react-dom": "^18",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
+    "baseline-browser-mapping": "^2.9.17",
     "dotenv": "^16.4.5",
     "eslint": "^8",
     "eslint-config-next": "14.2.3",
@@ -44,6 +52,8 @@
     "prettier": "^3.2.5",
     "prettier-plugin-tailwindcss": "^0.5.14",
     "tailwindcss": "^3.4.1",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^1.6.0"
   },

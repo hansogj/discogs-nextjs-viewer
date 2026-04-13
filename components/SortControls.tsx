@@ -1,7 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import clsx from 'clsx';
+import { useDebounce } from '@/lib/use-debounce';
 
 export type SortKey = 'date_added' | 'title' | 'year' | 'artist';
 export type SortOrder = 'asc' | 'desc';
@@ -41,10 +42,21 @@ const SortControls: React.FC<SortControlsProps> = ({
   filterOptions,
   view,
   onViewChange,
-  searchQuery,
+  searchQuery: initialSearchQuery,
   onSearchQueryChange,
   viewType,
 }) => {
+  const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000);
+
+  useEffect(() => {
+    onSearchQueryChange(debouncedSearchQuery);
+  }, [debouncedSearchQuery, onSearchQueryChange]);
+
+  useEffect(() => {
+    setSearchQuery(initialSearchQuery);
+  }, [initialSearchQuery]);
+
   const buttonBaseClasses =
     'focus:outline-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg focus:ring-discogs-blue';
   const activeButtonClasses = 'bg-discogs-blue text-white';
@@ -73,7 +85,7 @@ const SortControls: React.FC<SortControlsProps> = ({
             type="search"
             placeholder={`Search ${viewType}...`}
             value={searchQuery}
-            onChange={(e) => onSearchQueryChange(e.target.value)}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full rounded-lg border border-discogs-border bg-discogs-bg p-2.5 pl-10 text-sm text-white placeholder-discogs-text-secondary/50 focus:border-discogs-blue focus:ring-discogs-blue"
           />
         </div>

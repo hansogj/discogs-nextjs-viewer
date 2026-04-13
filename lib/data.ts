@@ -1,5 +1,5 @@
 import 'server-only';
-import { getSession } from './session';
+import { getIronSession } from 'iron-session';
 import { getCachedData } from './cache';
 import type {
   CollectionRelease,
@@ -7,21 +7,38 @@ import type {
   DiscogsUser,
   DiscogsUserProfile,
   Folder,
+  CustomField,
+  SessionData,
 } from './types';
+import { cookies } from 'next/headers';
+import { sessionOptions } from './session-options';
+
+import { DiscogsAuth } from './discogs';
 
 async function getAuthenticatedUser(): Promise<{
   user: DiscogsUser;
-  token: string;
+  token: DiscogsAuth;
   userProfile: DiscogsUserProfile | null;
 }> {
-  const session = await getSession();
-  if (!session.isLoggedIn || !session.user || !session.token) {
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  
+  const isTokenLoggedIn = !!session.token && !!session.user;
+  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
+
+  if (!isTokenLoggedIn && !isOAuthLoggedIn) {
     throw new Error('Not authenticated');
   }
-  // Return the full profile as well
+
+  const auth: DiscogsAuth = isOAuthLoggedIn
+    ? {
+        oauth_token: session.accessToken!,
+        oauth_token_secret: session.accessTokenSecret!,
+      }
+    : session.token!;
+
   return {
-    user: session.user,
-    token: session.token,
+    user: session.user!,
+    token: auth,
     userProfile: session.userProfile ?? null,
   };
 }
@@ -45,13 +62,19 @@ export async function getCachedWantlist(): Promise<ProcessedWantlistItem[]> {
 }
 
 export async function getUserProfile(): Promise<DiscogsUserProfile | null> {
-  const session = await getSession();
+  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
   return session.userProfile ?? null;
 }
 
 export async function getCachedFolders(): Promise<Folder[]> {
   const { user } = await getAuthenticatedUser();
   const data = await getCachedData<Folder[]>(user.username, 'folders');
+  return data ?? [];
+}
+
+export async function getCachedCustomFields(): Promise<CustomField[]> {
+  const { user } = await getAuthenticatedUser();
+  const data = await getCachedData<CustomField[]>(user.username, 'custom_fields');
   return data ?? [];
 }
 
