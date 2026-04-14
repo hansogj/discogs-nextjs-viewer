@@ -15,7 +15,8 @@
     "format:fix": "prettier --write .",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:oauth": "RUN_INTERACTIVE=1 playwright test --headed --grep 'full OAuth'"
   },
   "dependencies": {
     "bullmq": "^5.66.5",

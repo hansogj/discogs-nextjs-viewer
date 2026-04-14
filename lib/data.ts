@@ -120,13 +120,16 @@ export function getCollectionDuplicates(
 ): CollectionRelease[][] {
   const masters = new Map<number, CollectionRelease[]>();
   for (const release of collection) {
-    const masterId = release.basic_information.master_id;
-    if (masterId > 0) {
-      if (!masters.has(masterId)) {
-        masters.set(masterId, []);
-      }
-      masters.get(masterId)!.push(release);
+    // Use master_id when available; fall back to release id
+    // (a release with no master is effectively its own master)
+    const groupKey =
+      release.basic_information.master_id > 0
+        ? release.basic_information.master_id
+        : release.basic_information.id;
+    if (!masters.has(groupKey)) {
+      masters.set(groupKey, []);
     }
+    masters.get(groupKey)!.push(release);
   }
 
   const duplicates: CollectionRelease[][] = [];

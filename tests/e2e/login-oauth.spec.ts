@@ -91,6 +91,16 @@ test.describe('OAuth Login Flow', () => {
       return;
     }
 
+    // This test requires a visible browser for manual CAPTCHA/MFA.
+    // Skip unless RUN_INTERACTIVE=1 is set (use --headed when running).
+    if (!process.env.RUN_INTERACTIVE) {
+      test.skip(
+        true,
+        'Interactive test — run with: RUN_INTERACTIVE=1 pnpm test:e2e --headed --grep "full OAuth"',
+      );
+      return;
+    }
+
     // ── Diagnostics ──────────────────────────────────────────────
     page.on('response', async (resp: Response) => {
       const url = resp.url();
@@ -120,57 +130,16 @@ test.describe('OAuth Login Flow', () => {
         .fill(DISCOGS_PASSWORD);
 
       // Discogs uses Auth0 with reCAPTCHA that cannot be automated.
-      // The user must: check the reCAPTCHA → click Continue in the browser.
       console.log(
-        '\n>>> In the browser: check "I\'m not a robot", then click Continue <<<\n',
+        `\n>>> Browser is at: ${page.url()}`,
+      );
+      console.log(
+        '>>> Solve CAPTCHA, complete login/MFA, and click Authorize in the headed browser.\n',
       );
     }
 
-    // ── Wait for user to complete CAPTCHA + login + Authorize ────
-    const deadline = Date.now() + 160_000;
-    let clickedAuthorize = false;
-    while (Date.now() < deadline) {
-      const url = page.url();
-
-      if (url.includes('localhost')) break;
-
-      if (url.includes('mfa') || url.includes('otp')) {
-        console.log('\n>>> Enter your MFA/OTP code <<<\n');
-        await page
-          .waitForURL((u) => !u.toString().includes('mfa'), {
-            timeout: Math.min(deadline - Date.now(), 60_000),
-          })
-          .catch(() => {});
-        continue;
-      }
-
-      const authBtn = page.locator(
-        'button[name="action"][value="authorize"], button:has-text("Authorize")',
-      );
-      if (
-        await authBtn.first().isVisible({ timeout: 2_000 }).catch(() => false)
-      ) {
-        console.log('  Authorize page reached — clicking');
-        await page.screenshot({ path: 'test-results/authorize-page.png' });
-        await authBtn.first().click();
-        clickedAuthorize = true;
-        break;
-      }
-
-      await page
-        .waitForURL((u) => u.toString() !== url, {
-          timeout: Math.min(deadline - Date.now(), 5_000),
-        })
-        .catch(() => {});
-    }
-
-    // ── Wait for callback redirect to /collection ────────────────
-    console.log(
-      `  After authorize: clickedAuthorize=${clickedAuthorize}, url=${page.url()}`,
-    );
-
-    // Give time for the callback redirect chain to settle
-    await page.waitForURL(/localhost/, { timeout: 30_000 });
+    // Wait for the full OAuth round-trip to land back on localhost
+    await page.waitForURL(/localhost/, { timeout: 160_000 });
     console.log(`  Back on localhost: ${page.url()}`);
     await page.screenshot({ path: 'test-results/after-callback.png' });
 
