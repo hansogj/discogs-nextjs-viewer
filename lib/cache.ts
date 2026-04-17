@@ -1,6 +1,7 @@
 
 import path from 'path';
 import fs from 'fs/promises';
+import redis from './redis';
 import type {
   CollectionRelease,
   Folder,
@@ -104,54 +105,46 @@ export interface SyncProgress {
   total?: number;
   message?: string;
   progress?: number;
+  step?: number;
+  totalSteps?: number;
+  stepName?: string;
+  startedAt?: number;
 }
 
 export async function setSyncProgress(
   username: string,
   progress: SyncProgress,
 ): Promise<void> {
-  await ensureCacheDir();
-  const filePath = getProgressCachePath(username);
-  const tempFilePath = `${filePath}.tmp-${Date.now()}`;
   try {
-    await fs.writeFile(tempFilePath, JSON.stringify(progress), 'utf-8');
-    await fs.rename(tempFilePath, filePath); // Atomically replace the old file
+    await redis.set(
+      `sync-progress:${username}`,
+      JSON.stringify(progress),
+      'EX',
+      3600, // expire after 1 hour
+    );
   } catch (error) {
-    console.error('Failed to write sync progress:', error);
-    // Clean up temporary file if rename fails
-    try {
-      await fs.unlink(tempFilePath);
-    } catch (cleanupError) {
-      console.error('Failed to clean up temporary sync progress file:', cleanupError);
-    }
+    console.error('Failed to write sync progress to Redis:', error);
   }
 }
 
 export async function getSyncProgress(
   username: string,
 ): Promise<SyncProgress | null> {
-  const filePath = getProgressCachePath(username);
   try {
-    const fileContent = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(fileContent) as SyncProgress;
+    const data = await redis.get(`sync-progress:${username}`);
+    if (!data) return null;
+    return JSON.parse(data) as SyncProgress;
   } catch (error) {
-    // @ts-ignore
-    if ((error as { code?: string }).code !== 'ENOENT') {
-      console.error('Failed to read sync progress:', error);
-    }
+    console.error('Failed to read sync progress from Redis:', error);
     return null;
   }
 }
 
 export async function clearSyncProgress(username: string): Promise<void> {
-  const filePath = getProgressCachePath(username);
   try {
-    await fs.unlink(filePath);
+    await redis.del(`sync-progress:${username}`);
   } catch (error) {
-    // @ts-ignore
-    if ((error as { code?: string }).code !== 'ENOENT') {
-      console.error('Failed to clear sync progress file:', error);
-    }
+    console.error('Failed to clear sync progress from Redis:', error);
   }
 }
 

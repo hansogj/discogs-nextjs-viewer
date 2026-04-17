@@ -5,11 +5,13 @@ services:
     restart: always
     ports:
       - "6379:6379"
-    command: redis-server --save 20 1 --loglevel warning --requirepass "${REDIS_PASSWORD}"
+    env_file:
+      - ../.env.local
+    command: sh -c "redis-server --save 20 1 --loglevel warning --requirepass $$REDIS_PASSWORD"
     volumes:
       - cache:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -21,12 +23,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3000:3000"
+    env_file:
+      - ../.env.local
     environment:
-      AUTH_SECRET: ${AUTH_SECRET}
-      REDIS_URL: ${REDIS_URL}
-      DISCOGS_CONSUMER_KEY: ${DISCOGS_CONSUMER_KEY}
-      DISCOGS_CONSUMER_SECRET: ${DISCOGS_CONSUMER_SECRET}
-      DISCOGS_CALLBACK_URL: ${DISCOGS_CALLBACK_URL}
       NODE_ENV: development
     #volumes:
     #  - ..:/app # Mount parent directory as /app
@@ -41,13 +40,9 @@ services:
     build:
       context: .. # Dockerfile is in the parent directory
       dockerfile: Dockerfile
+    env_file:
+      - ../.env.local
     environment:
-      AUTH_SECRET: ${AUTH_SECRET}
-      REDIS_URL: ${REDIS_URL}
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      DISCOGS_CONSUMER_KEY: ${DISCOGS_CONSUMER_KEY}
-      DISCOGS_CONSUMER_SECRET: ${DISCOGS_CONSUMER_SECRET}
-      DISCOGS_CALLBACK_URL: ${DISCOGS_CALLBACK_URL}
       NODE_ENV: development
     #volumes:
     #  - ..:/app # Mount parent directory as /app

@@ -203,5 +203,9 @@ export interface SyncProgress {
   processed?: number;
   total?: number;
   message?: string;
-  progress?: number; // Added progress property
+  progress?: number;
+  step?: number;
+  totalSteps?: number;
+  stepName?: string;
+  startedAt?: number;
 }

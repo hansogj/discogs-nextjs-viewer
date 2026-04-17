@@ -50,15 +50,31 @@ export type OAuthTokens = {
 
 export type DiscogsAuth = string | OAuthTokens;
 
-// Simple rate limiter implementation
+// Adaptive rate limiter: slows down after 429s, speeds up after successes
 let lastRequestTime = 0;
+let currentInterval = 2000; // Start at 2s between requests
+const MIN_INTERVAL = 2000;
+const MAX_INTERVAL = 60000;
+
+function onRateLimited() {
+  // Double the interval on 429, up to max
+  currentInterval = Math.min(MAX_INTERVAL, currentInterval * 2);
+  console.log(`[Rate Limiter] Increased interval to ${currentInterval / 1000}s`);
+}
+
+function onSuccess() {
+  // Slowly decrease interval on success (halve, but not below min)
+  if (currentInterval > MIN_INTERVAL) {
+    currentInterval = Math.max(MIN_INTERVAL, Math.floor(currentInterval * 0.75));
+    console.log(`[Rate Limiter] Decreased interval to ${currentInterval / 1000}s`);
+  }
+}
+
 async function ensureRateLimit() {
   const now = Date.now();
   const timeSinceLastRequest = now - lastRequestTime;
-  // Discogs limit is 60/min, so roughly 1s per request.
-  // We use 1.1s to be safe.
-  if (timeSinceLastRequest < 1100) {
-    const waitTime = 1100 - timeSinceLastRequest;
+  if (timeSinceLastRequest < currentInterval) {
+    const waitTime = currentInterval - timeSinceLastRequest;
     await new Promise(resolve => setTimeout(resolve, waitTime));
   }
   lastRequestTime = Date.now();
@@ -91,8 +107,9 @@ const getAuthHeaderOAuth = (
   };
 };
 
-const MAX_RETRIES = 3;
-const INITIAL_BACKOFF_MS = 2000; // Start with a 2-second delay
+const MAX_RETRIES = 8;
+const INITIAL_BACKOFF_MS = 2000; // Start with a 2-second delay for server errors
+const RATE_LIMIT_BACKOFF_MS = 10000; // 10s initial backoff for 429s (adaptive limiter handles sustained throttling)
 
 type FetchDiscogsAPIParams = {
   url: string;
@@ -124,6 +141,7 @@ async function fetchDiscogsAPI<T>(params: FetchDiscogsAPIParams): Promise<T> {
       });
 
       if (response.ok) {
+        onSuccess();
         return response.json() as Promise<T>;
       }
 
@@ -140,14 +158,17 @@ async function fetchDiscogsAPI<T>(params: FetchDiscogsAPIParams): Promise<T> {
           } error: ${response.status} ${response.statusText} on ${url}`,
         );
 
-        let delay = INITIAL_BACKOFF_MS * Math.pow(2, attempt);
+        let delay = isRateLimit
+          ? RATE_LIMIT_BACKOFF_MS * Math.pow(2, attempt)
+          : INITIAL_BACKOFF_MS * Math.pow(2, attempt);
 
         if (isRateLimit) {
+          onRateLimited();
           const retryAfter = response.headers.get('Retry-After');
           if (retryAfter) {
             const seconds = parseInt(retryAfter, 10);
             if (!isNaN(seconds)) {
-              delay = seconds * 1000;
+              delay = Math.max(delay, seconds * 1000);
             }
           }
         }
@@ -160,6 +181,8 @@ async function fetchDiscogsAPI<T>(params: FetchDiscogsAPIParams): Promise<T> {
           }. Retrying in ${delay / 1000}s...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
+        // Reset rate limiter so next attempt waits the full interval
+        lastRequestTime = Date.now();
         continue; // Go to next attempt
       }
 

@@ -40,29 +40,42 @@ export default function Header({
     router.refresh(); // This will re-trigger the middleware, which will redirect to the login page.
   };
 
-  const getProgressMessage = (progress: SyncProgress): string => {
-    switch (progress.status) {
-      case 'starting':
-        return progress.message || 'Starting synchronization...';
-      case 'fetching':
-        if (progress.resource && progress.page && progress.pages) {
-          return `Fetching ${progress.resource} (page ${progress.page} of ${progress.pages})`;
-        }
-        return `Fetching ${progress.resource || 'data'}...`;
-      case 'processing':
-        if (progress.resource && progress.processed && progress.total) {
-          return `Processing ${progress.resource} (${progress.processed}/${progress.total} items)`;
-        }
-        return `Processing ${progress.resource || 'data'}...`;
-      case 'caching':
-        return progress.message || 'Saving data locally...';
-      case 'done':
-        return progress.message || 'Synchronization complete!';
-      case 'error':
-        return progress.message || 'Synchronization failed!';
-      default:
-        return 'Synchronization in progress...';
+  const getProgressPercentage = (progress: SyncProgress): number => {
+    if (!progress.step || !progress.totalSteps) return 0;
+    const basePercent = ((progress.step - 1) / progress.totalSteps) * 100;
+    const stepSize = 100 / progress.totalSteps;
+    let withinStep = 0;
+    if (progress.processed != null && progress.total && progress.total > 0) {
+      withinStep = progress.processed / progress.total;
+    } else if (progress.page != null && progress.pages && progress.pages > 0) {
+      withinStep = progress.page / progress.pages;
     }
+    return Math.min(100, Math.round(basePercent + stepSize * withinStep));
+  };
+
+  const getEta = (progress: SyncProgress): string | null => {
+    if (!progress.startedAt) return null;
+    const pct = getProgressPercentage(progress);
+    if (pct <= 1) return null;
+    const elapsed = Date.now() - progress.startedAt;
+    const totalEstimated = elapsed / (pct / 100);
+    const remaining = totalEstimated - elapsed;
+    if (remaining < 60_000) return 'less than a minute';
+    const mins = Math.round(remaining / 60_000);
+    if (mins < 60) return `~${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    const remMins = mins % 60;
+    return `~${hrs}h ${remMins}m`;
+  };
+
+  const getStepDetail = (progress: SyncProgress): string => {
+    if (progress.processed != null && progress.total) {
+      return `${progress.processed}/${progress.total} items`;
+    }
+    if (progress.page != null && progress.pages) {
+      return `page ${progress.page}/${progress.pages}`;
+    }
+    return '';
   };
 
   const buttonBaseClasses =
@@ -114,17 +127,32 @@ export default function Header({
             </div>
           </div>
           {isSyncing && syncProgress && (
-            <div className="ml-4 flex items-center space-x-2 text-discogs-blue">
-              <svg className="h-5 w-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <div className="ml-4 flex items-center space-x-3 text-discogs-blue">
+              <svg className="h-5 w-5 shrink-0 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              <span className="text-sm font-medium">
-                {getProgressMessage(syncProgress)}
-              </span>
-              {syncProgress.progress !== undefined && (
-                <span className="text-xs">{Math.round(syncProgress.progress)}%</span>
-              )}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  {syncProgress.step && syncProgress.totalSteps && (
+                    <span className="text-discogs-text-secondary">
+                      [{syncProgress.step}/{syncProgress.totalSteps}]
+                    </span>
+                  )}
+                  <span>{syncProgress.stepName || syncProgress.message || 'Syncing...'}</span>
+                  {(() => {
+                    const detail = getStepDetail(syncProgress);
+                    return detail ? <span className="text-discogs-text-secondary">({detail})</span> : null;
+                  })()}
+                  <span className="font-bold">{getProgressPercentage(syncProgress)}%</span>
+                </div>
+                {(() => {
+                  const eta = getEta(syncProgress);
+                  return eta ? (
+                    <span className="text-xs text-discogs-text-secondary">ETA: {eta}</span>
+                  ) : null;
+                })()}
+              </div>
             </div>
           )}
         </div>
