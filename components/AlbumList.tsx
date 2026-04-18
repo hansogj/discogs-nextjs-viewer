@@ -9,9 +9,18 @@ import AlbumListItem from './AlbumListItem';
 interface AlbumListProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
   folders: Folder[];
+  expandedItemId?: number | null;
+  onToggleExpand?: (id: number) => void;
+  finnCounts?: Map<number, number | null>;
 }
 
-const AlbumList: React.FC<AlbumListProps> = ({ items, folders }) => {
+const AlbumList: React.FC<AlbumListProps> = ({
+  items,
+  folders,
+  expandedItemId,
+  onToggleExpand,
+  finnCounts,
+}) => {
   if (!items || items.length === 0) {
     return (
       <p className="mt-10 text-center text-discogs-text-secondary">
@@ -28,7 +37,15 @@ const AlbumList: React.FC<AlbumListProps> = ({ items, folders }) => {
           className="animate-slide-up"
           style={{ animationDelay: `${index * 20}ms` }}
         >
-          <AlbumListItem item={item} folders={folders} />
+          <AlbumListItem
+            item={item}
+            folders={folders}
+            isExpanded={expandedItemId === item.id}
+            onToggle={
+              onToggleExpand ? () => onToggleExpand(item.id) : undefined
+            }
+            badgeCount={finnCounts?.get(item.id)}
+          />
         </div>
       ))}
     </div>

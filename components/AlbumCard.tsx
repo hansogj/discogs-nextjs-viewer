@@ -11,6 +11,9 @@ interface AlbumCardProps {
   title: string;
   artist: string;
   discogsUrl: string;
+  onClick?: () => void;
+  isExpanded?: boolean;
+  badgeCount?: number | null;
 }
 
 const AlbumCard: React.FC<AlbumCardProps> = ({
@@ -18,11 +21,16 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
   title,
   artist,
   discogsUrl,
+  onClick,
+  isExpanded,
+  badgeCount,
 }) => {
   const imageToDisplay = imageUrl || PLACEHOLDER_IMAGE_URL;
 
   return (
-    <div className="group relative h-full transform overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30">
+    <div
+      className={`group relative h-full transform overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30 ${isExpanded ? 'ring-2 ring-discogs-blue' : ''}`}
+    >
       <Image
         src={imageToDisplay}
         alt={`${artist} - ${title}`}
@@ -32,6 +40,11 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
         placeholder="blur"
         blurDataURL={PLACEHOLDER_IMAGE_URL}
       />
+      {badgeCount != null && badgeCount > 0 && (
+        <span className="absolute right-2 top-2 z-10 flex min-w-[1.5rem] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-xs font-bold text-white shadow-lg">
+          {badgeCount}
+        </span>
+      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
       <div className="absolute bottom-0 left-0 w-full p-4">
         <h3 className="truncate text-base font-bold leading-tight text-white drop-shadow-md">
@@ -41,13 +54,21 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
           {artist}
         </p>
       </div>
-      <a
-        href={discogsUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="absolute inset-0"
-        aria-label={`View ${artist} - ${title} on Discogs`}
-      ></a>
+      {onClick ? (
+        <button
+          onClick={onClick}
+          className="absolute inset-0 cursor-pointer"
+          aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${artist} - ${title}`}
+        />
+      ) : (
+        <a
+          href={discogsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute inset-0"
+          aria-label={`View ${artist} - ${title} on Discogs`}
+        ></a>
+      )}
     </div>
   );
 };

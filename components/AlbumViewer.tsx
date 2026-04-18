@@ -15,6 +15,8 @@ import SortControls, {
 } from './SortControls';
 import AlbumList from './AlbumList';
 import FilterSidebar from './FilterSidebar';
+import { useFinnCounts } from '@/hooks/useFinnCounts';
+import type { ProcessedWantlistItem } from '@/lib/types';
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
@@ -36,6 +38,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
   const [view, setView] = useState<View>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
+  const [showOnlyFinnHits, setShowOnlyFinnHits] = useState(false);
 
   // Filter states
   const [selectedArtists, setSelectedArtists] = useState<Set<string>>(
@@ -84,6 +88,12 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     }
     return uniqueItems;
   }, [items, viewType]);
+
+  const { counts: finnCounts } = useFinnCounts(
+    viewType === 'wantlist'
+      ? (uniqueWantlistItems as ProcessedWantlistItem[])
+      : [],
+  );
 
   const sortedAndFilteredItems = useMemo(() => {
     let itemsToDisplay = viewType === 'wantlist' ? uniqueWantlistItems : items;
@@ -175,8 +185,14 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     if (viewType === 'wantlist' && showOnlyInCollection) {
       itemsToDisplay = itemsToDisplay.filter((item) => {
         const masterId = item.basic_information.master_id;
-        // Inverted logic: show only items that ARE in the collection
         return masterId > 0 && collectionMasterIds.has(masterId);
+      });
+    }
+
+    if (viewType === 'wantlist' && showOnlyFinnHits) {
+      itemsToDisplay = itemsToDisplay.filter((item) => {
+        const count = finnCounts.get(item.id);
+        return count != null && count > 0;
       });
     }
 
@@ -229,6 +245,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     sortKey,
     sortOrder,
     showOnlyInCollection,
+    showOnlyFinnHits,
+    finnCounts,
     viewType,
     collectionMasterIds,
     searchQuery,
@@ -343,11 +361,18 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           viewType={viewType}
           filterOptions={
             viewType === 'wantlist'
-              ? {
-                  isEnabled: showOnlyInCollection,
-                  onToggle: () => setShowOnlyInCollection((prev) => !prev),
-                  label: 'Show only items in collection',
-                }
+              ? [
+                  {
+                    isEnabled: showOnlyInCollection,
+                    onToggle: () => setShowOnlyInCollection((prev) => !prev),
+                    label: 'In collection',
+                  },
+                  {
+                    isEnabled: showOnlyFinnHits,
+                    onToggle: () => setShowOnlyFinnHits((prev) => !prev),
+                    label: 'Found on Finn.no',
+                  },
+                ]
               : undefined
           }
         />
@@ -361,9 +386,30 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
             </p>
           </div>
         ) : view === 'grid' ? (
-          <Grid items={sortedAndFilteredItems} />
+          <Grid
+            items={sortedAndFilteredItems}
+            expandedItemId={viewType === 'wantlist' ? expandedItemId : null}
+            onToggleExpand={
+              viewType === 'wantlist'
+                ? (id) =>
+                    setExpandedItemId((prev) => (prev === id ? null : id))
+                : undefined
+            }
+            finnCounts={viewType === 'wantlist' ? finnCounts : undefined}
+          />
         ) : (
-          <AlbumList items={sortedAndFilteredItems} folders={folders} />
+          <AlbumList
+            items={sortedAndFilteredItems}
+            folders={folders}
+            expandedItemId={viewType === 'wantlist' ? expandedItemId : null}
+            onToggleExpand={
+              viewType === 'wantlist'
+                ? (id) =>
+                    setExpandedItemId((prev) => (prev === id ? null : id))
+                : undefined
+            }
+            finnCounts={viewType === 'wantlist' ? finnCounts : undefined}
+          />
         )}
       </div>
     </div>

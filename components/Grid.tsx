@@ -1,18 +1,27 @@
 import React from 'react';
-import type { CollectionRelease } from '@/lib/types';
-import type { ProcessedWantlistItem } from '../lib/types';
+import type { CollectionRelease, ProcessedWantlistItem } from '@/lib/types';
 import AlbumCard from './AlbumCard';
+import WantlistItemDetail from './WantlistItemDetail';
 
 interface GridProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
   gridClassNames?: string;
+  expandedItemId?: number | null;
+  onToggleExpand?: (id: number) => void;
+  finnCounts?: Map<number, number | null>;
 }
 
 const getArtistName = (item: CollectionRelease | ProcessedWantlistItem): string => {
   return item.basic_information.artists?.[0]?.name || 'Unknown Artist';
 };
 
-const Grid: React.FC<GridProps> = ({ items, gridClassNames }) => {
+const Grid: React.FC<GridProps> = ({
+  items,
+  gridClassNames,
+  expandedItemId,
+  onToggleExpand,
+  finnCounts,
+}) => {
   if (!items || items.length === 0) {
     return (
       <p className="mt-10 text-center text-discogs-text-secondary">
@@ -28,25 +37,39 @@ const Grid: React.FC<GridProps> = ({ items, gridClassNames }) => {
   return (
     <div className={gridClassNames || defaultGridClasses}>
       {items.map((item, index) => {
-        // Construct the URL to the specific release page on Discogs.
+        const itemId = 'instance_id' in item ? item.instance_id : item.id;
+        const isExpanded = expandedItemId === item.id;
         const discogsUrl = `${discogsBaseUrl}/release/${item.basic_information.id}`;
         return (
-          <div
-            key={'instance_id' in item ? item.instance_id : item.id}
-            className="animate-slide-up"
-            style={{ animationDelay: `${index * 20}ms` }}
-          >
-            <AlbumCard
-              title={item.basic_information.title}
-              artist={getArtistName(item)}
-              imageUrl={
-                'master_cover_image' in item
-                  ? item.master_cover_image
-                  : item.basic_information.cover_image
-              }
-              discogsUrl={discogsUrl}
-            />
-          </div>
+          <React.Fragment key={itemId}>
+            <div
+              className="animate-slide-up"
+              style={{ animationDelay: `${index * 20}ms` }}
+            >
+              <AlbumCard
+                title={item.basic_information.title}
+                artist={getArtistName(item)}
+                imageUrl={
+                  'master_cover_image' in item
+                    ? item.master_cover_image
+                    : item.basic_information.cover_image
+                }
+                discogsUrl={discogsUrl}
+                onClick={
+                  onToggleExpand ? () => onToggleExpand(item.id) : undefined
+                }
+                isExpanded={isExpanded}
+                badgeCount={finnCounts?.get(item.id)}
+              />
+            </div>
+            {isExpanded && (
+              <div className="col-span-full animate-fade-in">
+                <WantlistItemDetail
+                  item={item as ProcessedWantlistItem}
+                />
+              </div>
+            )}
+          </React.Fragment>
         );
       })}
     </div>

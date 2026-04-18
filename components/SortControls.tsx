@@ -19,7 +19,7 @@ interface SortControlsProps {
   sortOrder: SortOrder;
   onSortKeyChange: (key: SortKey) => void;
   onSortOrderChange: () => void;
-  filterOptions?: FilterOptions;
+  filterOptions?: FilterOptions | FilterOptions[];
   view: View;
   onViewChange: (view: View) => void;
   searchQuery: string;
@@ -148,36 +148,37 @@ const SortControls: React.FC<SortControlsProps> = ({
         </div>
       </div>
       <div className="flex items-center gap-4">
-        {filterOptions && (
-          <div className="flex items-center space-x-3">
-            <label
-              htmlFor="filter-toggle"
-              className="cursor-pointer text-sm font-medium text-discogs-text-secondary"
-            >
-              {filterOptions.label}
-            </label>
-            <button
-              id="filter-toggle"
-              role="switch"
-              aria-checked={filterOptions.isEnabled}
-              onClick={filterOptions.onToggle}
-              className={clsx(
-                'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg-light',
-                filterOptions.isEnabled
-                  ? 'bg-discogs-blue'
-                  : 'bg-discogs-border',
-              )}
-            >
-              <span
-                aria-hidden="true"
-                className={clsx(
-                  'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                  filterOptions.isEnabled ? 'translate-x-5' : 'translate-x-0',
-                )}
-              />
-            </button>
-          </div>
-        )}
+        {filterOptions &&
+          (Array.isArray(filterOptions) ? filterOptions : [filterOptions]).map(
+            (opt, i) => (
+              <div key={i} className="flex items-center space-x-3">
+                <label
+                  htmlFor={`filter-toggle-${i}`}
+                  className="cursor-pointer text-sm font-medium text-discogs-text-secondary"
+                >
+                  {opt.label}
+                </label>
+                <button
+                  id={`filter-toggle-${i}`}
+                  role="switch"
+                  aria-checked={opt.isEnabled}
+                  onClick={opt.onToggle}
+                  className={clsx(
+                    'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg-light',
+                    opt.isEnabled ? 'bg-discogs-blue' : 'bg-discogs-border',
+                  )}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={clsx(
+                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
+                      opt.isEnabled ? 'translate-x-5' : 'translate-x-0',
+                    )}
+                  />
+                </button>
+              </div>
+            ),
+          )}
         <div className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
           <button
             onClick={() => onViewChange('grid')}
