@@ -27,9 +27,8 @@ services:
       - ../.env.local
     environment:
       NODE_ENV: development
-    #volumes:
-    #  - ..:/app # Mount parent directory as /app
-    #  - /app/node_modules # Ensure node_modules are not overwritten by host volume
+    volumes:
+      - discogs-data:/app/.next/cache/discogs-data
     command: pnpm dev
     depends_on:
       cache:
@@ -44,9 +43,8 @@ services:
       - ../.env.local
     environment:
       NODE_ENV: development
-    #volumes:
-    #  - ..:/app # Mount parent directory as /app
-    #  - /app/node_modules # Ensure node_modules are not overwritten by host volume
+    volumes:
+      - discogs-data:/app/.next/cache/discogs-data
     command: pnpm dev:worker
     depends_on:
       cache:
@@ -54,4 +52,6 @@ services:
 
 volumes:
   cache:
+    driver: local
+  discogs-data:
     driver: local
