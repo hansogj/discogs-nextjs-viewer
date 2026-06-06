@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
   Folder,
   CustomField,
+  WantlistPricesMap,
 } from '@/lib/types';
 import Grid from './Grid';
 import SortControls, {
@@ -15,8 +16,8 @@ import SortControls, {
 } from './SortControls';
 import AlbumList from './AlbumList';
 import FilterSidebar from './FilterSidebar';
+import BestBuysPanel from './BestBuysPanel';
 import { useFinnCounts } from '@/hooks/useFinnCounts';
-import type { ProcessedWantlistItem } from '@/lib/types';
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
@@ -24,6 +25,7 @@ interface AlbumViewerProps {
   collectionItemsForFiltering?: CollectionRelease[];
   folders: Folder[];
   customFields: CustomField[];
+  wantlistPrices?: WantlistPricesMap;
 }
 
 const AlbumViewer: React.FC<AlbumViewerProps> = ({
@@ -32,6 +34,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   collectionItemsForFiltering,
   folders,
   customFields,
+  wantlistPrices,
 }) => {
   const [sortKey, setSortKey] = useState<SortKey>('date_added');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
@@ -336,9 +339,30 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     }
   };
 
+  const handleBestBuyClick = useCallback((releaseId: number) => {
+    setExpandedItemId(releaseId);
+    if (typeof window !== 'undefined') {
+      requestAnimationFrame(() => {
+        const el = document.getElementById(`wantlist-item-${releaseId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+  }, []);
+
   return (
     <div className="flex flex-col p-4 lg:flex-row lg:gap-6">
       <aside className="w-full flex-shrink-0 lg:w-72">
+        {viewType === 'wantlist' && (
+          <BestBuysPanel
+            items={uniqueWantlistItems as ProcessedWantlistItem[]}
+            prices={wantlistPrices ?? {}}
+            collectionMasterIds={collectionMasterIds}
+            isSyncing={false}
+            onItemClick={handleBestBuyClick}
+          />
+        )}
         <FilterSidebar
           items={items}
           folders={viewType === 'collection' ? folders : []}

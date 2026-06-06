@@ -1,13 +1,18 @@
 import AppLayout from '@/components/layout/AppLayout';
-import { getCachedWantlist, getCachedCollection } from '@/lib/data';
+import {
+  getCachedWantlist,
+  getCachedCollection,
+  getCachedWantlistPrices,
+} from '@/lib/data';
 import AlbumViewer from '@/components/AlbumViewer';
 
 export const dynamic = 'force-dynamic'; // Ensures data is fetched from cache on every request
 
 export default async function WantlistPage() {
-  const [wantlist, collection] = await Promise.all([
+  const [wantlist, collection, wantlistPrices] = await Promise.all([
     getCachedWantlist(),
     getCachedCollection(),
+    getCachedWantlistPrices(),
   ]);
 
   return (
@@ -18,6 +23,7 @@ export default async function WantlistPage() {
         viewType="wantlist"
         folders={[]}
         customFields={[]}
+        wantlistPrices={wantlistPrices}
       />
     </AppLayout>
   );

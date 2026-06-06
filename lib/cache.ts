@@ -8,6 +8,7 @@ import type {
   ProcessedWantlistItem,
   SyncInfo,
   CustomField,
+  WantlistPricesMap,
 } from './types';
 
 // Use .next/cache for storing data. This directory is typically available in Next.js environments.
@@ -29,7 +30,12 @@ async function ensureCacheDir() {
   }
 }
 
-type CacheKey = 'collection' | 'wantlist' | 'folders' | 'custom_fields';
+type CacheKey =
+  | 'collection'
+  | 'wantlist'
+  | 'folders'
+  | 'custom_fields'
+  | 'wantlist_prices';
 
 function getCachePath(username: string, key: CacheKey) {
   // Sanitize username to create a valid filename
@@ -98,7 +104,8 @@ export interface SyncProgress {
     | 'wantlist'
     | 'collection_details'
     | 'wantlist_details'
-    | 'collection_masters';
+    | 'collection_masters'
+    | 'wantlist_prices';
   page?: number;
   pages?: number;
   processed?: number;
@@ -170,13 +177,20 @@ export async function getCachedData<T>(
 export async function setCachedData(
   username: string,
   key: CacheKey,
-  data: CollectionRelease[] | ProcessedWantlistItem[] | Folder[] | CustomField[],
+  data:
+    | CollectionRelease[]
+    | ProcessedWantlistItem[]
+    | Folder[]
+    | CustomField[]
+    | WantlistPricesMap,
 ): Promise<void> {
   await ensureCacheDir();
   const filePath = getCachePath(username, key);
   try {
     await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
-    const itemCount = Array.isArray(data) ? data.length : 1;
+    const itemCount = Array.isArray(data)
+      ? data.length
+      : Object.keys(data).length;
     console.log(
       `[Cache] Wrote ${itemCount} item(s) to ${key} cache for ${username}.`,
     );
@@ -191,34 +205,23 @@ export async function clearUserCache(username: string): Promise<void> {
   const wantlistPath = getCachePath(username, 'wantlist');
   const foldersPath = getCachePath(username, 'folders');
   const customFieldsPath = getCachePath(username, 'custom_fields');
+  const wantlistPricesPath = getCachePath(username, 'wantlist_prices');
   const syncInfoPath = getSyncInfoCachePath(username);
 
+  const unlinkIfExists = (filePath: string, label: string) =>
+    fs.unlink(filePath).catch((e) => {
+      // @ts-ignore
+      if ((e as { code?: string }).code !== 'ENOENT')
+        console.error(`Failed to clear ${label} cache:`, e);
+    });
+
   await Promise.all([
-    fs.unlink(collectionPath).catch((e) => {
-      // @ts-ignore
-      if ((e as { code?: string }).code !== 'ENOENT')
-        console.error('Failed to clear collection cache:', e);
-    }),
-    fs.unlink(wantlistPath).catch((e) => {
-      // @ts-ignore
-      if ((e as { code?: string }).code !== 'ENOENT')
-        console.error('Failed to clear wantlist cache:', e);
-    }),
-    fs.unlink(foldersPath).catch((e) => {
-      // @ts-ignore
-      if ((e as { code?: string }).code !== 'ENOENT')
-        console.error('Failed to clear folders cache:', e);
-    }),
-    fs.unlink(customFieldsPath).catch((e) => {
-      // @ts-ignore
-      if ((e as { code?: string }).code !== 'ENOENT')
-        console.error('Failed to clear custom_fields cache:', e);
-    }),
-    fs.unlink(syncInfoPath).catch((e) => {
-      // @ts-ignore
-      if ((e as { code?: string }).code !== 'ENOENT')
-        console.error('Failed to clear sync info cache:', e);
-    }),
+    unlinkIfExists(collectionPath, 'collection'),
+    unlinkIfExists(wantlistPath, 'wantlist'),
+    unlinkIfExists(foldersPath, 'folders'),
+    unlinkIfExists(customFieldsPath, 'custom_fields'),
+    unlinkIfExists(wantlistPricesPath, 'wantlist_prices'),
+    unlinkIfExists(syncInfoPath, 'sync info'),
     clearSyncProgress(username),
   ]);
 }

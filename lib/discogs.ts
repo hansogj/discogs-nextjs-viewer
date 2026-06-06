@@ -1,25 +1,26 @@
 import crypto from 'crypto';
 import OAuth from 'oauth-1.0a';
 import pLimit from 'p-limit';
-import type { 
-  DiscogsUser, 
-  DiscogsUserProfile, 
-  Folder, 
-  CustomFieldsResponse, 
-  CollectionRelease, 
-  WantlistRelease, 
-  MasterRelease, 
-  ProcessedWantlistItem, 
-  Pagination, 
-  CollectionResponse, 
-  WantlistResponse, 
-  FoldersResponse, 
-  SyncInfo, 
-  CustomField, 
-  SyncProgress, 
-  ReleaseDetails, 
+import type {
+  DiscogsUser,
+  DiscogsUserProfile,
+  Folder,
+  CustomFieldsResponse,
+  CollectionRelease,
+  WantlistRelease,
+  MasterRelease,
+  ProcessedWantlistItem,
+  Pagination,
+  CollectionResponse,
+  WantlistResponse,
+  FoldersResponse,
+  SyncInfo,
+  CustomField,
+  SyncProgress,
+  ReleaseDetails,
   BasicInformation,
   FullRelease,
+  MarketplaceStats,
 } from './types';
 
 
@@ -141,8 +142,9 @@ async function fetchDiscogsAPI<T>(params: FetchDiscogsAPIParams): Promise<T> {
       });
 
       if (response.ok) {
+        const data = (await response.json()) as T;
         onSuccess();
-        return response.json() as Promise<T>;
+        return data;
       }
 
       // Retry on 5xx server errors, 429 (Rate Limit), or a 401 (sometimes transient auth issues)
@@ -427,6 +429,15 @@ export async function getRelease(
 ): Promise<FullRelease> {
   const url = `${API_BASE_URL}/releases/${releaseId}`;
   return fetchDiscogsAPI<FullRelease>({ url, auth });
+}
+
+export async function getMarketplaceStats(
+  releaseId: number,
+  auth: DiscogsAuth,
+  currency: string = 'NOK',
+): Promise<MarketplaceStats> {
+  const url = `${API_BASE_URL}/marketplace/stats/${releaseId}?curr_abbr=${encodeURIComponent(currency)}`;
+  return fetchDiscogsAPI<MarketplaceStats>({ url, auth });
 }
 
 export async function fetchAndAddDetailsToReleases<

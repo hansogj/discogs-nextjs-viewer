@@ -129,6 +129,23 @@ export interface ProcessedWantlistItem extends WantlistRelease {
   master_year?: number;
 }
 
+export interface MarketplaceStats {
+  lowest_price: { value: number; currency: string } | null;
+  num_for_sale: number;
+  blocked_from_sale: boolean;
+}
+
+export interface WantlistPrice {
+  release_id: number;
+  lowest_price: number | null;
+  currency: string;
+  num_for_sale: number;
+  blocked_from_sale: boolean;
+  fetched_at: string;
+}
+
+export type WantlistPricesMap = Record<number, WantlistPrice>;
+
 export interface Pagination {
   page: number;
   pages: number;
@@ -197,7 +214,8 @@ export interface SyncProgress {
     | 'wantlist'
     | 'collection_details'
     | 'wantlist_details'
-    | 'collection_masters';
+    | 'collection_masters'
+    | 'wantlist_prices';
   page?: number;
   pages?: number;
   processed?: number;

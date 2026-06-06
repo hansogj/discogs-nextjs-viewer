@@ -34,6 +34,7 @@ const AlbumList: React.FC<AlbumListProps> = ({
       {items.map((item, index) => (
         <div
           key={'instance_id' in item ? item.instance_id : item.id}
+          id={`wantlist-item-${item.id}`}
           className="animate-slide-up"
           style={{ animationDelay: `${index * 20}ms` }}
         >

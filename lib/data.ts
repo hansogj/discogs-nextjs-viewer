@@ -9,6 +9,7 @@ import type {
   Folder,
   CustomField,
   SessionData,
+  WantlistPricesMap,
 } from './types';
 import { cookies } from 'next/headers';
 import { sessionOptions } from './session-options';
@@ -76,6 +77,15 @@ export async function getCachedCustomFields(): Promise<CustomField[]> {
   const { user } = await getAuthenticatedUser();
   const data = await getCachedData<CustomField[]>(user.username, 'custom_fields');
   return data ?? [];
+}
+
+export async function getCachedWantlistPrices(): Promise<WantlistPricesMap> {
+  const { user } = await getAuthenticatedUser();
+  const data = await getCachedData<WantlistPricesMap>(
+    user.username,
+    'wantlist_prices',
+  );
+  return data ?? {};
 }
 
 // Fetches all data needed for the header

@@ -43,6 +43,7 @@ const Grid: React.FC<GridProps> = ({
         return (
           <React.Fragment key={itemId}>
             <div
+              id={`wantlist-item-${item.id}`}
               className="animate-slide-up"
               style={{ animationDelay: `${index * 20}ms` }}
             >

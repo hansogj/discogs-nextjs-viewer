@@ -8,20 +8,20 @@ import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { sessionOptions, SessionData } from '@/lib/session-options';
 
-export async function syncAllData(): Promise<{
-  success: boolean;
-  message?: string;
-}> {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-  
+async function getSessionAuth() {
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
+
   const isTokenLoggedIn = !!session.token && !!session.user;
-  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
+  const isOAuthLoggedIn =
+    !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
   if (!isTokenLoggedIn && !isOAuthLoggedIn) {
     throw new Error('Not authenticated');
   }
 
-  const { user } = session;
   const auth = isOAuthLoggedIn
     ? {
         oauth_token: session.accessToken!,
@@ -29,9 +29,25 @@ export async function syncAllData(): Promise<{
       }
     : session.token!;
 
-  await syncQueue.add('sync', { user, token: auth });
+  return { user: session.user!, auth };
+}
 
+export async function syncAllData(): Promise<{
+  success: boolean;
+  message?: string;
+}> {
+  const { user, auth } = await getSessionAuth();
+  await syncQueue.add('sync', { user, token: auth });
   return { success: true, message: 'Sync started!' };
+}
+
+export async function syncPricesAction(): Promise<{
+  success: boolean;
+  message?: string;
+}> {
+  const { user, auth } = await getSessionAuth();
+  await syncQueue.add('sync-prices', { user, token: auth });
+  return { success: true, message: 'Price sync started!' };
 }
 
 export async function getSyncJobStatus() {
