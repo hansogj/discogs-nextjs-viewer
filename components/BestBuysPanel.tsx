@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type {
   ProcessedWantlistItem,
   WantlistPricesMap,
@@ -12,33 +13,51 @@ interface BestBuysPanelProps {
   items: ProcessedWantlistItem[];
   prices: WantlistPricesMap;
   collectionMasterIds: Set<number>;
-  isSyncing: boolean;
   onItemClick?: (releaseId: number) => void;
 }
 
-const DEFAULT_BUDGET = 1000;
+const DEFAULT_BUDGET_NOK = 1000;
 const MAX_RESULTS = 20;
+
+// Approximate fixed rate. Discogs marketplace returns prices in EUR; we
+// convert to NOK for display because Discogs doesn't accept NOK as curr_abbr.
+const EUR_TO_NOK = 11.5;
 
 const buildDiscogsMarketplaceUrl = (releaseId: number) =>
   `https://www.discogs.com/sell/release/${releaseId}`;
+
+interface SyncProgressState {
+  status: string;
+  resource?: string;
+  processed?: number;
+  total?: number;
+  stepName?: string;
+  message?: string;
+}
 
 const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   items,
   prices,
   collectionMasterIds,
-  isSyncing,
   onItemClick,
 }) => {
-  const [budget, setBudget] = useState<number>(DEFAULT_BUDGET);
-  const [budgetInput, setBudgetInput] = useState<string>(String(DEFAULT_BUDGET));
+  const [budget, setBudget] = useState<number>(DEFAULT_BUDGET_NOK);
+  const [budgetInput, setBudgetInput] = useState<string>(
+    String(DEFAULT_BUDGET_NOK),
+  );
   const [refreshing, setRefreshing] = useState(false);
+  const [syncProgress, setSyncProgress] = useState<SyncProgressState | null>(
+    null,
+  );
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const router = useRouter();
 
   const ranked = useMemo(() => {
     const matches: {
       item: ProcessedWantlistItem;
-      price: number;
+      priceNok: number;
+      priceEur: number;
       numForSale: number;
-      currency: string;
     }[] = [];
 
     const seenMasters = new Set<number>();
@@ -53,17 +72,18 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       const price = prices[item.id];
       if (!price || price.lowest_price == null) continue;
       if (price.num_for_sale === 0) continue;
-      if (price.lowest_price > budget) continue;
+      const priceNok = price.lowest_price * EUR_TO_NOK;
+      if (priceNok > budget) continue;
 
       matches.push({
         item,
-        price: price.lowest_price,
+        priceNok,
+        priceEur: price.lowest_price,
         numForSale: price.num_for_sale,
-        currency: price.currency,
       });
     }
 
-    matches.sort((a, b) => a.price - b.price);
+    matches.sort((a, b) => a.priceNok - b.priceNok);
     return matches.slice(0, MAX_RESULTS);
   }, [items, prices, collectionMasterIds, budget]);
 
@@ -83,18 +103,77 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
     }
   };
 
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) {
+      clearInterval(pollRef.current);
+      pollRef.current = null;
+    }
+  }, []);
+
+  const startPolling = useCallback(() => {
+    if (pollRef.current) return;
+    let observedActiveSync = false;
+    let pollCount = 0;
+    pollRef.current = setInterval(async () => {
+      try {
+        const res = await fetch('/api/sync-progress');
+        if (!res.ok) return;
+        const progress = (await res.json()) as SyncProgressState;
+        pollCount++;
+
+        const isActive =
+          !!progress.status &&
+          progress.status !== 'idle' &&
+          progress.status !== 'done' &&
+          progress.status !== 'error';
+
+        if (isActive) {
+          observedActiveSync = true;
+          setSyncProgress(progress);
+        } else if (observedActiveSync) {
+          // Was running, now finished — reload to pull fresh cached prices
+          stopPolling();
+          setSyncProgress(null);
+          setRefreshing(false);
+          router.refresh();
+        } else if (pollCount > 10) {
+          // 30s with no activity — give up silently
+          stopPolling();
+          setRefreshing(false);
+        }
+      } catch {
+        // Network blip — keep polling
+      }
+    }, 3000);
+  }, [router, stopPolling]);
+
+  useEffect(() => stopPolling, [stopPolling]);
+
   const handleRefresh = async () => {
-    if (refreshing || isSyncing) return;
+    if (refreshing) return;
     setRefreshing(true);
+    setSyncProgress({ status: 'starting', message: 'Queuing sync…' });
     try {
       await syncPricesAction();
+      startPolling();
     } catch (err) {
       console.error('Failed to start price sync:', err);
-    } finally {
-      // Re-enable shortly; the actual progress is shown via the header sync indicator
-      setTimeout(() => setRefreshing(false), 1500);
+      setSyncProgress(null);
+      setRefreshing(false);
     }
   };
+
+  const progressLabel = (() => {
+    if (!syncProgress) return null;
+    if (syncProgress.processed != null && syncProgress.total) {
+      const pct =
+        syncProgress.total > 0
+          ? Math.round((syncProgress.processed / syncProgress.total) * 100)
+          : 0;
+      return `${syncProgress.processed}/${syncProgress.total} (${pct}%)`;
+    }
+    return syncProgress.stepName || syncProgress.message || 'Working…';
+  })();
 
   return (
     <div className="mb-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-4">
@@ -102,13 +181,17 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
         <h2 className="text-lg font-semibold text-white">Best buys</h2>
         <button
           onClick={handleRefresh}
-          disabled={refreshing || isSyncing}
+          disabled={refreshing}
           className="rounded-md bg-discogs-blue px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-gray-600"
           title="Fetch fresh Discogs marketplace prices for your wantlist (slow — runs in the background)"
         >
-          {refreshing || isSyncing ? 'Syncing…' : 'Refresh prices'}
+          {refreshing ? 'Syncing…' : 'Refresh prices'}
         </button>
       </div>
+
+      {refreshing && progressLabel && (
+        <p className="mb-3 text-xs text-discogs-blue">{progressLabel}</p>
+      )}
 
       <form onSubmit={handleBudgetSubmit} className="mb-3">
         <label className="mb-1 block text-xs text-discogs-text-secondary">
@@ -145,7 +228,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       )}
 
       <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
-        {ranked.map(({ item, price, numForSale, currency }) => {
+        {ranked.map(({ item, priceNok, priceEur, numForSale }) => {
           const info = item.basic_information;
           const artist = info.artists?.[0]?.name || 'Unknown Artist';
           const cover =
@@ -175,8 +258,11 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
                     {artist} – {info.title}
                   </button>
                   <div className="mt-1 flex items-center justify-between gap-2 text-xs">
-                    <span className="font-semibold text-discogs-blue">
-                      {Math.round(price)} {currency}
+                    <span
+                      className="font-semibold text-discogs-blue"
+                      title={`${priceEur.toFixed(2)} EUR`}
+                    >
+                      ~{Math.round(priceNok)} NOK
                     </span>
                     <span className="text-discogs-text-secondary">
                       {numForSale} for sale

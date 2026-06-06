@@ -359,7 +359,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
             items={uniqueWantlistItems as ProcessedWantlistItem[]}
             prices={wantlistPrices ?? {}}
             collectionMasterIds={collectionMasterIds}
-            isSyncing={false}
             onItemClick={handleBestBuyClick}
           />
         )}

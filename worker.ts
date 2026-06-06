@@ -129,12 +129,12 @@ async function runPricesSync(job: Job) {
         const stats = await getMarketplaceStats(
           item.basic_information.id,
           token,
-          'NOK',
+          'EUR',
         );
         const price: WantlistPrice = {
           release_id: item.basic_information.id,
           lowest_price: stats.lowest_price?.value ?? null,
-          currency: stats.lowest_price?.currency ?? 'NOK',
+          currency: stats.lowest_price?.currency ?? 'EUR',
           num_for_sale: stats.num_for_sale ?? 0,
           blocked_from_sale: stats.blocked_from_sale ?? false,
           fetched_at: new Date().toISOString(),

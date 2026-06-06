@@ -431,10 +431,13 @@ export async function getRelease(
   return fetchDiscogsAPI<FullRelease>({ url, auth });
 }
 
+// Discogs marketplace only supports these currencies for curr_abbr:
+// USD, GBP, EUR, CAD, AUD, JPY, CHF, MXN, BRL, NZD, SEK, ZAR.
+// NOK is not supported — the API returns 422.
 export async function getMarketplaceStats(
   releaseId: number,
   auth: DiscogsAuth,
-  currency: string = 'NOK',
+  currency: string = 'EUR',
 ): Promise<MarketplaceStats> {
   const url = `${API_BASE_URL}/marketplace/stats/${releaseId}?curr_abbr=${encodeURIComponent(currency)}`;
   return fetchDiscogsAPI<MarketplaceStats>({ url, auth });
