@@ -32,163 +32,105 @@ console.log('[Worker Init] Attempting to create BullMQ Worker instance.');
 
 type DetailResourceType = 'collection_details' | 'wantlist_details' | 'collection_masters';
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 
 const PRICE_CACHE_TTL_MS = 1000 * 60 * 60 * 24 * 7; // 7 days
 
-async function runPricesSync(job: Job) {
-  const { user, token } = job.data;
-  const startedAt = Date.now();
+type PriceSyncReporter = (progress: {
+  processed: number;
+  total: number;
+}) => Promise<void> | void;
 
-  console.log(`[Worker] Starting price sync for ${user.username}...`);
+async function fetchWantlistPrices(
+  username: string,
+  token: Parameters<typeof getMarketplaceStats>[1],
+  wantlist: ProcessedWantlistItem[],
+  collection: CollectionRelease[],
+  reportProgress: PriceSyncReporter,
+): Promise<{ fetched: number; skipped: number; total: number }> {
+  const existingPrices =
+    (await getCachedData<WantlistPricesMap>(username, 'wantlist_prices')) ?? {};
 
-  const setProgress = (
-    progress: Omit<
-      Parameters<typeof setSyncProgress>[1],
-      'totalSteps' | 'startedAt'
-    >,
-  ) =>
-    setSyncProgress(user.username, {
-      ...progress,
-      totalSteps: 1,
-      startedAt,
-    });
-
-  try {
-    await setProgress({
-      status: 'starting',
-      message: 'Loading wantlist...',
-      step: 1,
-      stepName: 'Fetching prices',
-    });
-
-    const wantlist =
-      (await getCachedData<ProcessedWantlistItem[]>(
-        user.username,
-        'wantlist',
-      )) ?? [];
-    const collection =
-      (await getCachedData<CollectionRelease[]>(
-        user.username,
-        'collection',
-      )) ?? [];
-    const existingPrices =
-      (await getCachedData<WantlistPricesMap>(
-        user.username,
-        'wantlist_prices',
-      )) ?? {};
-
-    const collectionMasterIds = new Set<number>();
-    for (const item of collection) {
-      if (item.basic_information.master_id > 0) {
-        collectionMasterIds.add(item.basic_information.master_id);
-      }
+  const collectionMasterIds = new Set<number>();
+  for (const item of collection) {
+    if (item.basic_information.master_id > 0) {
+      collectionMasterIds.add(item.basic_information.master_id);
     }
-
-    // Deduplicate by master_id (same way the UI does it) and skip items already in collection.
-    // Items without a master_id are excluded — matches the wantlist viewer's behavior.
-    const seenMasters = new Set<number>();
-    const candidates: ProcessedWantlistItem[] = [];
-    for (const item of wantlist) {
-      const masterId = item.basic_information.master_id;
-      if (masterId <= 0) continue;
-      if (seenMasters.has(masterId)) continue;
-      seenMasters.add(masterId);
-      if (collectionMasterIds.has(masterId)) continue;
-      candidates.push(item);
-    }
-
-    // Only refetch items missing from cache or older than TTL
-    const now = Date.now();
-    const toFetch = candidates.filter((item) => {
-      const cached = existingPrices[item.id];
-      if (!cached) return true;
-      const age = now - new Date(cached.fetched_at).getTime();
-      return age > PRICE_CACHE_TTL_MS;
-    });
-
-    console.log(
-      `[Worker] Price sync: ${candidates.length} candidates, ${toFetch.length} to fetch (rest are fresh).`,
-    );
-
-    const prices: WantlistPricesMap = { ...existingPrices };
-    let processed = 0;
-    const total = toFetch.length;
-
-    await setProgress({
-      status: 'processing',
-      resource: 'wantlist_prices',
-      processed,
-      total,
-      step: 1,
-      stepName: 'Fetching marketplace prices',
-    });
-
-    for (const item of toFetch) {
-      try {
-        const stats = await getMarketplaceStats(
-          item.basic_information.id,
-          token,
-          'EUR',
-        );
-        const price: WantlistPrice = {
-          release_id: item.basic_information.id,
-          lowest_price: stats.lowest_price?.value ?? null,
-          currency: stats.lowest_price?.currency ?? 'EUR',
-          num_for_sale: stats.num_for_sale ?? 0,
-          blocked_from_sale: stats.blocked_from_sale ?? false,
-          fetched_at: new Date().toISOString(),
-        };
-        prices[item.id] = price;
-      } catch (err) {
-        console.warn(
-          `[Worker] Failed to fetch stats for release ${item.basic_information.id}:`,
-          err instanceof Error ? err.message : err,
-        );
-      }
-      processed++;
-      // Persist intermittently so a long sync survives a crash
-      if (processed % 25 === 0 || processed === total) {
-        await setCachedData(user.username, 'wantlist_prices', prices);
-      }
-      await setProgress({
-        status: 'processing',
-        resource: 'wantlist_prices',
-        processed,
-        total,
-        step: 1,
-        stepName: 'Fetching marketplace prices',
-      });
-    }
-
-    await setCachedData(user.username, 'wantlist_prices', prices);
-
-    await setProgress({
-      status: 'done',
-      step: 1,
-      stepName: 'Complete',
-      message: 'Price sync complete!',
-    });
-    await clearSyncProgress(user.username);
-    console.log(`[Worker] Price sync complete. Fetched ${processed} items.`);
-  } catch (error) {
-    console.error('[Worker] Price sync failed:', error);
-    const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred';
-    await setProgress({
-      status: 'error',
-      message: `Price sync failed: ${errorMessage}`,
-    });
   }
+
+  // Deduplicate by master_id (same way the UI does it) and skip items already in collection.
+  // Items without a master_id are excluded — matches the wantlist viewer's behavior.
+  const seenMasters = new Set<number>();
+  const candidates: ProcessedWantlistItem[] = [];
+  for (const item of wantlist) {
+    const masterId = item.basic_information.master_id;
+    if (masterId <= 0) continue;
+    if (seenMasters.has(masterId)) continue;
+    seenMasters.add(masterId);
+    if (collectionMasterIds.has(masterId)) continue;
+    candidates.push(item);
+  }
+
+  const now = Date.now();
+  const toFetch = candidates.filter((item) => {
+    const cached = existingPrices[item.id];
+    if (!cached) return true;
+    const age = now - new Date(cached.fetched_at).getTime();
+    return age > PRICE_CACHE_TTL_MS;
+  });
+
+  console.log(
+    `[Worker] Price sync: ${candidates.length} candidates, ${toFetch.length} to fetch (rest are fresh).`,
+  );
+
+  const prices: WantlistPricesMap = { ...existingPrices };
+  let processed = 0;
+  const total = toFetch.length;
+
+  await reportProgress({ processed, total });
+
+  for (const item of toFetch) {
+    try {
+      const stats = await getMarketplaceStats(
+        item.basic_information.id,
+        token,
+        'EUR',
+      );
+      const price: WantlistPrice = {
+        release_id: item.basic_information.id,
+        lowest_price: stats.lowest_price?.value ?? null,
+        currency: stats.lowest_price?.currency ?? 'EUR',
+        num_for_sale: stats.num_for_sale ?? 0,
+        blocked_from_sale: stats.blocked_from_sale ?? false,
+        fetched_at: new Date().toISOString(),
+      };
+      prices[item.id] = price;
+    } catch (err) {
+      console.warn(
+        `[Worker] Failed to fetch stats for release ${item.basic_information.id}:`,
+        err instanceof Error ? err.message : err,
+      );
+    }
+    processed++;
+    // Persist intermittently so a long sync survives a crash
+    if (processed % 25 === 0 || processed === total) {
+      await setCachedData(username, 'wantlist_prices', prices);
+    }
+    await reportProgress({ processed, total });
+  }
+
+  await setCachedData(username, 'wantlist_prices', prices);
+
+  return {
+    fetched: processed,
+    skipped: candidates.length - toFetch.length,
+    total: candidates.length,
+  };
 }
 
 const worker = new Worker(
   'sync',
   async (job: Job) => {
-    if (job.name === 'sync-prices') {
-      return runPricesSync(job);
-    }
-
     const { user, token } = job.data;
     const startedAt = Date.now();
 
@@ -458,6 +400,40 @@ const worker = new Worker(
         collection: { total: finalCollection.length, new: newCollectionItems.length, removed: removedCollectionCount },
         wantlist: { total: finalWantlist.length, new: newWantlistItems.length, removed: removedWantlistCount },
       });
+
+      // --- Wantlist marketplace prices ---
+      try {
+        console.log('[Worker] Fetching wantlist marketplace prices...');
+        await setProgress({
+          status: 'processing',
+          resource: 'wantlist_prices',
+          processed: 0,
+          total: 0,
+          step: 11,
+          stepName: 'Wantlist prices',
+        });
+        const result = await fetchWantlistPrices(
+          user.username,
+          token,
+          finalWantlist,
+          finalCollection,
+          ({ processed, total }) =>
+            setProgress({
+              status: 'processing',
+              resource: 'wantlist_prices',
+              processed,
+              total,
+              step: 11,
+              stepName: 'Wantlist prices',
+            }),
+        );
+        console.log(
+          `[Worker] Price sync complete. Fetched ${result.fetched}, skipped ${result.skipped} (fresh), total candidates ${result.total}.`,
+        );
+      } catch (err) {
+        // Don't fail the whole sync — collection/wantlist data has already been saved.
+        console.error('[Worker] Wantlist price sync failed:', err);
+      }
 
       await setProgress({
         status: 'done',

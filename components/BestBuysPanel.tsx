@@ -1,13 +1,11 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import type {
   ProcessedWantlistItem,
   WantlistPricesMap,
 } from '@/lib/types';
-import { syncPricesAction } from '@/app/actions';
 
 interface BestBuysPanelProps {
   items: ProcessedWantlistItem[];
@@ -26,15 +24,6 @@ const EUR_TO_NOK = 11.5;
 const buildDiscogsMarketplaceUrl = (releaseId: number) =>
   `https://www.discogs.com/sell/release/${releaseId}`;
 
-interface SyncProgressState {
-  status: string;
-  resource?: string;
-  processed?: number;
-  total?: number;
-  stepName?: string;
-  message?: string;
-}
-
 const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   items,
   prices,
@@ -45,12 +34,6 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   const [budgetInput, setBudgetInput] = useState<string>(
     String(DEFAULT_BUDGET_NOK),
   );
-  const [refreshing, setRefreshing] = useState(false);
-  const [syncProgress, setSyncProgress] = useState<SyncProgressState | null>(
-    null,
-  );
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const router = useRouter();
 
   const ranked = useMemo(() => {
     const matches: {
@@ -103,95 +86,9 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
     }
   };
 
-  const stopPolling = useCallback(() => {
-    if (pollRef.current) {
-      clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-  }, []);
-
-  const startPolling = useCallback(() => {
-    if (pollRef.current) return;
-    let observedActiveSync = false;
-    let pollCount = 0;
-    pollRef.current = setInterval(async () => {
-      try {
-        const res = await fetch('/api/sync-progress');
-        if (!res.ok) return;
-        const progress = (await res.json()) as SyncProgressState;
-        pollCount++;
-
-        const isActive =
-          !!progress.status &&
-          progress.status !== 'idle' &&
-          progress.status !== 'done' &&
-          progress.status !== 'error';
-
-        if (isActive) {
-          observedActiveSync = true;
-          setSyncProgress(progress);
-        } else if (observedActiveSync) {
-          // Was running, now finished — reload to pull fresh cached prices
-          stopPolling();
-          setSyncProgress(null);
-          setRefreshing(false);
-          router.refresh();
-        } else if (pollCount > 10) {
-          // 30s with no activity — give up silently
-          stopPolling();
-          setRefreshing(false);
-        }
-      } catch {
-        // Network blip — keep polling
-      }
-    }, 3000);
-  }, [router, stopPolling]);
-
-  useEffect(() => stopPolling, [stopPolling]);
-
-  const handleRefresh = async () => {
-    if (refreshing) return;
-    setRefreshing(true);
-    setSyncProgress({ status: 'starting', message: 'Queuing sync…' });
-    try {
-      await syncPricesAction();
-      startPolling();
-    } catch (err) {
-      console.error('Failed to start price sync:', err);
-      setSyncProgress(null);
-      setRefreshing(false);
-    }
-  };
-
-  const progressLabel = (() => {
-    if (!syncProgress) return null;
-    if (syncProgress.processed != null && syncProgress.total) {
-      const pct =
-        syncProgress.total > 0
-          ? Math.round((syncProgress.processed / syncProgress.total) * 100)
-          : 0;
-      return `${syncProgress.processed}/${syncProgress.total} (${pct}%)`;
-    }
-    return syncProgress.stepName || syncProgress.message || 'Working…';
-  })();
-
   return (
     <div className="mb-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Best buys</h2>
-        <button
-          onClick={handleRefresh}
-          disabled={refreshing}
-          className="rounded-md bg-discogs-blue px-3 py-1 text-xs font-medium text-white transition-colors hover:bg-sky-600 disabled:cursor-not-allowed disabled:bg-gray-600"
-          title="Fetch fresh Discogs marketplace prices for your wantlist (slow — runs in the background)"
-        >
-          {refreshing ? 'Syncing…' : 'Refresh prices'}
-        </button>
-      </div>
-
-      {refreshing && progressLabel && (
-        <p className="mb-3 text-xs text-discogs-blue">{progressLabel}</p>
-      )}
+      <h2 className="mb-3 text-lg font-semibold text-white">Best buys</h2>
 
       <form onSubmit={handleBudgetSubmit} className="mb-3">
         <label className="mb-1 block text-xs text-discogs-text-secondary">
@@ -208,7 +105,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
           />
           <button
             type="submit"
-            className="rounded-md bg-discogs-border px-3 py-1 text-sm text-white transition-colors hover:bg-discogs-blue"
+            className="rounded-md bg-discogs-blue px-3 py-1 text-sm font-medium text-white transition-colors hover:bg-sky-600"
           >
             Apply
           </button>
@@ -218,7 +115,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       <p className="mb-3 text-xs text-discogs-text-secondary">
         {pricedCount > 0
           ? `${pricedCount} wantlist items priced. Showing top ${ranked.length} ≤ ${budget} NOK.`
-          : 'No prices cached yet. Click "Refresh prices" to fetch from Discogs.'}
+          : 'No prices cached yet. Prices are fetched during the main sync.'}
       </p>
 
       {ranked.length === 0 && pricedCount > 0 && (

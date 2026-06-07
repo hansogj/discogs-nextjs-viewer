@@ -41,15 +41,6 @@ export async function syncAllData(): Promise<{
   return { success: true, message: 'Sync started!' };
 }
 
-export async function syncPricesAction(): Promise<{
-  success: boolean;
-  message?: string;
-}> {
-  const { user, auth } = await getSessionAuth();
-  await syncQueue.add('sync-prices', { user, token: auth });
-  return { success: true, message: 'Price sync started!' };
-}
-
 export async function getSyncJobStatus() {
   const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
   const isTokenLoggedIn = !!session.token && !!session.user;
