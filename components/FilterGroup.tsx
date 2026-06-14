@@ -28,7 +28,7 @@ const FilterGroup: React.FC<FilterGroupProps> = ({
         aria-expanded={isOpen}
       >
         <div className="flex items-center">
-          <h3 className="font-semibold text-white">{title}</h3>
+          <h3 className="font-semibold text-discogs-text">{title}</h3>
           {selectedCount > 0 && (
             <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-discogs-blue text-xs font-bold text-white">
               {selectedCount}

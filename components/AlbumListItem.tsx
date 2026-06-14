@@ -125,7 +125,7 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
           <div>
             {onToggle ? (
               <div>
-                <h3 className="truncate text-base font-bold text-white">
+                <h3 className="truncate text-base font-bold text-discogs-text">
                   {info.title}
                 </h3>
                 <p className="truncate text-sm text-discogs-text-secondary">
@@ -139,7 +139,7 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
                 rel="noopener noreferrer"
                 className="group"
               >
-                <h3 className="truncate text-base font-bold text-white group-hover:text-discogs-blue group-hover:underline">
+                <h3 className="truncate text-base font-bold text-discogs-text group-hover:text-discogs-blue group-hover:underline">
                   {info.title}
                 </h3>
                 <p className="truncate text-sm text-discogs-text-secondary">

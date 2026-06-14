@@ -10,7 +10,7 @@ const StatCard: React.FC<{
 }> = ({ label, value, icon }) => (
   <div className="flex flex-col items-center justify-center rounded-xl bg-discogs-bg p-4 text-center shadow-inner">
     <div className="mb-2 text-discogs-blue">{icon}</div>
-    <p className="text-2xl font-bold text-white">{value}</p>
+    <p className="text-2xl font-bold text-discogs-text">{value}</p>
     <p className="text-xs text-discogs-text-secondary">{label}</p>
   </div>
 );
@@ -53,7 +53,7 @@ export default async function UserProfilePage() {
               className="h-32 w-32 rounded-full border-4 border-discogs-blue shadow-lg"
             />
             <div className="text-center sm:text-left">
-              <h1 className="text-4xl font-bold text-white">
+              <h1 className="text-4xl font-bold text-discogs-text">
                 {profile.name || profile.username}
               </h1>
               {profile.name && (
@@ -84,7 +84,7 @@ export default async function UserProfilePage() {
           )}
 
           <section>
-            <h2 className="mb-4 text-xl font-semibold text-white">
+            <h2 className="mb-4 text-xl font-semibold text-discogs-text">
               Discogs Stats
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">

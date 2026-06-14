@@ -7,10 +7,11 @@ import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
 import React from 'react';
 import type { SyncProgress } from '@/lib/cache'; // Import SyncProgress type
+import ThemePicker from './ThemePicker';
 
 interface HeaderProps {
   user: DiscogsUser;
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
   collectionCount: number;
   wantlistCount: number;
   duplicatesCount: number;
@@ -112,7 +113,7 @@ export default function Header({
               )}
             />
             <div>
-              <p className="font-semibold text-white group-hover:text-discogs-blue">
+              <p className="font-semibold text-discogs-text group-hover:text-discogs-blue">
                 {user.username}
               </p>
               <a
@@ -235,30 +236,52 @@ export default function Header({
               {duplicatesCount}
             </span>
           </Link>
+          <Link
+            href="/stats"
+            className={clsx(
+              buttonBaseClasses,
+              'flex items-center gap-2',
+              {
+                [activeButtonClasses]: activeView === 'stats',
+                [inactiveButtonClasses]: activeView !== 'stats',
+              },
+            )}
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-5 w-5"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M3 21V10h4v11H3zm7 0V3h4v18h-4zm7 0v-7h4v7h-4z" />
+            </svg>
+            <span>Stats</span>
+          </Link>
         </nav>
 
         <div className="flex items-center space-x-2">
+          <ThemePicker />
           <button
             onClick={onSync}
             disabled={isSyncing} // Disable when syncing
             className={clsx(
-              "px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg",
+              'px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg',
               isSyncing
-                ? "bg-gray-500 text-gray-300 cursor-not-allowed" // Disabled style
-                : "bg-green-600 text-white hover:bg-green-700 focus:ring-green-500"
+                ? 'bg-discogs-border text-discogs-text-secondary cursor-not-allowed'
+                : 'bg-discogs-success text-white hover:bg-discogs-success-dark focus:ring-discogs-success',
             )}
           >
             {isSyncing ? 'Syncing...' : 'Sync with Discogs'}
           </button>
           <button
             onClick={handleLogout}
-            className="rounded-lg bg-red-600 px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-discogs-bg"
+            className="rounded-lg bg-discogs-danger px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-discogs-danger-dark focus:outline-none focus:ring-2 focus:ring-discogs-danger focus:ring-offset-2 focus:ring-offset-discogs-bg"
           >
             Logout
           </button>
           <button
             onClick={onClearCache}
-            className="rounded-lg p-2 text-gray-400 transition-colors hover:bg-discogs-border hover:text-white"
+            className="rounded-lg p-2 text-discogs-text-secondary transition-colors hover:bg-discogs-border hover:text-discogs-text"
             title="Clear local cache"
           >
             <svg
@@ -284,7 +307,7 @@ export default function Header({
 export function HeaderSkeleton({
   activeView,
 }: {
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
 }) {
   const buttonBaseClasses =
     'focus:outline-none rounded-md px-4 py-2 text-sm font-medium';

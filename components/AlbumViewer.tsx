@@ -92,6 +92,46 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     return uniqueItems;
   }, [items, viewType]);
 
+  // Taste signals: how strongly each artist/label/style is represented in the
+  // user's collection. Used by BestBuysPanel to rank wantlist items by fit,
+  // not just by price.
+  const tasteSignals = useMemo(() => {
+    const artistCounts = new Map<string, number>();
+    const labelCounts = new Map<string, number>();
+    const styleCounts = new Map<string, number>();
+    const genreCounts = new Map<string, number>();
+
+    if (viewType !== 'wantlist' || !collectionItemsForFiltering) {
+      return { artistCounts, labelCounts, styleCounts, genreCounts };
+    }
+
+    const bump = (map: Map<string, number>, key: string | undefined) => {
+      if (!key) return;
+      map.set(key, (map.get(key) ?? 0) + 1);
+    };
+
+    for (const item of collectionItemsForFiltering) {
+      const info = item.basic_information;
+      for (const a of info.artists ?? []) bump(artistCounts, a.name);
+      for (const l of info.labels ?? []) bump(labelCounts, l.name);
+      for (const s of item.details?.styles ?? []) bump(styleCounts, s);
+      for (const g of item.details?.genres ?? []) bump(genreCounts, g);
+    }
+    return { artistCounts, labelCounts, styleCounts, genreCounts };
+  }, [collectionItemsForFiltering, viewType]);
+
+  // Pressings-wanted count: how many wantlist rows share a master_id.
+  // High count = strong "I want this album" signal regardless of pressing.
+  const pressingCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    if (viewType !== 'wantlist') return counts;
+    for (const item of items as ProcessedWantlistItem[]) {
+      const masterId = item.basic_information.master_id;
+      if (masterId > 0) counts.set(masterId, (counts.get(masterId) ?? 0) + 1);
+    }
+    return counts;
+  }, [items, viewType]);
+
   const { counts: finnCounts } = useFinnCounts(
     viewType === 'wantlist'
       ? (uniqueWantlistItems as ProcessedWantlistItem[])
@@ -359,6 +399,10 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
             items={uniqueWantlistItems as ProcessedWantlistItem[]}
             prices={wantlistPrices ?? {}}
             collectionMasterIds={collectionMasterIds}
+            artistCounts={tasteSignals.artistCounts}
+            labelCounts={tasteSignals.labelCounts}
+            styleCounts={tasteSignals.styleCounts}
+            pressingCounts={pressingCounts}
             onItemClick={handleBestBuyClick}
           />
         )}
