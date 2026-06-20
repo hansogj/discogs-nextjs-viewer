@@ -4,6 +4,10 @@ import AlbumCard from './AlbumCard';
 
 // Mock Next.js Image component
 vi.mock('next/image', () => ({
+  // Test mock — render a plain <img> with the same props the production
+  // component receives. ESLint's next/image and alt-text rules don't apply
+  // to the mock.
+  // eslint-disable-next-line @next/next/no-img-element, jsx-a11y/alt-text
   default: (props: any) => <img {...props} />,
 }));
 

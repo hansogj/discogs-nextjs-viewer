@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -53,15 +53,111 @@ const formatFamily = (name: string | undefined): string => {
   return 'Annet';
 };
 
+const BarRow = ({
+  name,
+  value,
+  max,
+  color,
+  wide = false,
+}: {
+  name: string;
+  value: number;
+  max: number;
+  color: string;
+  wide?: boolean;
+}) => (
+  <div
+    className="grid items-center gap-2.5"
+    style={{
+      gridTemplateColumns: wide ? '188px 1fr 44px' : '128px 1fr 38px',
+      marginBottom: 9,
+    }}
+  >
+    <div title={name} className="truncate text-[13px] text-discogs-text">
+      {name}
+    </div>
+    <div
+      className="overflow-hidden rounded-[3px] bg-discogs-bg"
+      style={{ height: wide ? 18 : 13 }}
+    >
+      <div
+        className="h-full rounded-[3px] transition-[width] duration-700 ease-out"
+        style={{
+          width: `${(value / Math.max(max, 1)) * 100}%`,
+          background: color,
+        }}
+      />
+    </div>
+    <div className="text-right font-mono text-xs text-discogs-text-secondary">
+      {value}
+    </div>
+  </div>
+);
+
+const VBars = ({
+  data,
+  highlight,
+}: {
+  data: [string, number][];
+  highlight?: (label: string) => boolean;
+}) => {
+  const max = Math.max(...data.map((d) => d[1]), 1);
+  return (
+    <div className="flex h-[200px] items-end gap-2 pt-1.5">
+      {data.map(([label, val]) => (
+        <div
+          key={label}
+          className="flex h-full flex-1 flex-col items-center justify-end gap-2"
+        >
+          <div className="font-mono text-[11px] text-discogs-text-secondary">
+            {val}
+          </div>
+          <div
+            title={`${label}: ${val}`}
+            className="w-full max-w-[46px] rounded-t transition-[height] duration-700 ease-out"
+            style={{
+              background: highlight?.(label) ? PALETTE[0] : PALETTE[1],
+              height: `${(val / max) * 100}%`,
+            }}
+          />
+          <div className="font-mono text-[11px] text-discogs-text-secondary">
+            {label}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const Card = ({
+  title,
+  sub,
+  children,
+}: {
+  title: string;
+  sub?: string;
+  children: React.ReactNode;
+}) => (
+  <div className="rounded-xl border border-discogs-border bg-discogs-bg-light p-6">
+    <h2 className="mb-1 font-serif text-xl font-semibold text-discogs-text">
+      {title}
+    </h2>
+    {sub && (
+      <p className="mb-5 text-[13px] text-discogs-text-secondary">{sub}</p>
+    )}
+    {children}
+  </div>
+);
+
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
   const [pillarCount, setPillarCount] = useState(8);
 
-  // data-hydrated flag — flips to "true" after client mount. Tests wait on
-  // this before interacting with the slider; before hydration the input's
-  // onChange handler isn't wired up yet.
-  const [hydrated, setHydrated] = useState(false);
+  // data-hydrated flag — set via DOM mutation after mount so tests can wait
+  // on it before interacting with the slider. Keeps server HTML free of the
+  // attribute and avoids a setState-in-effect.
+  const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    setHydrated(true);
+    rootRef.current?.setAttribute('data-hydrated', 'true');
   }, []);
 
   const stats = useMemo(() => {
@@ -210,105 +306,6 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
         )
       : 0;
 
-  const BarRow = ({
-    name,
-    value,
-    max,
-    color,
-    wide = false,
-  }: {
-    name: string;
-    value: number;
-    max: number;
-    color: string;
-    wide?: boolean;
-  }) => (
-    <div
-      className="grid items-center gap-2.5"
-      style={{
-        gridTemplateColumns: wide ? '188px 1fr 44px' : '128px 1fr 38px',
-        marginBottom: 9,
-      }}
-    >
-      <div
-        title={name}
-        className="truncate text-[13px] text-discogs-text"
-      >
-        {name}
-      </div>
-      <div
-        className="overflow-hidden rounded-[3px] bg-discogs-bg"
-        style={{ height: wide ? 18 : 13 }}
-      >
-        <div
-          className="h-full rounded-[3px] transition-[width] duration-700 ease-out"
-          style={{
-            width: `${(value / Math.max(max, 1)) * 100}%`,
-            background: color,
-          }}
-        />
-      </div>
-      <div className="text-right font-mono text-xs text-discogs-text-secondary">
-        {value}
-      </div>
-    </div>
-  );
-
-  const VBars = ({
-    data,
-    highlight,
-  }: {
-    data: [string, number][];
-    highlight?: (label: string) => boolean;
-  }) => {
-    const max = Math.max(...data.map((d) => d[1]), 1);
-    return (
-      <div className="flex h-[200px] items-end gap-2 pt-1.5">
-        {data.map(([label, val]) => (
-          <div
-            key={label}
-            className="flex h-full flex-1 flex-col items-center justify-end gap-2"
-          >
-            <div className="font-mono text-[11px] text-discogs-text-secondary">
-              {val}
-            </div>
-            <div
-              title={`${label}: ${val}`}
-              className="w-full max-w-[46px] rounded-t transition-[height] duration-700 ease-out"
-              style={{
-                background: highlight?.(label) ? PALETTE[0] : PALETTE[1],
-                height: `${(val / max) * 100}%`,
-              }}
-            />
-            <div className="font-mono text-[11px] text-discogs-text-secondary">
-              {label}
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  const Card = ({
-    title,
-    sub,
-    children,
-  }: {
-    title: string;
-    sub?: string;
-    children: React.ReactNode;
-  }) => (
-    <div className="rounded-xl border border-discogs-border bg-discogs-bg-light p-6">
-      <h2 className="mb-1 font-serif text-xl font-semibold text-discogs-text">
-        {title}
-      </h2>
-      {sub && (
-        <p className="mb-5 text-[13px] text-discogs-text-secondary">{sub}</p>
-      )}
-      {children}
-    </div>
-  );
-
   const pillarMax = Math.max(...pillars.map((p) => p.count), 1);
   const artistMax = topArtists[0]?.[1] ?? 1;
   const labelMax = topLabels[0]?.[1] ?? 1;
@@ -319,7 +316,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
 
   return (
     <div
-      data-hydrated={hydrated ? 'true' : undefined}
+      ref={rootRef}
       className="min-h-full px-[clamp(20px,4vw,56px)] py-[clamp(20px,4vw,56px)]"
     >
       <div className="mx-auto max-w-[1080px]">

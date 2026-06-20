@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import type {
   ProcessedWantlistItem,
@@ -70,11 +70,11 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   const [sortMode, setSortMode] = useState<SortMode>('taste');
 
   // Tests + a11y tools use data-hydrated to detect when the panel's onClick
-  // handlers are wired up. The attribute is missing in server-rendered HTML
-  // and only flips to "true" after the client mounts.
-  const [hydrated, setHydrated] = useState(false);
+  // handlers are wired up. Set the attribute via DOM mutation after mount —
+  // keeps server HTML free of the attribute and avoids a setState-in-effect.
+  const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    setHydrated(true);
+    rootRef.current?.setAttribute('data-hydrated', 'true');
   }, []);
 
   const ranked = useMemo<Ranked[]>(() => {
@@ -206,7 +206,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
 
   return (
     <div
-      data-hydrated={hydrated ? 'true' : undefined}
+      ref={rootRef}
       className="mb-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-4"
     >
       <h2 className="mb-3 text-lg font-semibold text-discogs-text">Best buys</h2>

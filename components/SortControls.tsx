@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
 import { useDebounce } from '@/lib/use-debounce';
 
@@ -47,15 +47,20 @@ const SortControls: React.FC<SortControlsProps> = ({
   viewType,
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  // Track the prop value with state so we can detect changes during render
+  // and resync without an effect — see https://react.dev/learn/you-might-not-need-an-effect.
+  const [prevInitialSearchQuery, setPrevInitialSearchQuery] =
+    useState(initialSearchQuery);
+  if (prevInitialSearchQuery !== initialSearchQuery) {
+    setPrevInitialSearchQuery(initialSearchQuery);
+    setSearchQuery(initialSearchQuery);
+  }
+
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
   useEffect(() => {
     onSearchQueryChange(debouncedSearchQuery);
   }, [debouncedSearchQuery, onSearchQueryChange]);
-
-  useEffect(() => {
-    setSearchQuery(initialSearchQuery);
-  }, [initialSearchQuery]);
 
   const buttonBaseClasses =
     'focus:outline-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg focus:ring-discogs-blue';

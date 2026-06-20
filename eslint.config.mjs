@@ -1,7 +1,7 @@
 import nextCoreWebVitals from 'eslint-config-next/core-web-vitals';
 import prettier from 'eslint-config-prettier/flat';
 
-export default [
+const config = [
   {
     ignores: [
       '.next/**',
@@ -16,3 +16,5 @@ export default [
   ...nextCoreWebVitals,
   prettier,
 ];
+
+export default config;

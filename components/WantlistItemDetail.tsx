@@ -30,27 +30,28 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
   const finnQuery = buildFinnSearchQuery(artist, info.title);
   const finnUrl = buildFinnSearchUrl(finnQuery);
 
-  const [finnCount, setFinnCount] = useState<number | null>(null);
-  const [finnLoading, setFinnLoading] = useState(true);
+  // Track the fetch result alongside the query it came from. `finnLoading`
+  // is derived: we're loading until the result matches the current query.
+  type FinnResult = { query: string; count: number | null };
+  const [finnResult, setFinnResult] = useState<FinnResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setFinnLoading(true);
     fetch(`/api/finn-search?q=${encodeURIComponent(finnQuery)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) {
-          setFinnCount(data.count);
-          setFinnLoading(false);
-        }
+        if (!cancelled) setFinnResult({ query: finnQuery, count: data.count });
       })
       .catch(() => {
-        if (!cancelled) setFinnLoading(false);
+        if (!cancelled) setFinnResult({ query: finnQuery, count: null });
       });
     return () => {
       cancelled = true;
     };
   }, [finnQuery]);
+
+  const finnLoading = finnResult?.query !== finnQuery;
+  const finnCount = finnLoading ? null : finnResult?.count ?? null;
 
   const year = item.master_year || info.year || null;
   const label = info.labels?.[0];

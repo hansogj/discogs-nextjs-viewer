@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import clsx from 'clsx';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import type { SyncProgress } from '@/lib/cache'; // Import SyncProgress type
 import ThemePicker from './ThemePicker';
 
@@ -36,6 +36,23 @@ export default function Header({
   const pathname = usePathname();
   const isUserPage = pathname === '/user';
 
+  // Tick once per second while syncing so the ETA recomputes against the
+  // current clock without calling Date.now() during render.
+  const [nowMs, setNowMs] = useState<number | null>(null);
+  useEffect(() => {
+    if (!isSyncing) {
+      const resetId = setTimeout(() => setNowMs(null), 0);
+      return () => clearTimeout(resetId);
+    }
+    const tick = () => setNowMs(Date.now());
+    const initId = setTimeout(tick, 0);
+    const intervalId = setInterval(tick, 1000);
+    return () => {
+      clearTimeout(initId);
+      clearInterval(intervalId);
+    };
+  }, [isSyncing]);
+
   const handleLogout = async () => {
     await fetch('/api/logout', { method: 'POST' });
     router.refresh(); // This will re-trigger the middleware, which will redirect to the login page.
@@ -55,10 +72,10 @@ export default function Header({
   };
 
   const getEta = (progress: SyncProgress): string | null => {
-    if (!progress.startedAt) return null;
+    if (!progress.startedAt || nowMs === null) return null;
     const pct = getProgressPercentage(progress);
     if (pct <= 1) return null;
-    const elapsed = Date.now() - progress.startedAt;
+    const elapsed = nowMs - progress.startedAt;
     const totalEstimated = elapsed / (pct / 100);
     const remaining = totalEstimated - elapsed;
     if (remaining < 60_000) return 'less than a minute';
