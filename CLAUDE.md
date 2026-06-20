@@ -49,6 +49,7 @@ Three services in `compose/docker-compose.yml`: `cache` (Redis), `web` (Next.js)
 ### Authentication
 
 OAuth 1.0a via Discogs:
+
 1. `POST /api/oauth/request` — fetches oauth_token from Discogs, stores request secret in session
 2. User redirected to Discogs authorization page
 3. `GET /api/oauth/callback` — exchanges verifier for access token, stores in session
@@ -65,6 +66,7 @@ Adaptive rate limiter in `lib/discogs.ts`: starts at 2s between requests, double
 ### Finn.no Integration
 
 Wantlist items show Finn.no marketplace hit counts:
+
 - `app/api/finn-search/route.ts` — server-side proxy that fetches Finn.no search pages and scrapes listing counts from HTML meta descriptions (with JSON-LD fallback)
 - `hooks/useFinnCounts.ts` — client hook that batch-fetches counts for all wantlist items (max 3 concurrent)
 - `components/WantlistItemDetail.tsx` — expandable card with Discogs and Finn.no links
@@ -84,6 +86,7 @@ Wantlist items show Finn.no marketplace hit counts:
 ### Environment Variables
 
 Required in `.env.local`:
+
 ```
 DISCOGS_CONSUMER_KEY=
 DISCOGS_CONSUMER_SECRET=

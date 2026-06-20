@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useRef, useState } from 'react';
-import type { ProcessedWantlistItem } from '@/lib/types';
+import { useEffect, useRef, useState } from "react";
+import type { ProcessedWantlistItem } from "@/lib/types";
 
 type FinnCounts = Map<number, number | null>;
 
 const buildQuery = (item: ProcessedWantlistItem): string => {
-  const artist = item.basic_information.artists?.[0]?.name || '';
+  const artist = item.basic_information.artists?.[0]?.name || "";
   return `${artist} ${item.basic_information.title} vinyl`;
 };
 

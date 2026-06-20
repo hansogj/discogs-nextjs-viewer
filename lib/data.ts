@@ -1,6 +1,6 @@
-import 'server-only';
-import { getIronSession } from 'iron-session';
-import { getCachedData } from './cache';
+import "server-only";
+import { getIronSession } from "iron-session";
+import { getCachedData } from "./cache";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -10,24 +10,28 @@ import type {
   CustomField,
   SessionData,
   WantlistPricesMap,
-} from './types';
-import { cookies } from 'next/headers';
-import { sessionOptions } from './session-options';
+} from "./types";
+import { cookies } from "next/headers";
+import { sessionOptions } from "./session-options";
 
-import { DiscogsAuth } from './discogs';
+import { DiscogsAuth } from "./discogs";
 
 async function getAuthenticatedUser(): Promise<{
   user: DiscogsUser;
   token: DiscogsAuth;
   userProfile: DiscogsUserProfile | null;
 }> {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-  
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
+
   const isTokenLoggedIn = !!session.token && !!session.user;
-  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
+  const isOAuthLoggedIn =
+    !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
   if (!isTokenLoggedIn && !isOAuthLoggedIn) {
-    throw new Error('Not authenticated');
+    throw new Error("Not authenticated");
   }
 
   const auth: DiscogsAuth = isOAuthLoggedIn
@@ -48,7 +52,7 @@ export async function getCachedCollection(): Promise<CollectionRelease[]> {
   const { user } = await getAuthenticatedUser();
   const data = await getCachedData<CollectionRelease[]>(
     user.username,
-    'collection',
+    "collection",
   );
   return data ?? [];
 }
@@ -57,25 +61,31 @@ export async function getCachedWantlist(): Promise<ProcessedWantlistItem[]> {
   const { user } = await getAuthenticatedUser();
   const data = await getCachedData<ProcessedWantlistItem[]>(
     user.username,
-    'wantlist',
+    "wantlist",
   );
   return data ?? [];
 }
 
 export async function getUserProfile(): Promise<DiscogsUserProfile | null> {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
   return session.userProfile ?? null;
 }
 
 export async function getCachedFolders(): Promise<Folder[]> {
   const { user } = await getAuthenticatedUser();
-  const data = await getCachedData<Folder[]>(user.username, 'folders');
+  const data = await getCachedData<Folder[]>(user.username, "folders");
   return data ?? [];
 }
 
 export async function getCachedCustomFields(): Promise<CustomField[]> {
   const { user } = await getAuthenticatedUser();
-  const data = await getCachedData<CustomField[]>(user.username, 'custom_fields');
+  const data = await getCachedData<CustomField[]>(
+    user.username,
+    "custom_fields",
+  );
   return data ?? [];
 }
 
@@ -83,7 +93,7 @@ export async function getCachedWantlistPrices(): Promise<WantlistPricesMap> {
   const { user } = await getAuthenticatedUser();
   const data = await getCachedData<WantlistPricesMap>(
     user.username,
-    'wantlist_prices',
+    "wantlist_prices",
   );
   return data ?? {};
 }

@@ -7,9 +7,9 @@ import type {
   MasterRelease,
   ProcessedWantlistItem,
   CustomFieldsResponse,
-} from '../lib/types';
+} from "../lib/types";
 
-const API_BASE_URL = 'https://api.discogs.com';
+const API_BASE_URL = "https://api.discogs.com";
 
 const getAuthHeader = (token: string) => ({
   Authorization: `Discogs token=${token}`,
@@ -59,7 +59,7 @@ export async function getCollection(
   return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
     url,
     token,
-    'releases',
+    "releases",
   );
 }
 
@@ -71,7 +71,7 @@ export async function getWantlist(
   return fetchAllPaginatedData<WantlistRelease, WantlistResponse>(
     url,
     token,
-    'wants',
+    "wants",
   );
 }
 
@@ -105,7 +105,7 @@ export async function processWantlist(
           token,
         );
         const masterImage =
-          master.images?.find((img) => img.type === 'primary')?.uri ||
+          master.images?.find((img) => img.type === "primary")?.uri ||
           want.basic_information.cover_image;
         return {
           ...want,

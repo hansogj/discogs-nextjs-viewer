@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import type { DiscogsUser } from '@/lib/types';
-import Link from 'next/link';
-import Image from 'next/image';
-import { usePathname, useRouter } from 'next/navigation';
-import clsx from 'clsx';
-import React, { useEffect, useState } from 'react';
-import type { SyncProgress } from '@/lib/cache'; // Import SyncProgress type
-import ThemePicker from './ThemePicker';
+import type { DiscogsUser } from "@/lib/types";
+import Link from "next/link";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import clsx from "clsx";
+import React, { useEffect, useState } from "react";
+import type { SyncProgress } from "@/lib/cache"; // Import SyncProgress type
+import ThemePicker from "./ThemePicker";
 
 interface HeaderProps {
   user: DiscogsUser;
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
+  activeView: "collection" | "wantlist" | "duplicates" | "stats" | "user";
   collectionCount: number;
   wantlistCount: number;
   duplicatesCount: number;
@@ -34,7 +34,7 @@ export default function Header({
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const isUserPage = pathname === '/user';
+  const isUserPage = pathname === "/user";
 
   // Tick once per second while syncing so the ETA recomputes against the
   // current clock without calling Date.now() during render.
@@ -54,7 +54,7 @@ export default function Header({
   }, [isSyncing]);
 
   const handleLogout = async () => {
-    await fetch('/api/logout', { method: 'POST' });
+    await fetch("/api/logout", { method: "POST" });
     router.refresh(); // This will re-trigger the middleware, which will redirect to the login page.
   };
 
@@ -78,7 +78,7 @@ export default function Header({
     const elapsed = nowMs - progress.startedAt;
     const totalEstimated = elapsed / (pct / 100);
     const remaining = totalEstimated - elapsed;
-    if (remaining < 60_000) return 'less than a minute';
+    if (remaining < 60_000) return "less than a minute";
     const mins = Math.round(remaining / 60_000);
     if (mins < 60) return `~${mins} min`;
     const hrs = Math.floor(mins / 60);
@@ -93,14 +93,14 @@ export default function Header({
     if (progress.page != null && progress.pages) {
       return `page ${progress.page}/${progress.pages}`;
     }
-    return '';
+    return "";
   };
 
   const buttonBaseClasses =
-    'focus:outline-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg focus:ring-discogs-blue';
-  const activeButtonClasses = 'bg-discogs-blue text-white';
+    "focus:outline-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg focus:ring-discogs-blue";
+  const activeButtonClasses = "bg-discogs-blue text-white";
   const inactiveButtonClasses =
-    'bg-discogs-bg-light text-discogs-text-secondary hover:bg-discogs-border';
+    "bg-discogs-bg-light text-discogs-text-secondary hover:bg-discogs-border";
 
   const PLACEHOLDER_AVATAR_URL =
     "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3e%3crect width='100' height='100' fill='%231d1f24'/%3e%3ccircle cx='50' cy='40' r='15' fill='%23a0a0a0'/%3e%3cpath d='M25,90 A30,30 0 0,1 75,90 Z' fill='%23a0a0a0'/%3e%3c/svg%3e";
@@ -110,11 +110,11 @@ export default function Header({
       <div className="container mx-auto flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <div
-            onClick={() => router.push('/user')}
-            style={{ cursor: 'pointer' }}
+            onClick={() => router.push("/user")}
+            style={{ cursor: "pointer" }}
             className={clsx(
-              'group flex items-center space-x-4 rounded-lg p-2 transition-colors duration-200 -m-2',
-              isUserPage ? 'bg-discogs-bg-light' : 'hover:bg-discogs-bg-light',
+              "group flex items-center space-x-4 rounded-lg p-2 transition-colors duration-200 -m-2",
+              isUserPage ? "bg-discogs-bg-light" : "hover:bg-discogs-bg-light",
             )}
           >
             <Image
@@ -123,10 +123,10 @@ export default function Header({
               width={48}
               height={48}
               className={clsx(
-                'h-12 w-12 rounded-full border-2 transition-colors duration-200',
+                "h-12 w-12 rounded-full border-2 transition-colors duration-200",
                 isUserPage
-                  ? 'border-white'
-                  : 'border-discogs-blue group-hover:border-white',
+                  ? "border-white"
+                  : "border-discogs-blue group-hover:border-white",
               )}
             />
             <div>
@@ -146,9 +146,25 @@ export default function Header({
           </div>
           {isSyncing && syncProgress && (
             <div className="ml-4 flex items-center space-x-3 text-discogs-blue">
-              <svg className="h-5 w-5 shrink-0 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="h-5 w-5 shrink-0 animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               <div className="flex flex-col">
                 <div className="flex items-center gap-2 text-sm font-medium">
@@ -157,17 +173,29 @@ export default function Header({
                       [{syncProgress.step}/{syncProgress.totalSteps}]
                     </span>
                   )}
-                  <span>{syncProgress.stepName || syncProgress.message || 'Syncing...'}</span>
+                  <span>
+                    {syncProgress.stepName ||
+                      syncProgress.message ||
+                      "Syncing..."}
+                  </span>
                   {(() => {
                     const detail = getStepDetail(syncProgress);
-                    return detail ? <span className="text-discogs-text-secondary">({detail})</span> : null;
+                    return detail ? (
+                      <span className="text-discogs-text-secondary">
+                        ({detail})
+                      </span>
+                    ) : null;
                   })()}
-                  <span className="font-bold">{getProgressPercentage(syncProgress)}%</span>
+                  <span className="font-bold">
+                    {getProgressPercentage(syncProgress)}%
+                  </span>
                 </div>
                 {(() => {
                   const eta = getEta(syncProgress);
                   return eta ? (
-                    <span className="text-xs text-discogs-text-secondary">ETA: {eta}</span>
+                    <span className="text-xs text-discogs-text-secondary">
+                      ETA: {eta}
+                    </span>
                   ) : null;
                 })()}
               </div>
@@ -180,10 +208,10 @@ export default function Header({
             href="/collection"
             className={clsx(
               buttonBaseClasses,
-              'flex items-center gap-2', // Added for icon layout
+              "flex items-center gap-2", // Added for icon layout
               {
-                [activeButtonClasses]: activeView === 'collection',
-                [inactiveButtonClasses]: activeView !== 'collection',
+                [activeButtonClasses]: activeView === "collection",
+                [inactiveButtonClasses]: activeView !== "collection",
               },
             )}
           >
@@ -208,10 +236,10 @@ export default function Header({
             href="/wantlist"
             className={clsx(
               buttonBaseClasses,
-              'flex items-center gap-2', // Added for icon layout
+              "flex items-center gap-2", // Added for icon layout
               {
-                [activeButtonClasses]: activeView === 'wantlist',
-                [inactiveButtonClasses]: activeView !== 'wantlist',
+                [activeButtonClasses]: activeView === "wantlist",
+                [inactiveButtonClasses]: activeView !== "wantlist",
               },
             )}
           >
@@ -233,10 +261,10 @@ export default function Header({
             href="/duplicates"
             className={clsx(
               buttonBaseClasses,
-              'flex items-center gap-2', // Added for icon layout
+              "flex items-center gap-2", // Added for icon layout
               {
-                [activeButtonClasses]: activeView === 'duplicates',
-                [inactiveButtonClasses]: activeView !== 'duplicates',
+                [activeButtonClasses]: activeView === "duplicates",
+                [inactiveButtonClasses]: activeView !== "duplicates",
               },
             )}
           >
@@ -255,14 +283,10 @@ export default function Header({
           </Link>
           <Link
             href="/stats"
-            className={clsx(
-              buttonBaseClasses,
-              'flex items-center gap-2',
-              {
-                [activeButtonClasses]: activeView === 'stats',
-                [inactiveButtonClasses]: activeView !== 'stats',
-              },
-            )}
+            className={clsx(buttonBaseClasses, "flex items-center gap-2", {
+              [activeButtonClasses]: activeView === "stats",
+              [inactiveButtonClasses]: activeView !== "stats",
+            })}
           >
             <svg
               viewBox="0 0 24 24"
@@ -282,13 +306,13 @@ export default function Header({
             onClick={onSync}
             disabled={isSyncing} // Disable when syncing
             className={clsx(
-              'px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg',
+              "px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg",
               isSyncing
-                ? 'bg-discogs-border text-discogs-text-secondary cursor-not-allowed'
-                : 'bg-discogs-success text-white hover:bg-discogs-success-dark focus:ring-discogs-success',
+                ? "bg-discogs-border text-discogs-text-secondary cursor-not-allowed"
+                : "bg-discogs-success text-white hover:bg-discogs-success-dark focus:ring-discogs-success",
             )}
           >
-            {isSyncing ? 'Syncing...' : 'Sync with Discogs'}
+            {isSyncing ? "Syncing..." : "Sync with Discogs"}
           </button>
           <button
             onClick={handleLogout}
@@ -314,7 +338,6 @@ export default function Header({
               />
             </svg>
           </button>
-
         </div>
       </div>
     </header>
@@ -324,12 +347,12 @@ export default function Header({
 export function HeaderSkeleton({
   activeView,
 }: {
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
+  activeView: "collection" | "wantlist" | "duplicates" | "stats" | "user";
 }) {
   const buttonBaseClasses =
-    'focus:outline-none rounded-md px-4 py-2 text-sm font-medium';
-  const activeButtonClasses = 'bg-discogs-blue';
-  const inactiveButtonClasses = 'bg-discogs-bg-light';
+    "focus:outline-none rounded-md px-4 py-2 text-sm font-medium";
+  const activeButtonClasses = "bg-discogs-blue";
+  const inactiveButtonClasses = "bg-discogs-bg-light";
 
   return (
     <header className="sticky top-0 z-50 border-b border-discogs-border bg-discogs-bg/80 p-4 shadow-lg backdrop-blur-sm">
@@ -346,35 +369,35 @@ export function HeaderSkeleton({
           <div
             className={clsx(
               buttonBaseClasses,
-              activeView === 'collection'
+              activeView === "collection"
                 ? activeButtonClasses
                 : inactiveButtonClasses,
-              'h-9 w-32',
+              "h-9 w-32",
             )}
           ></div>
           <div
             className={clsx(
               buttonBaseClasses,
-              activeView === 'wantlist'
+              activeView === "wantlist"
                 ? activeButtonClasses
                 : inactiveButtonClasses,
-              'h-9 w-32',
+              "h-9 w-32",
             )}
           ></div>
           <div
             className={clsx(
               buttonBaseClasses,
-              activeView === 'duplicates'
+              activeView === "duplicates"
                 ? activeButtonClasses
                 : inactiveButtonClasses,
-              'h-9 w-32',
+              "h-9 w-32",
             )}
           ></div>
         </div>
 
         <div className="flex items-center space-x-2">
-            <div className="h-10 w-36 rounded-lg bg-discogs-border"></div>
-            <div className="h-10 w-24 rounded-lg bg-discogs-border"></div>
+          <div className="h-10 w-36 rounded-lg bg-discogs-border"></div>
+          <div className="h-10 w-24 rounded-lg bg-discogs-border"></div>
         </div>
       </div>
     </header>

@@ -10,7 +10,7 @@
  */
 
 :root,
-[data-theme='dark-blue'] {
+[data-theme="dark-blue"] {
   /* Original look: deep navy with sky-blue accent */
   --color-bg: #101114;
   --color-bg-light: #1d1f24;
@@ -26,7 +26,7 @@
   --color-danger-dark: #b91c1c;
 }
 
-[data-theme='earthy'] {
+[data-theme="earthy"] {
   /* Warm dark brown with amber accent */
   --color-bg: #15120c;
   --color-bg-light: #1f1a12;
@@ -42,7 +42,7 @@
   --color-danger-dark: #8a3618;
 }
 
-[data-theme='olive'] {
+[data-theme="olive"] {
   /* Deep olive green with bright olive accent */
   --color-bg: #1a1d12;
   --color-bg-light: #23271a;
@@ -58,7 +58,7 @@
   --color-danger-dark: #7a3217;
 }
 
-[data-theme='light'] {
+[data-theme="light"] {
   /* Inverse: cream bg with near-black ink */
   --color-bg: #ece3d1;
   --color-bg-light: #dad1bc;

@@ -1,5 +1,5 @@
-import AppLayout from '@/components/layout/AppLayout';
-import LoadingIndicator from '@/components/LoadingIndicator';
+import AppLayout from "@/components/layout/AppLayout";
+import LoadingIndicator from "@/components/LoadingIndicator";
 
 export default function Loading() {
   return (

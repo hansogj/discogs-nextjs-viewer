@@ -1,11 +1,11 @@
-import { HeaderSkeleton } from '@/components/layout/Header';
-import { getHeaderData } from '@/lib/data';
-import React, { Suspense } from 'react';
-import AppContainer from './AppContainer';
+import { HeaderSkeleton } from "@/components/layout/Header";
+import { getHeaderData } from "@/lib/data";
+import React, { Suspense } from "react";
+import AppContainer from "./AppContainer";
 
 type AppLayoutProps = {
   children: React.ReactNode;
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
+  activeView: "collection" | "wantlist" | "duplicates" | "stats" | "user";
 };
 
 async function AppLayoutContent({ activeView, children }: AppLayoutProps) {

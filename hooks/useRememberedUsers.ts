@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useSyncExternalStore } from "react";
 
-const STORAGE_KEY = 'discogs-remembered-users';
-const CHANGE_EVENT = 'remembered-users-change';
+const STORAGE_KEY = "discogs-remembered-users";
+const CHANGE_EVENT = "remembered-users-change";
 
 export interface RememberedUser {
   username: string;
@@ -45,10 +45,10 @@ const getServerSnapshot = () => SERVER_SNAPSHOT;
 function subscribe(onChange: () => void) {
   // `storage` only fires cross-tab; we also dispatch a custom event for
   // same-tab updates from saveUser/removeUser.
-  window.addEventListener('storage', onChange);
+  window.addEventListener("storage", onChange);
   window.addEventListener(CHANGE_EVENT, onChange);
   return () => {
-    window.removeEventListener('storage', onChange);
+    window.removeEventListener("storage", onChange);
     window.removeEventListener(CHANGE_EVENT, onChange);
   };
 }
@@ -58,11 +58,7 @@ function notifyChange() {
 }
 
 export function useRememberedUsers() {
-  const users = useSyncExternalStore(
-    subscribe,
-    getSnapshot,
-    getServerSnapshot,
-  );
+  const users = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const saveUser = useCallback((username: string, avatar_url: string) => {
     const current = readUsers();

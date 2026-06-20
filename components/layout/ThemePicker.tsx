@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import React, { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
-type Theme = 'dark-blue' | 'earthy' | 'olive' | 'light';
+type Theme = "dark-blue" | "earthy" | "olive" | "light";
 
 interface ThemeOption {
   id: Theme;
@@ -12,14 +17,14 @@ interface ThemeOption {
 }
 
 const THEMES: ThemeOption[] = [
-  { id: 'dark-blue', label: 'Dark blue', swatch: ['#101114', '#3498db'] },
-  { id: 'earthy', label: 'Earthy', swatch: ['#15120c', '#e8a33d'] },
-  { id: 'olive', label: 'Olive', swatch: ['#1a1d12', '#8db342'] },
-  { id: 'light', label: 'Light', swatch: ['#ece3d1', '#c56a1e'] },
+  { id: "dark-blue", label: "Dark blue", swatch: ["#101114", "#3498db"] },
+  { id: "earthy", label: "Earthy", swatch: ["#15120c", "#e8a33d"] },
+  { id: "olive", label: "Olive", swatch: ["#1a1d12", "#8db342"] },
+  { id: "light", label: "Light", swatch: ["#ece3d1", "#c56a1e"] },
 ];
 
-const STORAGE_KEY = 'theme';
-const DEFAULT_THEME: Theme = 'dark-blue';
+const STORAGE_KEY = "theme";
+const DEFAULT_THEME: Theme = "dark-blue";
 
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
@@ -34,7 +39,7 @@ function subscribeThemeAttribute(onChange: () => void) {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, {
     attributes: true,
-    attributeFilter: ['data-theme'],
+    attributeFilter: ["data-theme"],
   });
   return () => observer.disconnect();
 }
@@ -66,10 +71,10 @@ export default function ThemePicker() {
     if (!open) return;
     const onDocClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-theme-picker]')) setOpen(false);
+      if (!target.closest("[data-theme-picker]")) setOpen(false);
     };
-    document.addEventListener('click', onDocClick);
-    return () => document.removeEventListener('click', onDocClick);
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
   }, [open]);
 
   const handleSelect = useCallback((next: Theme) => {
@@ -120,8 +125,8 @@ export default function ThemePicker() {
                   onClick={() => handleSelect(opt.id)}
                   className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
                     selected
-                      ? 'bg-discogs-blue text-white'
-                      : 'text-discogs-text hover:bg-discogs-border'
+                      ? "bg-discogs-blue text-white"
+                      : "text-discogs-text hover:bg-discogs-border"
                   }`}
                 >
                   <span

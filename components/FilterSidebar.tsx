@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
   Folder,
   CustomField,
-} from '@/lib/types';
-import FilterGroup from './FilterGroup';
+} from "@/lib/types";
+import FilterGroup from "./FilterGroup";
 
 type Item = CollectionRelease | ProcessedWantlistItem;
 
@@ -49,7 +49,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
     if (customFields) {
       for (const field of customFields) {
-        if (field.type === 'dropdown') {
+        if (field.type === "dropdown") {
           customFieldValues[field.name] = new Map<string, number>();
         }
       }
@@ -65,14 +65,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
         formats.set(formatName, (formats.get(formatName) || 0) + 1);
       }
       const year =
-        'master_year' in item && item.master_year
+        "master_year" in item && item.master_year
           ? item.master_year
           : item.basic_information.year;
       if (year) {
         const yearString = String(year); // Convert to string
         years.set(yearString, (years.get(yearString) || 0) + 1);
       }
-      if ('folder_id' in item) {
+      if ("folder_id" in item) {
         itemFolders.set(
           item.folder_id,
           (itemFolders.get(item.folder_id) || 0) + 1,
@@ -80,14 +80,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       }
       if (item.details?.extraartists) {
         for (const artist of item.details.extraartists) {
-          if (artist.role === 'Composed By') {
+          if (artist.role === "Composed By") {
             composers.set(artist.name, (composers.get(artist.name) || 0) + 1);
           }
         }
       }
       if (customFields) {
         for (const field of customFields) {
-          if (field.type === 'dropdown') {
+          if (field.type === "dropdown") {
             const note = (item as CollectionRelease).notes?.find(
               (n) => n.field_id === field.id,
             );
@@ -107,7 +107,9 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const sortedFormats = Array.from(formats.entries()).sort((a, b) =>
       a[0].localeCompare(b[0]),
     );
-    const sortedYears = Array.from(years.entries()).sort((a, b) => parseInt(b[0]) - parseInt(a[0])); // Descending year
+    const sortedYears = Array.from(years.entries()).sort(
+      (a, b) => parseInt(b[0]) - parseInt(a[0]),
+    ); // Descending year
     const sortedComposers = Array.from(composers.entries()).sort((a, b) =>
       a[0].localeCompare(b[0]),
     );
@@ -122,8 +124,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const sortedFolders = Array.from(itemFolders.entries())
       .map(([id, count]) => {
         let name = folderMap.get(id);
-        if (id === 1 || name === '*') {
-          name = 'Uncategorized';
+        if (id === 1 || name === "*") {
+          name = "Uncategorized";
         }
         return {
           id,
@@ -149,7 +151,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-discogs-text">Filters</h2>
         <button
-          onClick={() => onFilterClear('all')}
+          onClick={() => onFilterClear("all")}
           className="text-sm text-discogs-blue hover:underline"
         >
           Clear All
@@ -159,7 +161,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {filterData.artists.length > 0 && (
         <FilterGroup
           title="Artist"
-          onClear={() => onFilterClear('artists')}
+          onClear={() => onFilterClear("artists")}
           selectedCount={activeFilters.artists.size}
           defaultOpen={true}
         >
@@ -171,7 +173,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               count={count}
               checked={activeFilters.artists.has(name)}
               onChange={(e) =>
-                onFilterChange('artists', name, e.target.checked)
+                onFilterChange("artists", name, e.target.checked)
               }
             />
           ))}
@@ -181,7 +183,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {filterData.composers.length > 0 && (
         <FilterGroup
           title="Composer"
-          onClear={() => onFilterClear('composers')}
+          onClear={() => onFilterClear("composers")}
           selectedCount={activeFilters.composers.size}
         >
           {filterData.composers.map(([name, count]) => (
@@ -192,44 +194,45 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               count={count}
               checked={activeFilters.composers.has(name)}
               onChange={(e) =>
-                onFilterChange('composers', name, e.target.checked)
+                onFilterChange("composers", name, e.target.checked)
               }
             />
           ))}
         </FilterGroup>
       )}
 
-      {customFields && customFields.map((field) =>
-        field.type === 'dropdown' &&
-        filterData.customFields[field.name]?.length > 0 ? (
-          <FilterGroup
-            key={field.id}
-            title={field.name}
-            onClear={() => onFilterClear(field.name)}
-            selectedCount={activeFilters.customFields[field.name]?.size || 0}
-          >
-            {filterData.customFields[field.name].map(([name, count]) => (
-              <FilterCheckbox
-                key={name}
-                id={`custom-${field.id}-${name}`}
-                label={name}
-                count={count}
-                checked={
-                  activeFilters.customFields[field.name]?.has(name) || false
-                }
-                onChange={(e) =>
-                  onFilterChange(field.name, name, e.target.checked)
-                }
-              />
-            ))}
-          </FilterGroup>
-        ) : null,
-      )}
+      {customFields &&
+        customFields.map((field) =>
+          field.type === "dropdown" &&
+          filterData.customFields[field.name]?.length > 0 ? (
+            <FilterGroup
+              key={field.id}
+              title={field.name}
+              onClear={() => onFilterClear(field.name)}
+              selectedCount={activeFilters.customFields[field.name]?.size || 0}
+            >
+              {filterData.customFields[field.name].map(([name, count]) => (
+                <FilterCheckbox
+                  key={name}
+                  id={`custom-${field.id}-${name}`}
+                  label={name}
+                  count={count}
+                  checked={
+                    activeFilters.customFields[field.name]?.has(name) || false
+                  }
+                  onChange={(e) =>
+                    onFilterChange(field.name, name, e.target.checked)
+                  }
+                />
+              ))}
+            </FilterGroup>
+          ) : null,
+        )}
 
       {filterData.formats.length > 0 && (
         <FilterGroup
           title="Format"
-          onClear={() => onFilterClear('formats')}
+          onClear={() => onFilterClear("formats")}
           selectedCount={activeFilters.formats.size}
         >
           {filterData.formats.map(([name, count]) => (
@@ -240,7 +243,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               count={count}
               checked={activeFilters.formats.has(name)}
               onChange={(e) =>
-                onFilterChange('formats', name, e.target.checked)
+                onFilterChange("formats", name, e.target.checked)
               }
             />
           ))}
@@ -250,7 +253,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {filterData.years.length > 0 && (
         <FilterGroup
           title="Year"
-          onClear={() => onFilterClear('years')}
+          onClear={() => onFilterClear("years")}
           selectedCount={activeFilters.years.size}
         >
           {filterData.years.map(([year, count]) => (
@@ -261,7 +264,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               count={count}
               checked={activeFilters.years.has(parseInt(year, 10))}
               onChange={(e) =>
-                onFilterChange('years', parseInt(year, 10), e.target.checked)
+                onFilterChange("years", parseInt(year, 10), e.target.checked)
               }
             />
           ))}
@@ -271,7 +274,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       {folders.length > 0 && filterData.folders.length > 0 && (
         <FilterGroup
           title="Folder"
-          onClear={() => onFilterClear('folders')}
+          onClear={() => onFilterClear("folders")}
           selectedCount={activeFilters.folders.size}
         >
           {filterData.folders.map(({ id, name, count }) => (
@@ -281,7 +284,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               label={name}
               count={count}
               checked={activeFilters.folders.has(id)}
-              onChange={(e) => onFilterChange('folders', id, e.target.checked)}
+              onChange={(e) => onFilterChange("folders", id, e.target.checked)}
             />
           ))}
         </FilterGroup>

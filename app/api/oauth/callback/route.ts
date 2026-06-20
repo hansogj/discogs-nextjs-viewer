@@ -1,27 +1,37 @@
-import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { sessionOptions, SessionData } from '@/lib/session-options';
-import { getDiscogsAccessToken, getIdentity, getUserProfile } from '@/lib/discogs';
+import { NextResponse } from "next/server";
+import { getIronSession } from "iron-session";
+import { sessionOptions, SessionData } from "@/lib/session-options";
+import {
+  getDiscogsAccessToken,
+  getIdentity,
+  getUserProfile,
+} from "@/lib/discogs";
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const oauth_token = searchParams.get('oauth_token');
-    const oauth_verifier = searchParams.get('oauth_verifier');
+    const oauth_token = searchParams.get("oauth_token");
+    const oauth_verifier = searchParams.get("oauth_verifier");
 
     if (!oauth_token || !oauth_verifier) {
-      throw new Error('Missing OAuth token or verifier in callback.');
+      throw new Error("Missing OAuth token or verifier in callback.");
     }
 
     const origin = new URL(process.env.DISCOGS_CALLBACK_URL!).origin;
-    const redirectResponse = NextResponse.redirect(new URL('/collection', origin));
+    const redirectResponse = NextResponse.redirect(
+      new URL("/collection", origin),
+    );
 
-    const session = await getIronSession<SessionData>(request, redirectResponse, sessionOptions);
+    const session = await getIronSession<SessionData>(
+      request,
+      redirectResponse,
+      sessionOptions,
+    );
 
     const { oauthRequestToken, oauthRequestTokenSecret } = session;
 
     if (!oauthRequestToken || !oauthRequestTokenSecret) {
-      throw new Error('Missing OAuth request tokens in session.');
+      throw new Error("Missing OAuth request tokens in session.");
     }
 
     // Exchange request token for access token
@@ -47,7 +57,7 @@ export async function GET(request: Request) {
     });
 
     if (!identity || !identity.username) {
-      throw new Error('Invalid access token or failed to fetch identity.');
+      throw new Error("Invalid access token or failed to fetch identity.");
     }
 
     // Fetch detailed user profile
@@ -68,9 +78,9 @@ export async function GET(request: Request) {
 
     return redirectResponse;
   } catch (error) {
-    console.error('OAuth Callback error:', error);
+    console.error("OAuth Callback error:", error);
     const errorMessage =
-      error instanceof Error ? error.message : 'An unknown error occurred';
+      error instanceof Error ? error.message : "An unknown error occurred";
     return NextResponse.json(
       { error: `Authentication failed: ${errorMessage}` },
       { status: 500 },

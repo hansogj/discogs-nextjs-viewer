@@ -1,5 +1,5 @@
-import AppLayout from '@/components/layout/AppLayout';
-import React from 'react';
+import AppLayout from "@/components/layout/AppLayout";
+import React from "react";
 
 const SkeletonStatCard: React.FC = () => (
   <div className="flex animate-pulse flex-col items-center justify-center rounded-xl bg-discogs-bg p-4">

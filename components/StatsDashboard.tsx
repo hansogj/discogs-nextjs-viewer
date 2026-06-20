@@ -1,10 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import type {
-  CollectionRelease,
-  ProcessedWantlistItem,
-} from '@/lib/types';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import type { CollectionRelease, ProcessedWantlistItem } from "@/lib/types";
 
 interface StatsDashboardProps {
   collection: CollectionRelease[];
@@ -14,43 +11,43 @@ interface StatsDashboardProps {
 // Chart-color palette (extends the two main accent tokens into a 15-slot
 // jewel/earth ramp for pillar bars). Tailwind tokens cover all UI chrome.
 const PALETTE = [
-  '#e8a33d', // amber (= discogs-blue token)
-  '#5fb6a8', // teal  (= discogs-teal token)
-  '#c56a1e', // burnt orange
-  '#9e6b86', // mauve
-  '#f4d08a', // light amber
-  '#2f8074', // dark teal
-  '#c4694e', // terracotta
-  '#a07a33', // dark gold
-  '#8e7cc3', // lavender
-  '#6fa8dc', // sky
-  '#b45f06', // rust
-  '#674ea7', // purple
-  '#76a5af', // slate teal
-  '#cc7a6f', // coral
-  '#38761d', // moss
+  "#e8a33d", // amber (= discogs-blue token)
+  "#5fb6a8", // teal  (= discogs-teal token)
+  "#c56a1e", // burnt orange
+  "#9e6b86", // mauve
+  "#f4d08a", // light amber
+  "#2f8074", // dark teal
+  "#c4694e", // terracotta
+  "#a07a33", // dark gold
+  "#8e7cc3", // lavender
+  "#6fa8dc", // sky
+  "#b45f06", // rust
+  "#674ea7", // purple
+  "#76a5af", // slate teal
+  "#cc7a6f", // coral
+  "#38761d", // moss
 ];
-const OTHER_COLOR = '#7d7259';
+const OTHER_COLOR = "#7d7259";
 
 const COND_LABELS = [
-  'Mint (M)',
-  'Near Mint (NM or M-)',
-  'Very Good Plus (VG+)',
-  'Very Good (VG)',
-  'Good Plus (G+)',
-  'Good (G)',
-  'Fair (F)',
-  'Poor (P)',
+  "Mint (M)",
+  "Near Mint (NM or M-)",
+  "Very Good Plus (VG+)",
+  "Very Good (VG)",
+  "Good Plus (G+)",
+  "Good (G)",
+  "Fair (F)",
+  "Poor (P)",
 ];
 
-const VINYL_FORMATS = new Set(['Vinyl', 'LP', '12"', '7"', '10"']);
-const CD_FORMATS = new Set(['CD', 'CDr', 'SACD']);
+const VINYL_FORMATS = new Set(["Vinyl", "LP", '12"', '7"', '10"']);
+const CD_FORMATS = new Set(["CD", "CDr", "SACD"]);
 
 const formatFamily = (name: string | undefined): string => {
-  if (!name) return 'Annet';
-  if (VINYL_FORMATS.has(name)) return 'Vinyl';
-  if (CD_FORMATS.has(name)) return 'CD';
-  return 'Annet';
+  if (!name) return "Annet";
+  if (VINYL_FORMATS.has(name)) return "Vinyl";
+  if (CD_FORMATS.has(name)) return "CD";
+  return "Annet";
 };
 
 const BarRow = ({
@@ -69,7 +66,7 @@ const BarRow = ({
   <div
     className="grid items-center gap-2.5"
     style={{
-      gridTemplateColumns: wide ? '188px 1fr 44px' : '128px 1fr 38px',
+      gridTemplateColumns: wide ? "188px 1fr 44px" : "128px 1fr 38px",
       marginBottom: 9,
     }}
   >
@@ -157,7 +154,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
   // attribute and avoids a setState-in-effect.
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    rootRef.current?.setAttribute('data-hydrated', 'true');
+    rootRef.current?.setAttribute("data-hydrated", "true");
   }, []);
 
   const stats = useMemo(() => {
@@ -173,7 +170,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
       const info = item.basic_information;
 
       const primaryArtist = info.artists?.[0]?.name;
-      if (primaryArtist && primaryArtist !== 'Various') {
+      if (primaryArtist && primaryArtist !== "Various") {
         artistCounts.set(
           primaryArtist,
           (artistCounts.get(primaryArtist) ?? 0) + 1,
@@ -182,16 +179,13 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
 
       const primaryLabel = info.labels?.[0]?.name;
       if (primaryLabel) {
-        labelCounts.set(
-          primaryLabel,
-          (labelCounts.get(primaryLabel) ?? 0) + 1,
-        );
+        labelCounts.set(primaryLabel, (labelCounts.get(primaryLabel) ?? 0) + 1);
       }
 
       const styles = item.details?.styles ?? [];
       for (const s of styles) {
         styleCounts.set(s, (styleCounts.get(s) ?? 0) + 1);
-        if (primaryArtist && primaryArtist !== 'Various') {
+        if (primaryArtist && primaryArtist !== "Various") {
           if (!artistStyles.has(primaryArtist)) {
             artistStyles.set(primaryArtist, new Map());
           }
@@ -211,10 +205,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
 
       for (const n of item.notes ?? []) {
         if (COND_LABELS.includes(n.value)) {
-          conditionCounts.set(
-            n.value,
-            (conditionCounts.get(n.value) ?? 0) + 1,
-          );
+          conditionCounts.set(n.value, (conditionCounts.get(n.value) ?? 0) + 1);
           break;
         }
       }
@@ -248,7 +239,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
       .slice(pillarCount)
       .reduce((sum, [, c]) => sum + c, 0);
     if (otherCount > 0) {
-      top.push({ name: 'Andre', count: otherCount, color: OTHER_COLOR });
+      top.push({ name: "Andre", count: otherCount, color: OTHER_COLOR });
     }
     return top;
   }, [stats.styleCounts, pillarCount]);
@@ -256,7 +247,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
   const pillarColorByStyle = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of pillars) {
-      if (p.name !== 'Andre') m.set(p.name, p.color);
+      if (p.name !== "Andre") m.set(p.name, p.color);
     }
     return m;
   }, [pillars]);
@@ -293,7 +284,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
     [stats.conditionCounts],
   );
   const formats = useMemo(() => {
-    const order = ['Vinyl', 'CD', 'Annet'];
+    const order = ["Vinyl", "CD", "Annet"];
     return order
       .map((k) => [k, stats.formatCounts.get(k) ?? 0] as [string, number])
       .filter(([, v]) => v > 0);
@@ -302,7 +293,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
   const vinylPct =
     stats.totalReleases > 0
       ? Math.round(
-          ((stats.formatCounts.get('Vinyl') ?? 0) / stats.totalReleases) * 100,
+          ((stats.formatCounts.get("Vinyl") ?? 0) / stats.totalReleases) * 100,
         )
       : 0;
 
@@ -324,7 +315,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
           Platesamling · Discogs
         </p>
         <h1 className="mb-4 font-serif font-black leading-[0.92] tracking-tight text-discogs-text [font-size:clamp(38px,8vw,82px)]">
-          {stats.totalReleases.toLocaleString('no-NO')} plater,
+          {stats.totalReleases.toLocaleString("no-NO")} plater,
           <br />
           <em className="font-normal italic text-discogs-blue">
             {pillarCount} søyler.
@@ -338,10 +329,10 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
         {/* stat cards */}
         <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] border border-discogs-border bg-discogs-border sm:grid-cols-4">
           {[
-            [stats.totalReleases.toLocaleString('no-NO'), 'Utgivelser'],
-            [stats.uniqueArtists.toLocaleString('no-NO'), 'Unike artister'],
-            [stats.uniqueLabels.toLocaleString('no-NO'), 'Plateselskaper'],
-            [`${vinylPct} %`, 'Vinyl'],
+            [stats.totalReleases.toLocaleString("no-NO"), "Utgivelser"],
+            [stats.uniqueArtists.toLocaleString("no-NO"), "Unike artister"],
+            [stats.uniqueLabels.toLocaleString("no-NO"), "Plateselskaper"],
+            [`${vinylPct} %`, "Vinyl"],
           ].map(([n, l]) => (
             <div key={l} className="bg-discogs-bg-light px-4 py-5">
               <div className="font-serif font-semibold leading-none [font-size:clamp(26px,4vw,40px)]">
@@ -406,11 +397,14 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
 
         {/* artists + labels */}
         <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-          <Card title="Mest samlede artister" sub="Topp 20, farget etter dominerende stil">
+          <Card
+            title="Mest samlede artister"
+            sub="Topp 20, farget etter dominerende stil"
+          >
             {topArtists.map(([name, val]) => {
               const dominant = dominantStyleForArtist(name);
               const color = dominant
-                ? pillarColorByStyle.get(dominant) ?? OTHER_COLOR
+                ? (pillarColorByStyle.get(dominant) ?? OTHER_COLOR)
                 : OTHER_COLOR;
               return (
                 <BarRow
@@ -438,7 +432,10 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
 
         {decades.length > 0 && (
           <div className="mt-6">
-            <Card title="Utgivelser per tiår" sub="Når musikken opprinnelig kom ut">
+            <Card
+              title="Utgivelser per tiår"
+              sub="Når musikken opprinnelig kom ut"
+            >
               <VBars
                 data={decades}
                 highlight={(l) => {
@@ -470,9 +467,9 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
                     const y1 = 90 + donutR * Math.sin(a1);
                     const large = frac > 0.5 ? 1 : 0;
                     const color =
-                      label === 'Vinyl'
+                      label === "Vinyl"
                         ? PALETTE[0]
-                        : label === 'CD'
+                        : label === "CD"
                           ? PALETTE[1]
                           : OTHER_COLOR;
                     return (
@@ -510,20 +507,15 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ collection }) => {
               <div className="flex flex-col gap-3 text-sm">
                 {formats.map(([label, val]) => {
                   const pct =
-                    formatTotal > 0
-                      ? Math.round((val / formatTotal) * 100)
-                      : 0;
+                    formatTotal > 0 ? Math.round((val / formatTotal) * 100) : 0;
                   const color =
-                    label === 'Vinyl'
+                    label === "Vinyl"
                       ? PALETTE[0]
-                      : label === 'CD'
+                      : label === "CD"
                         ? PALETTE[1]
                         : OTHER_COLOR;
                   return (
-                    <div
-                      key={label}
-                      className="flex items-center gap-2.5"
-                    >
+                    <div key={label} className="flex items-center gap-2.5">
                       <span
                         className="h-[11px] w-[11px] rounded-[3px]"
                         style={{ background: color }}

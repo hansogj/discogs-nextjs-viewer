@@ -1,30 +1,30 @@
-import type { Metadata } from 'next';
-import { Inter, Fraunces, Space_Mono } from 'next/font/google';
-import './globals.css';
-import React from 'react';
+import type { Metadata } from "next";
+import { Inter, Fraunces, Space_Mono } from "next/font/google";
+import "./globals.css";
+import React from "react";
 
 const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 const fraunces = Fraunces({
-  subsets: ['latin'],
-  variable: '--font-fraunces',
-  weight: ['400', '600', '900'],
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-fraunces",
+  weight: ["400", "600", "900"],
+  display: "swap",
 });
 const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  variable: '--font-space-mono',
-  weight: ['400', '700'],
-  display: 'swap',
+  subsets: ["latin"],
+  variable: "--font-space-mono",
+  weight: ["400", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: 'Discogs Collection Viewer',
+  title: "Discogs Collection Viewer",
   description:
-    'View your Discogs collection and wantlist with a modern interface.',
+    "View your Discogs collection and wantlist with a modern interface.",
 };
 
 // Inline, render-blocking so the theme is set before first paint.

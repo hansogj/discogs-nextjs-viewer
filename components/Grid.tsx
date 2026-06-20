@@ -1,7 +1,7 @@
-import React from 'react';
-import type { CollectionRelease, ProcessedWantlistItem } from '@/lib/types';
-import AlbumCard from './AlbumCard';
-import WantlistItemDetail from './WantlistItemDetail';
+import React from "react";
+import type { CollectionRelease, ProcessedWantlistItem } from "@/lib/types";
+import AlbumCard from "./AlbumCard";
+import WantlistItemDetail from "./WantlistItemDetail";
 
 interface GridProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
@@ -11,8 +11,10 @@ interface GridProps {
   finnCounts?: Map<number, number | null>;
 }
 
-const getArtistName = (item: CollectionRelease | ProcessedWantlistItem): string => {
-  return item.basic_information.artists?.[0]?.name || 'Unknown Artist';
+const getArtistName = (
+  item: CollectionRelease | ProcessedWantlistItem,
+): string => {
+  return item.basic_information.artists?.[0]?.name || "Unknown Artist";
 };
 
 const Grid: React.FC<GridProps> = ({
@@ -30,14 +32,14 @@ const Grid: React.FC<GridProps> = ({
     );
   }
 
-  const discogsBaseUrl = 'https://www.discogs.com';
+  const discogsBaseUrl = "https://www.discogs.com";
   const defaultGridClasses =
-    'grid animate-fade-in grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8';
+    "grid animate-fade-in grid-cols-2 gap-4 p-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8";
 
   return (
     <div className={gridClassNames || defaultGridClasses}>
       {items.map((item, index) => {
-        const itemId = 'instance_id' in item ? item.instance_id : item.id;
+        const itemId = "instance_id" in item ? item.instance_id : item.id;
         const isExpanded = expandedItemId === item.id;
         const discogsUrl = `${discogsBaseUrl}/release/${item.basic_information.id}`;
         return (
@@ -51,7 +53,7 @@ const Grid: React.FC<GridProps> = ({
                 title={item.basic_information.title}
                 artist={getArtistName(item)}
                 imageUrl={
-                  'master_cover_image' in item
+                  "master_cover_image" in item
                     ? item.master_cover_image
                     : item.basic_information.cover_image
                 }
@@ -65,9 +67,7 @@ const Grid: React.FC<GridProps> = ({
             </div>
             {isExpanded && (
               <div className="col-span-full animate-fade-in">
-                <WantlistItemDetail
-                  item={item as ProcessedWantlistItem}
-                />
+                <WantlistItemDetail item={item as ProcessedWantlistItem} />
               </div>
             )}
           </React.Fragment>

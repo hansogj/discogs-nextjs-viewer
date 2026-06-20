@@ -1,10 +1,9 @@
+"use client";
 
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import Spinner from './Spinner';
-import { getRandomQuote } from '@/lib/quotes';
-import type { Quote } from '@/lib/quotes';
+import React, { useState, useEffect } from "react";
+import Spinner from "./Spinner";
+import { getRandomQuote } from "@/lib/quotes";
+import type { Quote } from "@/lib/quotes";
 
 interface LoadingIndicatorProps {
   message: string;

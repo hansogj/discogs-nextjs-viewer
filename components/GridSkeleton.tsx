@@ -1,17 +1,16 @@
-import React from 'react';
+import React from "react";
 
 const SkeletonCard: React.FC = () => {
-    return (
-        <div className="relative overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg">
-            <div className="aspect-square w-full bg-discogs-border"></div>
-            <div className="absolute bottom-0 left-0 p-4 w-full">
-                <div className="h-4 bg-discogs-border rounded w-3/4 mb-2"></div>
-                <div className="h-3 bg-discogs-border rounded w-1/2"></div>
-            </div>
-        </div>
-    );
+  return (
+    <div className="relative overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg">
+      <div className="aspect-square w-full bg-discogs-border"></div>
+      <div className="absolute bottom-0 left-0 p-4 w-full">
+        <div className="h-4 bg-discogs-border rounded w-3/4 mb-2"></div>
+        <div className="h-3 bg-discogs-border rounded w-1/2"></div>
+      </div>
+    </div>
+  );
 };
-
 
 const GridSkeleton: React.FC = () => {
   return (

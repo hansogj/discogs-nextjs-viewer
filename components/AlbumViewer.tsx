@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from "react";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
   Folder,
   CustomField,
   WantlistPricesMap,
-} from '@/lib/types';
-import Grid from './Grid';
+} from "@/lib/types";
+import Grid from "./Grid";
 import SortControls, {
   type SortKey,
   type SortOrder,
   type View,
-} from './SortControls';
-import AlbumList from './AlbumList';
-import FilterSidebar from './FilterSidebar';
-import BestBuysPanel from './BestBuysPanel';
-import { useFinnCounts } from '@/hooks/useFinnCounts';
+} from "./SortControls";
+import AlbumList from "./AlbumList";
+import FilterSidebar from "./FilterSidebar";
+import BestBuysPanel from "./BestBuysPanel";
+import { useFinnCounts } from "@/hooks/useFinnCounts";
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
-  viewType: 'collection' | 'wantlist';
+  viewType: "collection" | "wantlist";
   collectionItemsForFiltering?: CollectionRelease[];
   folders: Folder[];
   customFields: CustomField[];
@@ -36,11 +36,11 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   customFields,
   wantlistPrices,
 }) => {
-  const [sortKey, setSortKey] = useState<SortKey>('date_added');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sortKey, setSortKey] = useState<SortKey>("date_added");
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
-  const [view, setView] = useState<View>('grid');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [view, setView] = useState<View>("grid");
+  const [searchQuery, setSearchQuery] = useState("");
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
   const [showOnlyFinnHits, setShowOnlyFinnHits] = useState(false);
 
@@ -63,11 +63,11 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   >({});
 
   const handleSortOrderChange = () => {
-    setSortOrder((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
   };
 
   const collectionMasterIds = useMemo(() => {
-    if (viewType !== 'wantlist' || !collectionItemsForFiltering)
+    if (viewType !== "wantlist" || !collectionItemsForFiltering)
       return new Set<number>();
     const ids = new Set<number>();
     for (const item of collectionItemsForFiltering) {
@@ -79,7 +79,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   }, [collectionItemsForFiltering, viewType]);
 
   const uniqueWantlistItems = useMemo(() => {
-    if (viewType !== 'wantlist') return items;
+    if (viewType !== "wantlist") return items;
     const uniqueItems: ProcessedWantlistItem[] = [];
     const seenIds = new Set<number>();
     for (const item of items as ProcessedWantlistItem[]) {
@@ -101,7 +101,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     const styleCounts = new Map<string, number>();
     const genreCounts = new Map<string, number>();
 
-    if (viewType !== 'wantlist' || !collectionItemsForFiltering) {
+    if (viewType !== "wantlist" || !collectionItemsForFiltering) {
       return { artistCounts, labelCounts, styleCounts, genreCounts };
     }
 
@@ -124,7 +124,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   // High count = strong "I want this album" signal regardless of pressing.
   const pressingCounts = useMemo(() => {
     const counts = new Map<number, number>();
-    if (viewType !== 'wantlist') return counts;
+    if (viewType !== "wantlist") return counts;
     for (const item of items as ProcessedWantlistItem[]) {
       const masterId = item.basic_information.master_id;
       if (masterId > 0) counts.set(masterId, (counts.get(masterId) ?? 0) + 1);
@@ -133,13 +133,13 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   }, [items, viewType]);
 
   const { counts: finnCounts } = useFinnCounts(
-    viewType === 'wantlist'
+    viewType === "wantlist"
       ? (uniqueWantlistItems as ProcessedWantlistItem[])
       : [],
   );
 
   const sortedAndFilteredItems = useMemo(() => {
-    let itemsToDisplay = viewType === 'wantlist' ? uniqueWantlistItems : items;
+    let itemsToDisplay = viewType === "wantlist" ? uniqueWantlistItems : items;
 
     // --- Sidebar Filtering ---
     itemsToDisplay = itemsToDisplay.filter((item) => {
@@ -147,11 +147,13 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       const artistName = info.artists?.[0]?.name;
       const formatName = info.formats?.[0]?.name;
       const year =
-        'master_year' in item && item.master_year ? item.master_year : info.year;
-      const folderId = 'folder_id' in item ? item.folder_id : -1;
+        "master_year" in item && item.master_year
+          ? item.master_year
+          : info.year;
+      const folderId = "folder_id" in item ? item.folder_id : -1;
       const composers =
         item.details?.extraartists
-          ?.filter((artist) => artist.role === 'Composed By')
+          ?.filter((artist) => artist.role === "Composed By")
           .map((artist) => artist.name) || [];
 
       if (
@@ -193,7 +195,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     });
 
     // --- Search Filtering ---
-    if (searchQuery.trim() !== '') {
+    if (searchQuery.trim() !== "") {
       const lowercasedQuery = searchQuery.toLowerCase();
       itemsToDisplay = itemsToDisplay.filter((item) => {
         const info = item.basic_information;
@@ -209,7 +211,9 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         if (info.artists?.some((a) => check(a.name))) return true;
         if (info.labels?.some((l) => check(l.name) || check(l.catno)))
           return true;
-        if (info.formats?.some((f) => check(f.name) || checkArr(f.descriptions)))
+        if (
+          info.formats?.some((f) => check(f.name) || checkArr(f.descriptions))
+        )
           return true;
 
         if (details) {
@@ -225,14 +229,14 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     }
 
     // --- Other Filtering ---
-    if (viewType === 'wantlist' && showOnlyInCollection) {
+    if (viewType === "wantlist" && showOnlyInCollection) {
       itemsToDisplay = itemsToDisplay.filter((item) => {
         const masterId = item.basic_information.master_id;
         return masterId > 0 && collectionMasterIds.has(masterId);
       });
     }
 
-    if (viewType === 'wantlist' && showOnlyFinnHits) {
+    if (viewType === "wantlist" && showOnlyFinnHits) {
       itemsToDisplay = itemsToDisplay.filter((item) => {
         const count = finnCounts.get(item.id);
         return count != null && count > 0;
@@ -247,35 +251,39 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       let compareB: string | number;
 
       switch (sortKey) {
-        case 'artist':
-          compareA = aInfo.artists?.[0]?.name.toLocaleLowerCase() || '';
-          compareB = bInfo.artists?.[0]?.name.toLocaleLowerCase() || '';
+        case "artist":
+          compareA = aInfo.artists?.[0]?.name.toLocaleLowerCase() || "";
+          compareB = bInfo.artists?.[0]?.name.toLocaleLowerCase() || "";
           break;
-        case 'year':
+        case "year":
           compareA =
-            'master_year' in a && a.master_year ? a.master_year : aInfo.year || 0;
+            "master_year" in a && a.master_year
+              ? a.master_year
+              : aInfo.year || 0;
           compareB =
-            'master_year' in b && b.master_year ? b.master_year : bInfo.year || 0;
+            "master_year" in b && b.master_year
+              ? b.master_year
+              : bInfo.year || 0;
           break;
-        case 'date_added':
-          const dateA = 'date_added' in a ? a.date_added : 0;
-          const dateB = 'date_added' in b ? b.date_added : 0;
+        case "date_added":
+          const dateA = "date_added" in a ? a.date_added : 0;
+          const dateB = "date_added" in b ? b.date_added : 0;
           compareA = new Date(dateA).getTime();
           compareB = new Date(dateB).getTime();
           break;
-        case 'title':
+        case "title":
         default:
           compareA = aInfo.title
-            .replace(/^(the|a|an)\s+/i, '')
+            .replace(/^(the|a|an)\s+/i, "")
             .toLocaleLowerCase();
           compareB = bInfo.title
-            .replace(/^(the|a|an)\s+/i, '')
+            .replace(/^(the|a|an)\s+/i, "")
             .toLocaleLowerCase();
       }
 
-      const direction = sortOrder === 'asc' ? 1 : -1;
+      const direction = sortOrder === "asc" ? 1 : -1;
 
-      if (typeof compareA === 'string' && typeof compareB === 'string') {
+      if (typeof compareA === "string" && typeof compareB === "string") {
         return compareA.localeCompare(compareB) * direction;
       }
       if (compareA < compareB) return -1 * direction;
@@ -312,11 +320,13 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   };
 
   const onFilterChange = (
-    type: 'artists' | 'formats' | 'years' | 'folders' | 'composers' | string,
+    type: "artists" | "formats" | "years" | "folders" | "composers" | string,
     value: string | number,
     isSelected: boolean,
   ) => {
-    const updater = (setter: React.Dispatch<React.SetStateAction<Set<any>>>) => {
+    const updater = (
+      setter: React.Dispatch<React.SetStateAction<Set<any>>>,
+    ) => {
       setter((prev) => {
         const newSet = new Set(prev);
         if (isSelected) {
@@ -344,19 +354,19 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     };
 
     switch (type) {
-      case 'artists':
+      case "artists":
         updater(setSelectedArtists);
         break;
-      case 'formats':
+      case "formats":
         updater(setSelectedFormats);
         break;
-      case 'years':
+      case "years":
         updater(setSelectedYears);
         break;
-      case 'folders':
+      case "folders":
         updater(setSelectedFolders);
         break;
-      case 'composers':
+      case "composers":
         updater(setSelectedComposers);
         break;
       default:
@@ -365,14 +375,21 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   };
 
   const onFilterClear = (
-    type: 'artists' | 'formats' | 'years' | 'folders' | 'composers' | 'all' | string,
+    type:
+      | "artists"
+      | "formats"
+      | "years"
+      | "folders"
+      | "composers"
+      | "all"
+      | string,
   ) => {
-    if (type === 'artists' || type === 'all') setSelectedArtists(new Set());
-    if (type === 'formats' || type === 'all') setSelectedFormats(new Set());
-    if (type === 'years' || type === 'all') setSelectedYears(new Set());
-    if (type === 'folders' || type === 'all') setSelectedFolders(new Set());
-    if (type === 'composers' || type === 'all') setSelectedComposers(new Set());
-    if (type === 'all') {
+    if (type === "artists" || type === "all") setSelectedArtists(new Set());
+    if (type === "formats" || type === "all") setSelectedFormats(new Set());
+    if (type === "years" || type === "all") setSelectedYears(new Set());
+    if (type === "folders" || type === "all") setSelectedFolders(new Set());
+    if (type === "composers" || type === "all") setSelectedComposers(new Set());
+    if (type === "all") {
       setSelectedCustomFields({});
     } else {
       setSelectedCustomFields((prev) => ({ ...prev, [type]: new Set() }));
@@ -381,11 +398,11 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
 
   const handleBestBuyClick = useCallback((releaseId: number) => {
     setExpandedItemId(releaseId);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       requestAnimationFrame(() => {
         const el = document.getElementById(`wantlist-item-${releaseId}`);
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       });
     }
@@ -394,7 +411,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   return (
     <div className="flex flex-col p-4 lg:flex-row lg:gap-6">
       <aside className="w-full flex-shrink-0 lg:w-72">
-        {viewType === 'wantlist' && (
+        {viewType === "wantlist" && (
           <BestBuysPanel
             items={uniqueWantlistItems as ProcessedWantlistItem[]}
             prices={wantlistPrices ?? {}}
@@ -408,7 +425,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         )}
         <FilterSidebar
           items={items}
-          folders={viewType === 'collection' ? folders : []}
+          folders={viewType === "collection" ? folders : []}
           activeFilters={activeFilters}
           onFilterChange={onFilterChange}
           onFilterClear={onFilterClear}
@@ -427,17 +444,17 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
           onSearchQueryChange={setSearchQuery}
           viewType={viewType}
           filterOptions={
-            viewType === 'wantlist'
+            viewType === "wantlist"
               ? [
                   {
                     isEnabled: showOnlyInCollection,
                     onToggle: () => setShowOnlyInCollection((prev) => !prev),
-                    label: 'In collection',
+                    label: "In collection",
                   },
                   {
                     isEnabled: showOnlyFinnHits,
                     onToggle: () => setShowOnlyFinnHits((prev) => !prev),
-                    label: 'Found on Finn.no',
+                    label: "Found on Finn.no",
                   },
                 ]
               : undefined
@@ -452,30 +469,28 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
               Try syncing with Discogs to load your data.
             </p>
           </div>
-        ) : view === 'grid' ? (
+        ) : view === "grid" ? (
           <Grid
             items={sortedAndFilteredItems}
-            expandedItemId={viewType === 'wantlist' ? expandedItemId : null}
+            expandedItemId={viewType === "wantlist" ? expandedItemId : null}
             onToggleExpand={
-              viewType === 'wantlist'
-                ? (id) =>
-                    setExpandedItemId((prev) => (prev === id ? null : id))
+              viewType === "wantlist"
+                ? (id) => setExpandedItemId((prev) => (prev === id ? null : id))
                 : undefined
             }
-            finnCounts={viewType === 'wantlist' ? finnCounts : undefined}
+            finnCounts={viewType === "wantlist" ? finnCounts : undefined}
           />
         ) : (
           <AlbumList
             items={sortedAndFilteredItems}
             folders={folders}
-            expandedItemId={viewType === 'wantlist' ? expandedItemId : null}
+            expandedItemId={viewType === "wantlist" ? expandedItemId : null}
             onToggleExpand={
-              viewType === 'wantlist'
-                ? (id) =>
-                    setExpandedItemId((prev) => (prev === id ? null : id))
+              viewType === "wantlist"
+                ? (id) => setExpandedItemId((prev) => (prev === id ? null : id))
                 : undefined
             }
-            finnCounts={viewType === 'wantlist' ? finnCounts : undefined}
+            finnCounts={viewType === "wantlist" ? finnCounts : undefined}
           />
         )}
       </div>
