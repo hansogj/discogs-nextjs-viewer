@@ -13,7 +13,7 @@ import { useRememberedUsers } from '@/hooks/useRememberedUsers';
 
 interface AppContainerProps {
   children: React.ReactNode;
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'user';
+  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
   user: DiscogsUser;
   collectionCount: number;
   wantlistCount: number;

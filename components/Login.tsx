@@ -44,7 +44,7 @@ const Login: React.FC = () => {
                 className="h-10 w-10 rounded-full border border-discogs-border"
               />
               <div className="flex-1">
-                <p className="font-medium text-white group-hover:text-discogs-blue">
+                <p className="font-medium text-discogs-text group-hover:text-discogs-blue">
                   {user.username}
                 </p>
                 <p className="text-xs text-discogs-text-secondary">

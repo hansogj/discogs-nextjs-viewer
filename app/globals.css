@@ -2,20 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 224, 224, 224;
-  --background-start-rgb: 16, 17, 20;
-  --background-end-rgb: 16, 17, 20;
+/*
+ * Theme tokens. The Tailwind classes (bg-discogs-bg, text-discogs-text, etc.)
+ * resolve to these custom properties — see tailwind.config.ts. Switch themes
+ * by setting `data-theme` on the <html> element; the ThemePicker component
+ * does this and persists the choice in localStorage.
+ */
+
+:root,
+[data-theme='dark-blue'] {
+  /* Original look: deep navy with sky-blue accent */
+  --color-bg: #101114;
+  --color-bg-light: #1d1f24;
+  --color-border: #2f323a;
+  --color-text: #e0e0e0;
+  --color-text-secondary: #a0a0a0;
+  --color-accent: #3498db;
+  --color-accent-dark: #2980b9;
+  --color-teal: #5fb6a8;
+  --color-success: #16a34a;
+  --color-success-dark: #15803d;
+  --color-danger: #dc2626;
+  --color-danger-dark: #b91c1c;
+}
+
+[data-theme='earthy'] {
+  /* Warm dark brown with amber accent */
+  --color-bg: #15120c;
+  --color-bg-light: #1f1a12;
+  --color-border: #3a3122;
+  --color-text: #ece3d1;
+  --color-text-secondary: #a99c81;
+  --color-accent: #e8a33d;
+  --color-accent-dark: #c56a1e;
+  --color-teal: #5fb6a8;
+  --color-success: #7d9c3d;
+  --color-success-dark: #5e7a2a;
+  --color-danger: #b04a2a;
+  --color-danger-dark: #8a3618;
+}
+
+[data-theme='olive'] {
+  /* Deep olive green with bright olive accent */
+  --color-bg: #1a1d12;
+  --color-bg-light: #23271a;
+  --color-border: #3a4022;
+  --color-text: #dde0c8;
+  --color-text-secondary: #9aa382;
+  --color-accent: #8db342;
+  --color-accent-dark: #6b8a2f;
+  --color-teal: #5fb6a8;
+  --color-success: #5fb6a8;
+  --color-success-dark: #2f8074;
+  --color-danger: #a3431f;
+  --color-danger-dark: #7a3217;
+}
+
+[data-theme='light'] {
+  /* Inverse: cream bg with near-black ink */
+  --color-bg: #ece3d1;
+  --color-bg-light: #dad1bc;
+  --color-border: #a99c81;
+  --color-text: #15120c;
+  --color-text-secondary: #5c5040;
+  --color-accent: #c56a1e;
+  --color-accent-dark: #8a4810;
+  --color-teal: #2f8074;
+  --color-success: #5c7a2a;
+  --color-success-dark: #3f5519;
+  --color-danger: #8a2f1c;
+  --color-danger-dark: #5f200f;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  color: var(--color-text);
+  background: var(--color-bg);
 }
 
 @layer utilities {

@@ -147,7 +147,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   return (
     <div className="sticky top-24 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">Filters</h2>
+        <h2 className="text-lg font-semibold text-discogs-text">Filters</h2>
         <button
           onClick={() => onFilterClear('all')}
           className="text-sm text-discogs-blue hover:underline"
@@ -307,7 +307,7 @@ const FilterCheckbox: React.FC<{
         type="checkbox"
         checked={checked}
         onChange={onChange}
-        className="h-4 w-4 rounded border-gray-500 bg-gray-700 text-discogs-blue focus:ring-discogs-blue"
+        className="h-4 w-4 rounded border-discogs-border bg-discogs-bg text-discogs-blue focus:ring-discogs-blue"
       />
       <span className="truncate" title={label}>
         {label}

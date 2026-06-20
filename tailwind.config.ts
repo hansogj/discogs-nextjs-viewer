@@ -9,13 +9,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        'discogs-blue': '#3498db',
-        'discogs-blue-dark': '#2980b9',
-        'discogs-bg': '#101114',
-        'discogs-bg-light': '#1d1f24',
-        'discogs-border': '#2f323a',
-        'discogs-text': '#e0e0e0',
-        'discogs-text-secondary': '#a0a0a0',
+        // All theme-aware colors resolve to CSS variables defined per
+        // [data-theme="..."] block in globals.css.
+        'discogs-blue': 'var(--color-accent)',
+        'discogs-blue-dark': 'var(--color-accent-dark)',
+        'discogs-bg': 'var(--color-bg)',
+        'discogs-bg-light': 'var(--color-bg-light)',
+        'discogs-border': 'var(--color-border)',
+        'discogs-text': 'var(--color-text)',
+        'discogs-text-secondary': 'var(--color-text-secondary)',
+        'discogs-teal': 'var(--color-teal)',
+        'discogs-success': 'var(--color-success)',
+        'discogs-success-dark': 'var(--color-success-dark)',
+        'discogs-danger': 'var(--color-danger)',
+        'discogs-danger-dark': 'var(--color-danger-dark)',
+      },
+      fontFamily: {
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        serif: ['var(--font-fraunces)', 'ui-serif', 'Georgia', 'serif'],
+        mono: [
+          'var(--font-space-mono)',
+          'ui-monospace',
+          'SFMono-Regular',
+          'monospace',
+        ],
       },
       boxShadow: {
         'glow-blue': '0 0 15px 5px rgba(52, 152, 219, 0.2)',

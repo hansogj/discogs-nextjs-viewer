@@ -67,7 +67,7 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
     <div className="flex flex-col gap-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-5 sm:flex-row">
       <div className="flex-1 space-y-3">
         <div>
-          <h4 className="text-lg font-bold text-white">{info.title}</h4>
+          <h4 className="text-lg font-bold text-discogs-text">{info.title}</h4>
           <p className="text-sm text-discogs-text-secondary">{artist}</p>
         </div>
 
@@ -90,7 +90,7 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
             href={discogsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-md bg-discogs-border px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-discogs-blue"
+            className="inline-flex items-center gap-2 rounded-md bg-discogs-border px-4 py-2 text-sm font-medium text-discogs-text transition-colors hover:bg-discogs-blue hover:text-white"
           >
             <svg
               className="h-4 w-4"
