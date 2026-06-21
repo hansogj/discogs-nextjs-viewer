@@ -48,16 +48,21 @@ export default function AppContainer({
         const res = await fetch("/api/sync-progress");
         if (res.ok) {
           const progress = await res.json();
+          // Worker writes `"done"` / `"error"` (see lib/cache.ts SyncProgress
+          // type + worker.ts). It also calls clearSyncProgress at the end, so
+          // we may instead observe `"idle"` (the API's fallback when the key
+          // is gone). All three mean the sync is no longer running — stop
+          // polling and refresh the page so the new cached data is rendered.
           if (
-            progress.status === "completed" ||
-            progress.status === "failed" ||
+            progress.status === "done" ||
+            progress.status === "error" ||
             progress.status === "idle"
           ) {
             if (pollRef.current) clearInterval(pollRef.current);
             pollRef.current = null;
             setIsSyncing(false);
             setSyncProgress(null);
-            if (progress.status === "completed") router.refresh();
+            if (progress.status !== "error") router.refresh();
           } else if (progress.status) {
             setIsSyncing(true);
             setSyncProgress(progress);
@@ -85,8 +90,8 @@ export default function AppContainer({
           if (
             progress.status &&
             progress.status !== "idle" &&
-            progress.status !== "completed" &&
-            progress.status !== "failed"
+            progress.status !== "done" &&
+            progress.status !== "error"
           ) {
             setIsSyncing(true);
             setSyncProgress(progress);
