@@ -15,6 +15,7 @@ import type {
 // where `process.cwd` is not found on the `Process` type due to conflicting global type definitions.
 // `path.resolve` with a relative path will resolve it against the current working directory, achieving the same result.
 const CACHE_DIR = path.resolve("./.next/cache/discogs-data");
+const CACHE_DIR_PREFIX = CACHE_DIR + path.sep;
 
 // Ensure cache directory exists
 async function ensureCacheDir() {
@@ -36,20 +37,31 @@ type CacheKey =
   | "custom_fields"
   | "wantlist_prices";
 
-function getCachePath(username: string, key: CacheKey) {
-  // Sanitize username to create a valid filename
+// Strip any character that can't appear in a safe filename (anything outside
+// [A-Za-z0-9]). Returns a deterministic, traversal-safe slug derived from the
+// session-provided username. Then resolve the final path and assert it stays
+// within CACHE_DIR — defense in depth so a future change to the sanitizer
+// can't introduce a path-traversal regression. CodeQL also recognises this
+// pattern as a sanitizer.
+function safeCachePath(username: string, filename: string) {
   const safeUsername = username.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-  return path.join(CACHE_DIR, `${safeUsername}-${key}.json`);
+  const resolved = path.resolve(CACHE_DIR, `${safeUsername}-${filename}`);
+  if (resolved !== CACHE_DIR && !resolved.startsWith(CACHE_DIR_PREFIX)) {
+    throw new Error("Cache path escape blocked");
+  }
+  return resolved;
+}
+
+function getCachePath(username: string, key: CacheKey) {
+  return safeCachePath(username, `${key}.json`);
 }
 
 function getProgressCachePath(username: string) {
-  const safeUsername = username.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-  return path.join(CACHE_DIR, `${safeUsername}-sync-progress.json`);
+  return safeCachePath(username, "sync-progress.json");
 }
 
 function getSyncInfoCachePath(username: string) {
-  const safeUsername = username.replace(/[^a-z0-9]/gi, "_").toLowerCase();
-  return path.join(CACHE_DIR, `${safeUsername}-sync-info.json`);
+  return safeCachePath(username, "sync-info.json");
 }
 
 // --- Sync Info ---
