@@ -23,7 +23,7 @@ env:
 
 jobs:
   verify:
-    name: Typecheck + unit tests
+    name: Typecheck + unit tests + coverage
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,8 +38,15 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Typecheck
         run: pnpm tsc --noEmit
-      - name: Unit tests
-        run: pnpm test --run
+      - name: Unit tests with coverage
+        run: pnpm test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
 
   lint:
     name: ESLint + Prettier
