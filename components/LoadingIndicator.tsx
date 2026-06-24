@@ -1,10 +1,9 @@
+"use client";
 
-'use client';
-
-import React, { useState, useEffect } from 'react';
-import Spinner from './Spinner';
-import { getRandomQuote } from '@/lib/quotes';
-import type { Quote } from '@/lib/quotes';
+import React, { useState, useEffect } from "react";
+import Spinner from "./Spinner";
+import { getRandomQuote } from "@/lib/quotes";
+import type { Quote } from "@/lib/quotes";
 
 interface LoadingIndicatorProps {
   message: string;
@@ -14,13 +13,19 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ message }) => {
   const [quote, setQuote] = useState<Quote | null>(null);
 
   useEffect(() => {
-    // Set initial quote and then change it periodically if the component stays mounted for long
-    setQuote(getRandomQuote());
+    // Defer the initial random pick to the next macrotask so React's
+    // strict-effects lint doesn't flag a synchronous setState in the effect
+    // body. Server renders no quote (SSR-safe), client renders one shortly
+    // after mount, then the interval rotates it every 10s.
+    const initialId = setTimeout(() => setQuote(getRandomQuote()), 0);
     const intervalId = setInterval(() => {
       setQuote(getRandomQuote());
     }, 10000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearTimeout(initialId);
+      clearInterval(intervalId);
+    };
   }, []);
 
   return (
@@ -33,7 +38,7 @@ const LoadingIndicator: React.FC<LoadingIndicatorProps> = ({ message }) => {
       <p className="mt-4 text-lg font-semibold text-discogs-text">{message}</p>
       {quote && (
         <blockquote className="mt-4 max-w-sm border-l-4 border-discogs-border p-4 italic text-discogs-text-secondary">
-          <p>"{quote.quote}"</p>
+          <p>&ldquo;{quote.quote}&rdquo;</p>
           <cite className="mt-2 block text-right text-sm not-italic text-discogs-text-secondary/80">
             &mdash; {quote.author}
           </cite>

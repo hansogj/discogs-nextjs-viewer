@@ -1,11 +1,8 @@
-'use client';
+"use client";
 
-import React, { useEffect, useMemo, useState } from 'react';
-import Image from 'next/image';
-import type {
-  ProcessedWantlistItem,
-  WantlistPricesMap,
-} from '@/lib/types';
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
+import type { ProcessedWantlistItem, WantlistPricesMap } from "@/lib/types";
 
 interface BestBuysPanelProps {
   items: ProcessedWantlistItem[];
@@ -35,7 +32,7 @@ const W_PRESSINGS = 2;
 const W_LABEL = 1;
 
 const MYWANTS_URL =
-  'https://www.discogs.com/sell/mywants?format=Vinyl&currency=EUR&ships_to=NO';
+  "https://www.discogs.com/sell/mywants?format=Vinyl&currency=EUR&ships_to=NO";
 
 const buildDiscogsMarketplaceUrl = (releaseId: number) =>
   `https://www.discogs.com/sell/release/${releaseId}`;
@@ -51,7 +48,7 @@ type Ranked = {
   reasons: string[];
 };
 
-type SortMode = 'taste' | 'cheap' | 'value';
+type SortMode = "taste" | "cheap" | "value";
 
 const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   items,
@@ -67,14 +64,14 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   const [budgetInput, setBudgetInput] = useState<string>(
     String(DEFAULT_BUDGET_NOK),
   );
-  const [sortMode, setSortMode] = useState<SortMode>('taste');
+  const [sortMode, setSortMode] = useState<SortMode>("taste");
 
   // Tests + a11y tools use data-hydrated to detect when the panel's onClick
-  // handlers are wired up. The attribute is missing in server-rendered HTML
-  // and only flips to "true" after the client mounts.
-  const [hydrated, setHydrated] = useState(false);
+  // handlers are wired up. Set the attribute via DOM mutation after mount —
+  // keeps server HTML free of the attribute and avoids a setState-in-effect.
+  const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    setHydrated(true);
+    rootRef.current?.setAttribute("data-hydrated", "true");
   }, []);
 
   const ranked = useMemo<Ranked[]>(() => {
@@ -152,9 +149,9 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       });
     }
 
-    if (sortMode === 'cheap') {
+    if (sortMode === "cheap") {
       matches.sort((a, b) => a.priceNok - b.priceNok);
-    } else if (sortMode === 'value') {
+    } else if (sortMode === "value") {
       // taste per NOK spent — biggest bang for buck
       matches.sort(
         (a, b) =>
@@ -200,16 +197,18 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   const sortButtonClass = (mode: SortMode) =>
     `flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
       sortMode === mode
-        ? 'bg-discogs-blue text-white'
-        : 'bg-discogs-bg text-discogs-text-secondary hover:bg-discogs-border'
+        ? "bg-discogs-blue text-white"
+        : "bg-discogs-bg text-discogs-text-secondary hover:bg-discogs-border"
     }`;
 
   return (
     <div
-      data-hydrated={hydrated ? 'true' : undefined}
+      ref={rootRef}
       className="mb-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-4"
     >
-      <h2 className="mb-3 text-lg font-semibold text-discogs-text">Best buys</h2>
+      <h2 className="mb-3 text-lg font-semibold text-discogs-text">
+        Best buys
+      </h2>
 
       <a
         href={MYWANTS_URL}
@@ -246,27 +245,27 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       <div className="mb-3 flex gap-1">
         <button
           type="button"
-          onClick={() => setSortMode('taste')}
-          aria-pressed={sortMode === 'taste'}
-          className={sortButtonClass('taste')}
+          onClick={() => setSortMode("taste")}
+          aria-pressed={sortMode === "taste"}
+          className={sortButtonClass("taste")}
           title="Items closest to your collection's taste profile"
         >
           Taste match
         </button>
         <button
           type="button"
-          onClick={() => setSortMode('value')}
-          aria-pressed={sortMode === 'value'}
-          className={sortButtonClass('value')}
+          onClick={() => setSortMode("value")}
+          aria-pressed={sortMode === "value"}
+          className={sortButtonClass("value")}
           title="Taste score per NOK spent"
         >
           Value
         </button>
         <button
           type="button"
-          onClick={() => setSortMode('cheap')}
-          aria-pressed={sortMode === 'cheap'}
-          className={sortButtonClass('cheap')}
+          onClick={() => setSortMode("cheap")}
+          aria-pressed={sortMode === "cheap"}
+          className={sortButtonClass("cheap")}
           title="Sorted by price ascending"
         >
           Cheapest
@@ -275,8 +274,8 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
 
       <p className="mb-3 text-xs text-discogs-text-secondary">
         {pricedCount > 0
-          ? `${pricedCount} priced items. Showing top ${ranked.length} ≤ ${budget} NOK by ${sortMode === 'taste' ? 'taste match' : sortMode === 'value' ? 'value' : 'price'}.`
-          : 'No prices cached yet. Run a sync to populate marketplace prices.'}
+          ? `${pricedCount} priced items. Showing top ${ranked.length} ≤ ${budget} NOK by ${sortMode === "taste" ? "taste match" : sortMode === "value" ? "value" : "price"}.`
+          : "No prices cached yet. Run a sync to populate marketplace prices."}
       </p>
 
       {ranked.length === 0 && pricedCount > 0 && (
@@ -288,7 +287,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
         {ranked.map((r) => {
           const info = r.item.basic_information;
-          const artist = info.artists?.[0]?.name || 'Unknown Artist';
+          const artist = info.artists?.[0]?.name || "Unknown Artist";
           const cover =
             r.item.master_cover_image || info.cover_image || info.thumb;
           return (
@@ -329,9 +328,9 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
                   {r.reasons.length > 0 && (
                     <div
                       className="mt-1 truncate text-[10px] text-discogs-text-secondary"
-                      title={r.reasons.join(' · ')}
+                      title={r.reasons.join(" · ")}
                     >
-                      {r.reasons.join(' · ')}
+                      {r.reasons.join(" · ")}
                     </div>
                   )}
                   <a

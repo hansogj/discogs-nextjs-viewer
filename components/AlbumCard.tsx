@@ -1,5 +1,5 @@
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 
 // Using a data URI for the placeholder SVG to avoid creating new files.
 // This SVG displays a simple musical note on a record, matching the app's dark theme.
@@ -29,7 +29,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
 
   return (
     <div
-      className={`group relative h-full transform overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30 ${isExpanded ? 'ring-2 ring-discogs-blue' : ''}`}
+      className={`group relative h-full transform overflow-hidden rounded-lg bg-discogs-bg-light shadow-lg transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-2xl hover:shadow-glow-blue/30 ${isExpanded ? "ring-2 ring-discogs-blue" : ""}`}
     >
       <Image
         src={imageToDisplay}
@@ -58,7 +58,7 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
         <button
           onClick={onClick}
           className="absolute inset-0 cursor-pointer"
-          aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${artist} - ${title}`}
+          aria-label={`${isExpanded ? "Collapse" : "Expand"} ${artist} - ${title}`}
         />
       ) : (
         <a

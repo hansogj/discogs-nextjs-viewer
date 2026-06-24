@@ -1,12 +1,12 @@
-import React from 'react';
-import Image from 'next/image';
+import React from "react";
+import Image from "next/image";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
   BasicInformation,
   Folder,
-} from '@/lib/types';
-import WantlistItemDetail from './WantlistItemDetail';
+} from "@/lib/types";
+import WantlistItemDetail from "./WantlistItemDetail";
 
 const PLACEHOLDER_IMAGE_URL =
   "data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' fill='none'%3e%3crect width='100' height='100' fill='%231d1f24'/%3e%3ccircle cx='50' cy='50' r='35' stroke='%232f323a' stroke-width='4'/%3e%3ccircle cx='50' cy='50' r='10' fill='%23101114' stroke='%232f323a' stroke-width='2'/%3e%3cpath d='M45 55 a5,5 0 0,1 10,0 l0,-20 a5,5 0 0,1 5,-5 a5,5 0 0,1 5,5' stroke='%23a0a0a0' stroke-width='3'/%3e%3ccircle cx='47.5' cy='55' r='4' fill='%23a0a0a0'/%3e%3ccircle cx='62.5' cy='40' r='4' fill='%23a0a0a0'/%3e%3c/svg%3e";
@@ -14,15 +14,15 @@ const PLACEHOLDER_IMAGE_URL =
 const getArtistName = (
   item: CollectionRelease | ProcessedWantlistItem,
 ): string => {
-  return item.basic_information.artists?.[0]?.name || 'Unknown Artist';
+  return item.basic_information.artists?.[0]?.name || "Unknown Artist";
 };
 
-const formatMedia = (formats: BasicInformation['formats']): string => {
-  if (!formats || formats.length === 0) return 'N/A';
+const formatMedia = (formats: BasicInformation["formats"]): string => {
+  if (!formats || formats.length === 0) return "N/A";
   const format = formats[0];
   let desc = format.name;
   if (format.descriptions && format.descriptions.length > 0) {
-    desc += `, ${format.descriptions.join(', ')}`;
+    desc += `, ${format.descriptions.join(", ")}`;
   }
   return desc;
 };
@@ -41,7 +41,7 @@ const DetailItem: React.FC<{
   label: string;
   value: string | number | undefined;
 }> = ({ label, value }) => {
-  if (!value || value === 'N/A') return null;
+  if (!value || value === "N/A") return null;
   return (
     <div>
       <p className="text-xs font-semibold text-discogs-text-secondary">
@@ -62,29 +62,28 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
   const { basic_information: info } = item;
   const discogsUrl = `https://www.discogs.com/release/${info.id}`;
   const imageUrl =
-    'master_cover_image' in item ? item.master_cover_image : info.cover_image;
+    "master_cover_image" in item ? item.master_cover_image : info.cover_image;
 
   const labelInfo = info.labels?.[0];
   const labelParts = [labelInfo?.name, labelInfo?.catno].filter(Boolean);
-  const labelString = labelParts.length > 0 ? labelParts.join(' - ') : undefined;
+  const labelString =
+    labelParts.length > 0 ? labelParts.join(" - ") : undefined;
 
   const folderMap = new Map(folders.map((f) => [f.id, f.name]));
   const folderName =
-    'folder_id' in item ? folderMap.get(item.folder_id) : undefined;
+    "folder_id" in item ? folderMap.get(item.folder_id) : undefined;
   const year =
-    'master_year' in item && item.master_year
+    "master_year" in item && item.master_year
       ? item.master_year
       : info.year || undefined;
 
-  const Wrapper = onToggle ? 'button' : 'div';
+  const Wrapper = onToggle ? "button" : "div";
 
   return (
     <div>
       <Wrapper
-        {...(onToggle
-          ? { onClick: onToggle, type: 'button' as const }
-          : {})}
-        className={`flex w-full space-x-4 rounded-lg border border-discogs-border/50 bg-discogs-bg p-3 text-left transition-colors hover:bg-discogs-border/30 ${onToggle ? 'cursor-pointer' : ''} ${isExpanded ? 'ring-2 ring-discogs-blue' : ''}`}
+        {...(onToggle ? { onClick: onToggle, type: "button" as const } : {})}
+        className={`flex w-full space-x-4 rounded-lg border border-discogs-border/50 bg-discogs-bg p-3 text-left transition-colors hover:bg-discogs-border/30 ${onToggle ? "cursor-pointer" : ""} ${isExpanded ? "ring-2 ring-discogs-blue" : ""}`}
       >
         {onToggle ? (
           <div className="relative block flex-shrink-0">
@@ -152,13 +151,13 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
             <DetailItem label="Label" value={labelString} />
             <DetailItem label="Format" value={formatMedia(info.formats)} />
             <DetailItem label="Year" value={year} />
-            {'date_added' in item && (
+            {"date_added" in item && (
               <DetailItem
                 label="Added"
                 value={new Date(item.date_added).toLocaleDateString()}
               />
             )}
-            {'folder_id' in item && (
+            {"folder_id" in item && (
               <DetailItem label="Folder" value={folderName} />
             )}
           </div>

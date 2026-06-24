@@ -1,12 +1,11 @@
+"use server";
 
-'use server';
-
-import { getIronSession } from 'iron-session';
-import { syncQueue } from '@/lib/queue';
-import { clearUserCache } from '@/lib/cache';
-import { revalidatePath } from 'next/cache';
-import { cookies } from 'next/headers';
-import { sessionOptions, SessionData } from '@/lib/session-options';
+import { getIronSession } from "iron-session";
+import { syncQueue } from "@/lib/queue";
+import { clearUserCache } from "@/lib/cache";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { sessionOptions, SessionData } from "@/lib/session-options";
 
 async function getSessionAuth() {
   const session = await getIronSession<SessionData>(
@@ -19,7 +18,7 @@ async function getSessionAuth() {
     !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
   if (!isTokenLoggedIn && !isOAuthLoggedIn) {
-    throw new Error('Not authenticated');
+    throw new Error("Not authenticated");
   }
 
   const auth = isOAuthLoggedIn
@@ -37,20 +36,29 @@ export async function syncAllData(): Promise<{
   message?: string;
 }> {
   const { user, auth } = await getSessionAuth();
-  await syncQueue.add('sync', { user, token: auth });
-  return { success: true, message: 'Sync started!' };
+  await syncQueue.add("sync", { user, token: auth });
+  return { success: true, message: "Sync started!" };
 }
 
 export async function getSyncJobStatus() {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
   const isTokenLoggedIn = !!session.token && !!session.user;
-  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
+  const isOAuthLoggedIn =
+    !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
   if (!isTokenLoggedIn && !isOAuthLoggedIn) {
-    throw new Error('Not authenticated');
+    throw new Error("Not authenticated");
   }
-  const jobs = await syncQueue.getJobs(['active', 'waiting', 'completed', 'failed']);
-  const job = jobs.find(j => j.data.user.username === session.user?.username);
+  const jobs = await syncQueue.getJobs([
+    "active",
+    "waiting",
+    "completed",
+    "failed",
+  ]);
+  const job = jobs.find((j) => j.data.user.username === session.user?.username);
 
   if (job) {
     return {
@@ -65,17 +73,19 @@ export async function getSyncJobStatus() {
 }
 
 export async function clearCacheAction() {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
   const isTokenLoggedIn = !!session.token && !!session.user;
-  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
+  const isOAuthLoggedIn =
+    !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
   if (!isTokenLoggedIn && !isOAuthLoggedIn) {
-    throw new Error('Not authenticated');
+    throw new Error("Not authenticated");
   }
   await clearUserCache(session.user!.username);
-  revalidatePath('/', 'layout');
+  revalidatePath("/", "layout");
   console.log(`[Action] Cache cleared for ${session.user!.username}`);
   return { success: true };
 }
-
-

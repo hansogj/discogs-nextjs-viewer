@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
-type Theme = 'dark-blue' | 'earthy' | 'olive' | 'light';
+type Theme = "dark-blue" | "earthy" | "olive" | "light";
 
 interface ThemeOption {
   id: Theme;
@@ -12,14 +17,14 @@ interface ThemeOption {
 }
 
 const THEMES: ThemeOption[] = [
-  { id: 'dark-blue', label: 'Dark blue', swatch: ['#101114', '#3498db'] },
-  { id: 'earthy', label: 'Earthy', swatch: ['#15120c', '#e8a33d'] },
-  { id: 'olive', label: 'Olive', swatch: ['#1a1d12', '#8db342'] },
-  { id: 'light', label: 'Light', swatch: ['#ece3d1', '#c56a1e'] },
+  { id: "dark-blue", label: "Dark blue", swatch: ["#101114", "#3498db"] },
+  { id: "earthy", label: "Earthy", swatch: ["#15120c", "#e8a33d"] },
+  { id: "olive", label: "Olive", swatch: ["#1a1d12", "#8db342"] },
+  { id: "light", label: "Light", swatch: ["#ece3d1", "#c56a1e"] },
 ];
 
-const STORAGE_KEY = 'theme';
-const DEFAULT_THEME: Theme = 'dark-blue';
+const STORAGE_KEY = "theme";
+const DEFAULT_THEME: Theme = "dark-blue";
 
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
@@ -30,37 +35,52 @@ function applyTheme(theme: Theme) {
   }
 }
 
-export default function ThemePicker() {
-  const [theme, setTheme] = useState<Theme>(DEFAULT_THEME);
-  const [open, setOpen] = useState(false);
+function subscribeThemeAttribute(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["data-theme"],
+  });
+  return () => observer.disconnect();
+}
 
-  // Sync local state with the data-theme attribute set by the inline init
-  // script in app/layout.tsx. We avoid reading localStorage here to keep the
-  // server-rendered tree consistent — the inline script has already applied
-  // the persisted choice before this component mounts.
-  useEffect(() => {
-    const current = document.documentElement.dataset.theme as Theme | undefined;
-    if (current && THEMES.some((t) => t.id === current)) {
-      setTheme(current);
-    }
-  }, []);
+function getThemeSnapshot(): Theme {
+  const current = document.documentElement.dataset.theme as Theme | undefined;
+  return current && THEMES.some((t) => t.id === current)
+    ? current
+    : DEFAULT_THEME;
+}
+
+function getServerThemeSnapshot(): Theme {
+  return DEFAULT_THEME;
+}
+
+export default function ThemePicker() {
+  // Subscribe to the data-theme attribute on <html>. The inline init script in
+  // app/layout.tsx applies the persisted choice before this component mounts,
+  // so we just mirror what's already on the DOM.
+  const theme = useSyncExternalStore(
+    subscribeThemeAttribute,
+    getThemeSnapshot,
+    getServerThemeSnapshot,
+  );
+  const [open, setOpen] = useState(false);
 
   // Close the menu on outside click.
   useEffect(() => {
     if (!open) return;
     const onDocClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-theme-picker]')) setOpen(false);
+      if (!target.closest("[data-theme-picker]")) setOpen(false);
     };
-    document.addEventListener('click', onDocClick);
-    return () => document.removeEventListener('click', onDocClick);
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
   }, [open]);
 
-  const handleSelect = (next: Theme) => {
-    setTheme(next);
+  const handleSelect = useCallback((next: Theme) => {
     applyTheme(next);
     setOpen(false);
-  };
+  }, []);
 
   const active = THEMES.find((t) => t.id === theme) ?? THEMES[0];
 
@@ -105,8 +125,8 @@ export default function ThemePicker() {
                   onClick={() => handleSelect(opt.id)}
                   className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
                     selected
-                      ? 'bg-discogs-blue text-white'
-                      : 'text-discogs-text hover:bg-discogs-border'
+                      ? "bg-discogs-blue text-white"
+                      : "text-discogs-text hover:bg-discogs-border"
                   }`}
                 >
                   <span

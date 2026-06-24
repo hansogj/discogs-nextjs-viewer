@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import type { ProcessedWantlistItem } from '@/lib/types';
+import React, { useEffect, useState } from "react";
+import type { ProcessedWantlistItem } from "@/lib/types";
 
 interface WantlistItemDetailProps {
   item: ProcessedWantlistItem;
@@ -25,32 +25,33 @@ const buildDiscogsUrl = (item: ProcessedWantlistItem): string => {
 
 const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
   const { basic_information: info } = item;
-  const artist = info.artists?.[0]?.name || 'Unknown Artist';
+  const artist = info.artists?.[0]?.name || "Unknown Artist";
   const discogsUrl = buildDiscogsUrl(item);
   const finnQuery = buildFinnSearchQuery(artist, info.title);
   const finnUrl = buildFinnSearchUrl(finnQuery);
 
-  const [finnCount, setFinnCount] = useState<number | null>(null);
-  const [finnLoading, setFinnLoading] = useState(true);
+  // Track the fetch result alongside the query it came from. `finnLoading`
+  // is derived: we're loading until the result matches the current query.
+  type FinnResult = { query: string; count: number | null };
+  const [finnResult, setFinnResult] = useState<FinnResult | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    setFinnLoading(true);
     fetch(`/api/finn-search?q=${encodeURIComponent(finnQuery)}`)
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) {
-          setFinnCount(data.count);
-          setFinnLoading(false);
-        }
+        if (!cancelled) setFinnResult({ query: finnQuery, count: data.count });
       })
       .catch(() => {
-        if (!cancelled) setFinnLoading(false);
+        if (!cancelled) setFinnResult({ query: finnQuery, count: null });
       });
     return () => {
       cancelled = true;
     };
   }, [finnQuery]);
+
+  const finnLoading = finnResult?.query !== finnQuery;
+  const finnCount = finnLoading ? null : (finnResult?.count ?? null);
 
   const year = item.master_year || info.year || null;
   const label = info.labels?.[0];
@@ -58,10 +59,10 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
   const styles = item.details?.styles;
 
   const finnLabel = finnLoading
-    ? 'Search on Finn.no\u2026'
+    ? "Search on Finn.no\u2026"
     : finnCount !== null
-      ? `Search on Finn.no: ${finnCount} ${finnCount === 1 ? 'hit' : 'hits'}`
-      : 'Search on Finn.no';
+      ? `Search on Finn.no: ${finnCount} ${finnCount === 1 ? "hit" : "hits"}`
+      : "Search on Finn.no";
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-5 sm:flex-row">
@@ -77,11 +78,11 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
             {label && (
               <span>
                 {label.name}
-                {label.catno ? ` - ${label.catno}` : ''}
+                {label.catno ? ` - ${label.catno}` : ""}
               </span>
             )}
-            {genres && genres.length > 0 && <span>{genres.join(', ')}</span>}
-            {styles && styles.length > 0 && <span>{styles.join(', ')}</span>}
+            {genres && genres.length > 0 && <span>{genres.join(", ")}</span>}
+            {styles && styles.length > 0 && <span>{styles.join(", ")}</span>}
           </div>
         )}
 

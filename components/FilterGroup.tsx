@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import clsx from 'clsx';
+import React, { useState } from "react";
+import clsx from "clsx";
 
 interface FilterGroupProps {
   title: string;
@@ -50,8 +50,8 @@ const FilterGroup: React.FC<FilterGroupProps> = ({
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className={clsx(
-              'h-5 w-5 text-discogs-text-secondary transition-transform',
-              { 'rotate-180': !isOpen },
+              "h-5 w-5 text-discogs-text-secondary transition-transform",
+              { "rotate-180": !isOpen },
             )}
             viewBox="0 0 20 20"
             fill="currentColor"

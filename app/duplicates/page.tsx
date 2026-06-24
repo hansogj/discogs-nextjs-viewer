@@ -1,16 +1,16 @@
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from "@/components/layout/AppLayout";
 import {
   getCachedCollection,
   getCollectionDuplicates,
   getCachedFolders,
-} from '@/lib/data';
-import type { CollectionRelease } from '@/lib/types';
-import AlbumListItem from '@/components/AlbumListItem';
+} from "@/lib/data";
+import type { CollectionRelease } from "@/lib/types";
+import AlbumListItem from "@/components/AlbumListItem";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const getArtistName = (item: CollectionRelease): string => {
-  return item.basic_information.artists?.[0]?.name || 'Unknown Artist';
+  return item.basic_information.artists?.[0]?.name || "Unknown Artist";
 };
 
 export default async function DuplicatesPage() {

@@ -10,44 +10,107 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Stub values for env vars that lib/discogs.ts and lib/session-options.ts
+# read at import time — those modules throw on import if these aren't set,
+# which would block tsc, vitest, lint and build from even loading them.
+env:
+  DISCOGS_CONSUMER_KEY: ci-stub
+  DISCOGS_CONSUMER_SECRET: ci-stub
+  DISCOGS_CALLBACK_URL: http://localhost:3000/api/oauth/callback
+  AUTH_SECRET: ci-stub-auth-secret-at-least-32-characters-long
+  REDIS_URL: redis://localhost:6379
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
 jobs:
   verify:
-    name: Typecheck + unit tests
+    name: Typecheck + unit tests + coverage
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # Stub values for env vars that lib/discogs.ts reads at import time —
-    # the module throws on import if these aren't set, which would block
-    # tsc and vitest from even loading the file. Real values aren't needed
-    # because we don't make any Discogs API calls during typecheck or unit
-    # tests.
-    env:
-      DISCOGS_CONSUMER_KEY: ci-stub
-      DISCOGS_CONSUMER_SECRET: ci-stub
-      DISCOGS_CALLBACK_URL: http://localhost:3000/api/oauth/callback
-      AUTH_SECRET: ci-stub-auth-secret-at-least-32-characters-long
-      REDIS_URL: redis://localhost:6379
-      NEXT_PUBLIC_APP_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
         with:
           version: 10.13.1
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
+      - run: pnpm install --frozen-lockfile
       - name: Typecheck
         run: pnpm tsc --noEmit
+      - name: Unit tests with coverage
+        run: pnpm test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
 
-      # Lint intentionally omitted: `next lint` (the current package script)
-      # was removed in Next.js 16. Re-enable once .eslintrc.* is migrated
-      # to a flat config and the script points at eslint directly.
+  lint:
+    name: ESLint + Prettier
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: ESLint
+        run: pnpm lint --max-warnings 0
+      - name: Prettier
+        run: pnpm format
 
-      - name: Unit tests
-        run: pnpm test --run
+  build:
+    name: Production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Next.js build
+        run: pnpm build
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: pnpm audit (fail on high/critical)
+        run: pnpm audit --audit-level=high --prod
+
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

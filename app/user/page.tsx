@@ -1,7 +1,7 @@
-import AppLayout from '@/components/layout/AppLayout';
-import { getUserProfile } from '@/lib/data';
-import Image from 'next/image';
-import React from 'react';
+import AppLayout from "@/components/layout/AppLayout";
+import { getUserProfile } from "@/lib/data";
+import Image from "next/image";
+import React from "react";
 
 const StatCard: React.FC<{
   label: string;
@@ -35,8 +35,8 @@ export default async function UserProfilePage() {
   }
 
   const registeredDate = new Date(profile.registered).toLocaleDateString(
-    'en-US',
-    { year: 'numeric', month: 'long', day: 'numeric' },
+    "en-US",
+    { year: "numeric", month: "long", day: "numeric" },
   );
 
   return (

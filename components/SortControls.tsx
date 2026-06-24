@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import clsx from 'clsx';
-import { useDebounce } from '@/lib/use-debounce';
+import React, { useEffect, useState } from "react";
+import clsx from "clsx";
+import { useDebounce } from "@/lib/use-debounce";
 
-export type SortKey = 'date_added' | 'title' | 'year' | 'artist';
-export type SortOrder = 'asc' | 'desc';
-export type View = 'grid' | 'list';
+export type SortKey = "date_added" | "title" | "year" | "artist";
+export type SortOrder = "asc" | "desc";
+export type View = "grid" | "list";
 
 interface FilterOptions {
   isEnabled: boolean;
@@ -24,14 +24,14 @@ interface SortControlsProps {
   onViewChange: (view: View) => void;
   searchQuery: string;
   onSearchQueryChange: (query: string) => void;
-  viewType: 'collection' | 'wantlist';
+  viewType: "collection" | "wantlist";
 }
 
 const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: 'title', label: 'Title' },
-  { key: 'artist', label: 'Artist' },
-  { key: 'year', label: 'Year' },
-  { key: 'date_added', label: 'Date Added' },
+  { key: "title", label: "Title" },
+  { key: "artist", label: "Artist" },
+  { key: "year", label: "Year" },
+  { key: "date_added", label: "Date Added" },
 ];
 
 const SortControls: React.FC<SortControlsProps> = ({
@@ -47,21 +47,26 @@ const SortControls: React.FC<SortControlsProps> = ({
   viewType,
 }) => {
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
+  // Track the prop value with state so we can detect changes during render
+  // and resync without an effect — see https://react.dev/learn/you-might-not-need-an-effect.
+  const [prevInitialSearchQuery, setPrevInitialSearchQuery] =
+    useState(initialSearchQuery);
+  if (prevInitialSearchQuery !== initialSearchQuery) {
+    setPrevInitialSearchQuery(initialSearchQuery);
+    setSearchQuery(initialSearchQuery);
+  }
+
   const debouncedSearchQuery = useDebounce(searchQuery, 1000);
 
   useEffect(() => {
     onSearchQueryChange(debouncedSearchQuery);
   }, [debouncedSearchQuery, onSearchQueryChange]);
 
-  useEffect(() => {
-    setSearchQuery(initialSearchQuery);
-  }, [initialSearchQuery]);
-
   const buttonBaseClasses =
-    'focus:outline-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg focus:ring-discogs-blue';
-  const activeButtonClasses = 'bg-discogs-blue text-white';
+    "focus:outline-none rounded-md px-4 py-2 text-sm font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg focus:ring-discogs-blue";
+  const activeButtonClasses = "bg-discogs-blue text-white";
   const inactiveButtonClasses =
-    'bg-discogs-bg-light text-discogs-text-secondary hover:bg-discogs-border';
+    "bg-discogs-bg-light text-discogs-text-secondary hover:bg-discogs-border";
 
   return (
     <div className="sticky top-[80px] z-40 flex flex-wrap items-center justify-between gap-4 border-b border-discogs-border bg-discogs-bg-light/80 p-4 backdrop-blur-sm">
@@ -110,14 +115,14 @@ const SortControls: React.FC<SortControlsProps> = ({
             className={clsx(
               buttonBaseClasses,
               inactiveButtonClasses,
-              'ml-2 flex items-center space-x-2',
+              "ml-2 flex items-center space-x-2",
             )}
             aria-label={`Sort order: ${
-              sortOrder === 'asc' ? 'Ascending' : 'Descending'
+              sortOrder === "asc" ? "Ascending" : "Descending"
             }`}
           >
-            <span>{sortOrder === 'asc' ? 'Asc' : 'Desc'}</span>
-            {sortOrder === 'asc' ? (
+            <span>{sortOrder === "asc" ? "Asc" : "Desc"}</span>
+            {sortOrder === "asc" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-4 w-4"
@@ -164,15 +169,15 @@ const SortControls: React.FC<SortControlsProps> = ({
                   aria-checked={opt.isEnabled}
                   onClick={opt.onToggle}
                   className={clsx(
-                    'relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg-light',
-                    opt.isEnabled ? 'bg-discogs-blue' : 'bg-discogs-border',
+                    "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg-light",
+                    opt.isEnabled ? "bg-discogs-blue" : "bg-discogs-border",
                   )}
                 >
                   <span
                     aria-hidden="true"
                     className={clsx(
-                      'pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out',
-                      opt.isEnabled ? 'translate-x-5' : 'translate-x-0',
+                      "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                      opt.isEnabled ? "translate-x-5" : "translate-x-0",
                     )}
                   />
                 </button>
@@ -181,13 +186,13 @@ const SortControls: React.FC<SortControlsProps> = ({
           )}
         <div className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
           <button
-            onClick={() => onViewChange('grid')}
-            aria-pressed={view === 'grid'}
+            onClick={() => onViewChange("grid")}
+            aria-pressed={view === "grid"}
             className={clsx(
-              'rounded-md p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg',
-              view === 'grid'
-                ? 'bg-discogs-blue text-white'
-                : 'text-discogs-text-secondary hover:bg-discogs-border',
+              "rounded-md p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg",
+              view === "grid"
+                ? "bg-discogs-blue text-white"
+                : "text-discogs-text-secondary hover:bg-discogs-border",
             )}
             aria-label="Grid View"
           >
@@ -201,13 +206,13 @@ const SortControls: React.FC<SortControlsProps> = ({
             </svg>
           </button>
           <button
-            onClick={() => onViewChange('list')}
-            aria-pressed={view === 'list'}
+            onClick={() => onViewChange("list")}
+            aria-pressed={view === "list"}
             className={clsx(
-              'rounded-md p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg',
-              view === 'list'
-                ? 'bg-discogs-blue text-white'
-                : 'text-discogs-text-secondary hover:bg-discogs-border',
+              "rounded-md p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-discogs-blue focus:ring-offset-2 focus:ring-offset-discogs-bg",
+              view === "list"
+                ? "bg-discogs-blue text-white"
+                : "text-discogs-text-secondary hover:bg-discogs-border",
             )}
             aria-label="List View"
           >

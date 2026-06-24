@@ -102,6 +102,6 @@ export interface WantlistResponse {
 }
 
 export enum ViewType {
-  COLLECTION = 'COLLECTION',
-  WANTLIST = 'WANTLIST',
+  COLLECTION = "COLLECTION",
+  WANTLIST = "WANTLIST",
 }

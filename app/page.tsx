@@ -1,19 +1,23 @@
-import { getIronSession } from 'iron-session';
-import { redirect } from 'next/navigation';
-import Login from '@/components/Login';
-import { cookies } from 'next/headers';
-import { sessionOptions, SessionData } from '@/lib/session-options';
+import { getIronSession } from "iron-session";
+import { redirect } from "next/navigation";
+import Login from "@/components/Login";
+import { cookies } from "next/headers";
+import { sessionOptions, SessionData } from "@/lib/session-options";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function LoginPage() {
-  const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
-  
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
+
   const isTokenLoggedIn = !!session.token && !!session.user;
-  const isOAuthLoggedIn = !!session.accessToken && !!session.accessTokenSecret && !!session.user;
+  const isOAuthLoggedIn =
+    !!session.accessToken && !!session.accessTokenSecret && !!session.user;
 
   if (isTokenLoggedIn || isOAuthLoggedIn) {
-    redirect('/collection');
+    redirect("/collection");
   }
 
   return (

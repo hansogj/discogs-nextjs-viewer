@@ -3,16 +3,16 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'i.discogs.com',
-        port: '',
-        pathname: '/**',
+        protocol: "https",
+        hostname: "i.discogs.com",
+        port: "",
+        pathname: "/**",
       },
       {
-        protocol: 'https',
-        hostname: 'gravatar.com',
-        port: '',
-        pathname: '/avatar/**',
+        protocol: "https",
+        hostname: "gravatar.com",
+        port: "",
+        pathname: "/avatar/**",
       },
     ],
   },
@@ -20,11 +20,11 @@ const nextConfig = {
     // Workaround for issues with Node.js modules using "#" imports.
     // This aliases '#async_hooks' to the Node.js built-in 'async_hooks' module,
     // resolving the "Module not found" error during the build.
-    config.resolve.alias['#async_hooks'] = 'async_hooks';
+    config.resolve.alias["#async_hooks"] = "async_hooks";
     return config;
   },
   // Add turbopack config to silence the warning and potentially resolve build issues
-  turbopack: {}, 
+  turbopack: {},
 };
 
 export default nextConfig;

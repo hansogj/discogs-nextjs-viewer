@@ -1,4 +1,3 @@
-
 export interface DiscogsUser {
   id: number;
   username: string;
@@ -103,7 +102,7 @@ export interface WantlistRelease {
 
 export interface MasterRelease {
   id: number;
-    images: {
+  images: {
     type: string;
     uri: string;
     resource_url: string;
@@ -197,7 +196,7 @@ export interface SessionData {
 export interface CustomField {
   id: number;
   name: string;
-  type: 'dropdown' | 'textarea';
+  type: "dropdown" | "textarea";
   public: boolean;
   options?: string[];
 }
@@ -208,14 +207,14 @@ export interface CustomFieldsResponse {
 
 // SyncProgress interface updated to include 'progress' property
 export interface SyncProgress {
-  status: 'starting' | 'fetching' | 'processing' | 'caching' | 'done' | 'error';
+  status: "starting" | "fetching" | "processing" | "caching" | "done" | "error";
   resource?:
-    | 'collection'
-    | 'wantlist'
-    | 'collection_details'
-    | 'wantlist_details'
-    | 'collection_masters'
-    | 'wantlist_prices';
+    | "collection"
+    | "wantlist"
+    | "collection_details"
+    | "wantlist_details"
+    | "collection_masters"
+    | "wantlist_prices";
   page?: number;
   pages?: number;
   processed?: number;

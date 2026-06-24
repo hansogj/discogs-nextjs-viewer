@@ -1,19 +1,18 @@
-
-'use client';
+"use client";
 
 // Fix: Import `useState` from React to manage component state.
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import Header from './Header';
-import ErrorMessage from '../ErrorMessage';
-import { syncAllData, clearCacheAction } from '@/app/actions';
-import type { DiscogsUser } from '@/lib/types';
-import type { SyncProgress } from '@/lib/cache';
-import { useRememberedUsers } from '@/hooks/useRememberedUsers';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
+import Header from "./Header";
+import ErrorMessage from "../ErrorMessage";
+import { syncAllData, clearCacheAction } from "@/app/actions";
+import type { DiscogsUser } from "@/lib/types";
+import type { SyncProgress } from "@/lib/cache";
+import { useRememberedUsers } from "@/hooks/useRememberedUsers";
 
 interface AppContainerProps {
   children: React.ReactNode;
-  activeView: 'collection' | 'wantlist' | 'duplicates' | 'stats' | 'user';
+  activeView: "collection" | "wantlist" | "duplicates" | "stats" | "user";
   user: DiscogsUser;
   collectionCount: number;
   wantlistCount: number;
@@ -46,27 +45,36 @@ export default function AppContainer({
     if (pollRef.current) return;
     pollRef.current = setInterval(async () => {
       try {
-        const res = await fetch('/api/sync-progress');
+        const res = await fetch("/api/sync-progress");
         if (res.ok) {
           const progress = await res.json();
-          if (progress.status === 'completed' || progress.status === 'failed' || progress.status === 'idle') {
+          // Worker writes `"done"` / `"error"` (see lib/cache.ts SyncProgress
+          // type + worker.ts). It also calls clearSyncProgress at the end, so
+          // we may instead observe `"idle"` (the API's fallback when the key
+          // is gone). All three mean the sync is no longer running — stop
+          // polling and refresh the page so the new cached data is rendered.
+          if (
+            progress.status === "done" ||
+            progress.status === "error" ||
+            progress.status === "idle"
+          ) {
             if (pollRef.current) clearInterval(pollRef.current);
             pollRef.current = null;
             setIsSyncing(false);
             setSyncProgress(null);
-            if (progress.status === 'completed') router.refresh();
+            if (progress.status !== "error") router.refresh();
           } else if (progress.status) {
             setIsSyncing(true);
             setSyncProgress(progress);
           }
         }
       } catch (e) {
-        console.error('Polling for sync progress failed', e);
+        console.error("Polling for sync progress failed", e);
         if (pollRef.current) clearInterval(pollRef.current);
         pollRef.current = null;
         setIsSyncing(false);
         setSyncProgress(null);
-        setSyncError('Failed to get sync progress.');
+        setSyncError("Failed to get sync progress.");
       }
     }, 2000);
   }, [router]);
@@ -76,10 +84,15 @@ export default function AppContainer({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch('/api/sync-progress');
+        const res = await fetch("/api/sync-progress");
         if (res.ok && !cancelled) {
           const progress = await res.json();
-          if (progress.status && progress.status !== 'idle' && progress.status !== 'completed' && progress.status !== 'failed') {
+          if (
+            progress.status &&
+            progress.status !== "idle" &&
+            progress.status !== "done" &&
+            progress.status !== "error"
+          ) {
             setIsSyncing(true);
             setSyncProgress(progress);
             startPolling();
@@ -99,7 +112,7 @@ export default function AppContainer({
   const handleSync = async () => {
     setIsSyncing(true);
     setSyncError(null);
-    setSyncProgress({ status: 'starting', message: 'Initiating sync...' });
+    setSyncProgress({ status: "starting", message: "Initiating sync..." });
 
     await syncAllData();
     startPolling();
@@ -108,7 +121,7 @@ export default function AppContainer({
   const handleClearCache = async () => {
     if (
       window.confirm(
-        'Are you sure you want to clear the local cache? This will require a full sync with Discogs.',
+        "Are you sure you want to clear the local cache? This will require a full sync with Discogs.",
       )
     ) {
       await clearCacheAction();
@@ -143,5 +156,3 @@ export default function AppContainer({
     </>
   );
 }
-
-

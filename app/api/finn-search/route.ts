@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const query = request.nextUrl.searchParams.get('q');
+  const query = request.nextUrl.searchParams.get("q");
   if (!query) {
     return NextResponse.json({ count: null }, { status: 400 });
   }
@@ -11,9 +11,9 @@ export async function GET(request: NextRequest) {
   try {
     const res = await fetch(finnUrl, {
       headers: {
-        'User-Agent':
-          'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        Accept: 'text/html',
+        "User-Agent":
+          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Accept: "text/html",
       },
       next: { revalidate: 3600 },
     });
@@ -25,9 +25,7 @@ export async function GET(request: NextRequest) {
     const html = await res.text();
 
     // Try meta description: "Du finner X annonse(r)..."
-    const metaMatch = html.match(
-      /Du finner (\d+) annonse/,
-    );
+    const metaMatch = html.match(/Du finner (\d+) annonse/);
     if (metaMatch) {
       return NextResponse.json({ count: parseInt(metaMatch[1], 10) });
     }
