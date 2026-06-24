@@ -109,10 +109,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    # Soft-fail until repo settings have Dependency Graph enabled
-    # (Settings → Code security → Dependency graph). Once on, this can be
-    # tightened by removing continue-on-error.
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/dependency-review-action@v4
