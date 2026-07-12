@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+} from "react";
+import { useSearchParams } from "next/navigation";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -44,23 +51,79 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
   const [showOnlyFinnHits, setShowOnlyFinnHits] = useState(false);
 
-  // Filter states
+  // Seed filter state from URL search params (e.g. links from the /stats
+  // page: `/collection?style=Jazz`, `?decade=1970s`, `?artist=X`,
+  // `?label=Y`, `?format=Vinyl,LP,12"`). Reads params synchronously so
+  // initial render is already filtered — no flash of unfiltered content.
+  const searchParams = useSearchParams();
+  const readList = useCallback(
+    (key: string) =>
+      searchParams
+        ?.get(key)
+        ?.split(",")
+        .map((s) => s.trim())
+        .filter(Boolean) ?? [],
+    [searchParams],
+  );
+  const initialYearsFromParams = useCallback((): Set<number> => {
+    const decade = searchParams?.get("decade");
+    if (decade) {
+      const m = decade.match(/^(\d{4})s?$/);
+      if (m) {
+        const start = parseInt(m[1], 10);
+        const years = new Set<number>();
+        for (let y = start; y < start + 10; y++) years.add(y);
+        return years;
+      }
+    }
+    const yearParam = readList("year");
+    if (yearParam.length) {
+      return new Set(yearParam.map((y) => parseInt(y, 10)));
+    }
+    return new Set();
+  }, [searchParams, readList]);
+
   const [selectedArtists, setSelectedArtists] = useState<Set<string>>(
-    new Set(),
+    () => new Set(readList("artist")),
   );
   const [selectedFormats, setSelectedFormats] = useState<Set<string>>(
-    new Set(),
+    () => new Set(readList("format")),
   );
-  const [selectedYears, setSelectedYears] = useState<Set<number>>(new Set());
+  const [selectedYears, setSelectedYears] = useState<Set<number>>(
+    initialYearsFromParams,
+  );
   const [selectedFolders, setSelectedFolders] = useState<Set<number>>(
     new Set(),
   );
   const [selectedComposers, setSelectedComposers] = useState<Set<string>>(
     new Set(),
   );
+  const [selectedStyles, setSelectedStyles] = useState<Set<string>>(
+    () => new Set(readList("style")),
+  );
+  const [selectedLabels, setSelectedLabels] = useState<Set<string>>(
+    () => new Set(readList("label")),
+  );
   const [selectedCustomFields, setSelectedCustomFields] = useState<
     Record<string, Set<string>>
   >({});
+
+  // If the URL changes after mount (e.g. user clicks a different stats
+  // link while already on /collection), re-seed the filter state.
+  const searchParamsKey = searchParams?.toString() ?? "";
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    setSelectedArtists(new Set(readList("artist")));
+    setSelectedFormats(new Set(readList("format")));
+    setSelectedStyles(new Set(readList("style")));
+    setSelectedLabels(new Set(readList("label")));
+    setSelectedYears(initialYearsFromParams());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsKey]);
 
   const handleSortOrderChange = () => {
     setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -146,6 +209,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       const info = item.basic_information;
       const artistName = info.artists?.[0]?.name;
       const formatName = info.formats?.[0]?.name;
+      const primaryLabel = info.labels?.[0]?.name;
+      const itemStyles = item.details?.styles ?? [];
       const year =
         "master_year" in item && item.master_year
           ? item.master_year
@@ -169,6 +234,16 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       if (
         selectedFormats.size > 0 &&
         (!formatName || !selectedFormats.has(formatName))
+      )
+        return false;
+      if (
+        selectedStyles.size > 0 &&
+        !itemStyles.some((s) => selectedStyles.has(s))
+      )
+        return false;
+      if (
+        selectedLabels.size > 0 &&
+        (!primaryLabel || !selectedLabels.has(primaryLabel))
       )
         return false;
       if (selectedYears.size > 0 && (!year || !selectedYears.has(year)))
@@ -306,6 +381,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     selectedYears,
     selectedFolders,
     selectedComposers,
+    selectedStyles,
+    selectedLabels,
     selectedCustomFields,
     customFields,
   ]);
@@ -316,6 +393,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     years: selectedYears,
     folders: selectedFolders,
     composers: selectedComposers,
+    styles: selectedStyles,
+    labels: selectedLabels,
     customFields: selectedCustomFields,
   };
 
@@ -369,6 +448,12 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       case "composers":
         updater(setSelectedComposers);
         break;
+      case "styles":
+        updater(setSelectedStyles);
+        break;
+      case "labels":
+        updater(setSelectedLabels);
+        break;
       default:
         customFieldUpdater(type);
     }
@@ -381,6 +466,8 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       | "years"
       | "folders"
       | "composers"
+      | "styles"
+      | "labels"
       | "all"
       | string,
   ) => {
@@ -389,9 +476,19 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     if (type === "years" || type === "all") setSelectedYears(new Set());
     if (type === "folders" || type === "all") setSelectedFolders(new Set());
     if (type === "composers" || type === "all") setSelectedComposers(new Set());
+    if (type === "styles" || type === "all") setSelectedStyles(new Set());
+    if (type === "labels" || type === "all") setSelectedLabels(new Set());
     if (type === "all") {
       setSelectedCustomFields({});
-    } else {
+    } else if (
+      type !== "artists" &&
+      type !== "formats" &&
+      type !== "years" &&
+      type !== "folders" &&
+      type !== "composers" &&
+      type !== "styles" &&
+      type !== "labels"
+    ) {
       setSelectedCustomFields((prev) => ({ ...prev, [type]: new Set() }));
     }
   };

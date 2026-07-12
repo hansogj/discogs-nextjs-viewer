@@ -20,6 +20,8 @@ interface FilterSidebarProps {
     years: Set<number>;
     folders: Set<number>;
     composers: Set<string>;
+    styles: Set<string>;
+    labels: Set<string>;
     customFields: Record<string, Set<string>>;
   };
   onFilterChange: (
@@ -45,6 +47,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const years = new Map<string, number>();
     const itemFolders = new Map<number, number>();
     const composers = new Map<string, number>();
+    const styles = new Map<string, number>();
+    const labels = new Map<string, number>();
     const customFieldValues: Record<string, Map<string, number>> = {};
 
     if (customFields) {
@@ -63,6 +67,13 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       const formatName = item.basic_information.formats?.[0]?.name;
       if (formatName) {
         formats.set(formatName, (formats.get(formatName) || 0) + 1);
+      }
+      const labelName = item.basic_information.labels?.[0]?.name;
+      if (labelName) {
+        labels.set(labelName, (labels.get(labelName) || 0) + 1);
+      }
+      for (const s of item.details?.styles ?? []) {
+        styles.set(s, (styles.get(s) || 0) + 1);
       }
       const year =
         "master_year" in item && item.master_year
@@ -113,6 +124,14 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
     const sortedComposers = Array.from(composers.entries()).sort((a, b) =>
       a[0].localeCompare(b[0]),
     );
+    // Styles + labels are typically long tails; sort by count desc so the
+    // dominant few surface at the top of the collapsed group.
+    const sortedStyles = Array.from(styles.entries()).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
+    const sortedLabels = Array.from(labels.entries()).sort(
+      (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+    );
     const sortedCustomFields: Record<string, [string, number][]> = {};
     for (const fieldName in customFieldValues) {
       sortedCustomFields[fieldName] = Array.from(
@@ -141,6 +160,8 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
       years: sortedYears,
       folders: sortedFolders,
       composers: sortedComposers,
+      styles: sortedStyles,
+      labels: sortedLabels,
       customFields: sortedCustomFields,
     };
     return result;
@@ -196,6 +217,46 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
               onChange={(e) =>
                 onFilterChange("composers", name, e.target.checked)
               }
+            />
+          ))}
+        </FilterGroup>
+      )}
+
+      {filterData.styles.length > 0 && (
+        <FilterGroup
+          title="Style"
+          onClear={() => onFilterClear("styles")}
+          selectedCount={activeFilters.styles.size}
+          defaultOpen={activeFilters.styles.size > 0}
+        >
+          {filterData.styles.map(([name, count]) => (
+            <FilterCheckbox
+              key={name}
+              id={`style-${name}`}
+              label={name}
+              count={count}
+              checked={activeFilters.styles.has(name)}
+              onChange={(e) => onFilterChange("styles", name, e.target.checked)}
+            />
+          ))}
+        </FilterGroup>
+      )}
+
+      {filterData.labels.length > 0 && (
+        <FilterGroup
+          title="Label"
+          onClear={() => onFilterClear("labels")}
+          selectedCount={activeFilters.labels.size}
+          defaultOpen={activeFilters.labels.size > 0}
+        >
+          {filterData.labels.map(([name, count]) => (
+            <FilterCheckbox
+              key={name}
+              id={`label-${name}`}
+              label={name}
+              count={count}
+              checked={activeFilters.labels.has(name)}
+              onChange={(e) => onFilterChange("labels", name, e.target.checked)}
             />
           ))}
         </FilterGroup>
