@@ -178,13 +178,17 @@ export async function getCachedData<T>(
   key: CacheKey,
 ): Promise<T | null> {
   const filePath = getCachePath(username, key);
+  // Open once and reuse the same file descriptor for stat + read so mtime
+  // check and content read cannot refer to different files (TOCTOU).
+  let handle: fs.FileHandle | undefined;
   try {
-    const stat = await fs.stat(filePath);
+    handle = await fs.open(filePath, "r");
+    const stat = await handle.stat();
     const cached = parsedCache.get(filePath);
     if (cached && cached.mtimeMs === stat.mtimeMs) {
       return cached.data as T;
     }
-    const fileContent = await fs.readFile(filePath, "utf-8");
+    const fileContent = await handle.readFile("utf-8");
     const parsed = JSON.parse(fileContent) as T;
     parsedCache.set(filePath, { mtimeMs: stat.mtimeMs, data: parsed });
     return parsed;
@@ -196,6 +200,8 @@ export async function getCachedData<T>(
     }
     parsedCache.delete(filePath);
     return null;
+  } finally {
+    await handle?.close().catch(() => {});
   }
 }
 
