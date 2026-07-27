@@ -20,18 +20,18 @@
     "test:e2e:oauth": "RUN_INTERACTIVE=1 playwright test --headed --grep 'full OAuth'"
   },
   "dependencies": {
-    "bullmq": "^5.66.5",
+    "bullmq": "^5.81.2",
     "clsx": "^2.1.1",
-    "ioredis": "^5.10.1",
+    "ioredis": "^5.11.1",
     "iron-session": "^8.0.4",
-    "next": "^16.2.9",
+    "next": "^16.2.12",
     "oauth-1.0a": "^2.2.6",
     "p-limit": "4.0.0",
     "react": "^18",
     "react-dom": "^18",
     "redis": "^5.10.0",
     "server-only": "^0.0.1",
-    "sharp": "^0.34.4",
+    "sharp": "^0.35.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
