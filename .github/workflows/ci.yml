@@ -88,18 +88,15 @@ jobs:
     name: Dependency audit
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/action-setup@v6
+      - name: OSV scan
+        uses: google/osv-scanner-action/osv-scanner-action@v2.3.8
         with:
-          version: 10.13.1
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: pnpm audit (fail on high/critical)
-        run: pnpm audit --audit-level=high --prod
+          scan-args: |-
+            --lockfile=pnpm-lock.yaml
 
   dependency-review:
     name: Dependency review
