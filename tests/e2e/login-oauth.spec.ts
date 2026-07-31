@@ -11,10 +11,22 @@ test.describe("OAuth Login Flow", () => {
   /**
    * Automated: verifies the OAuth request endpoint redirects to Discogs
    * and sets the session cookie with request tokens.
+   *
+   * Skipped when DISCOGS_CONSUMER_KEY is the ci-stub value — this endpoint
+   * makes a real HTTP call to Discogs's request_token endpoint which returns
+   * 401 "Invalid consumer" for stub credentials.
    */
   test("request endpoint should redirect to Discogs with session cookie", async ({
     request,
   }) => {
+    if (
+      !process.env.DISCOGS_CONSUMER_KEY ||
+      process.env.DISCOGS_CONSUMER_KEY === "ci-stub"
+    ) {
+      test.skip(true, "Real DISCOGS_CONSUMER_KEY required (skipped in CI)");
+      return;
+    }
+
     const resp = await request.get("/api/oauth/request", {
       maxRedirects: 0,
     });

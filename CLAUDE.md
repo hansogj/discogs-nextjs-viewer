@@ -76,7 +76,8 @@ Wantlist items show Finn.no marketplace hit counts:
 
 - **`lib/discogs.ts`** — All Discogs API calls: OAuth signing, pagination, release detail fetching, adaptive rate limiting
 - **`lib/cache.ts`** — Read/write JSON cache files, sync info (timestamps), sync progress (via Redis)
-- **`lib/data.ts`** — Data access layer for pages: `getCachedCollection()`, `getCachedWantlist()`, `getHeaderData()`, etc.
+- **`lib/data.ts`** — Server-only data access layer for pages: `getCachedCollection()`, `getCachedWantlist()`, `getHeaderData()`, `getCollectionStats()`. Imports `server-only` so it cannot be pulled into a client or test module.
+- **`lib/stats.ts`** — Pure aggregation helpers (`computeCollectionStats`, `getCollectionDuplicates`, `StatsPayload`). Split from `lib/data.ts` so unit tests can exercise them without the server-only auth/cache chain. Re-exported from `lib/data.ts` for existing call sites.
 - **`lib/queue.ts`** — BullMQ queue instance (`'sync'` queue)
 - **`lib/redis.ts`** — ioredis connection (env: `REDIS_URL`, `REDIS_PASSWORD`)
 - **`lib/session-options.ts`** — iron-session config (env: `AUTH_SECRET`)
@@ -108,6 +109,21 @@ NEXT_PUBLIC_APP_URL=      # e.g. http://localhost:3000
 
 ### Testing
 
-- Unit tests live alongside source in `*.test.ts` files or in `tests/`
-- E2E tests in `tests/e2e/` use Playwright; `login-oauth.spec.ts` covers the OAuth flow
-- Vitest config in `vitest.config.ts`, Playwright config in `playwright.config.ts`
+- Unit tests live alongside source (`*.test.ts` / `*.test.tsx`). Vitest config in `vitest.config.ts`; it aliases `@/*` to the project root and stubs `server-only` so pure modules like `lib/stats.ts` can be tested. `vitest.setup.ts` seeds the env vars that server modules validate on import.
+- Shared test fixtures live in `tests/fixtures/` (e.g. `sample-collection.ts`) and are consumed by both unit tests and the Playwright E2E setup.
+- E2E tests in `tests/e2e/` use Playwright. `tests/e2e/global-setup.ts` writes the fixtures into `.next/cache/discogs-data/` before any spec runs so `/stats`, `/duplicates`, and `/wantlist` render against known data.
+- CI runs Vitest + Playwright as separate workflows (`.github/workflows/ci.yml` and `.github/workflows/e2e.yml`).
+
+### CI Workflows
+
+Two workflows in `.github/workflows/`:
+
+- **`ci.yml`** — parallel jobs for typecheck+tests+coverage, lint+format, production build, dependency audit (`google/osv-scanner-action` reading `pnpm-lock.yaml`, configured via `.github/osv-scanner.toml`), and GitHub's `dependency-review-action`.
+- **`e2e.yml`** — Playwright suite against a Redis service container. Seeds fixture data via `tests/e2e/global-setup.ts`.
+
+### Dependency Policy
+
+- **Exact versions**: `package.json` pins every entry to an exact version (no `^`, `~`, or `*`). `.npmrc` sets `save-exact=true` so future `pnpm add` calls preserve that convention.
+- **Dependabot** is the source of updates. Group rules are configured in `.github/dependabot.yml`.
+- **Security audits** run OSV against `pnpm-lock.yaml`. Known-safe advisories that cannot be fixed without a major upstream change are listed in `.github/osv-scanner.toml` with an `ignoreUntil` deadline to force periodic reassessment.
+- **pnpm overrides** in `package.json` (`postcss@<X: exact`, `sharp@<X: exact`) are used to force transitively-pinned versions inside Next.js's own dep tree past their fix release.
