@@ -46,7 +46,16 @@ export default defineConfig({
         "app/**/page.tsx",
         "app/**/layout.tsx",
       ],
-      // No thresholds yet — measure first, gate later.
+      // Threshold acts as a ratchet: current baseline sits above these
+      // numbers, so removing tests fails CI. Bump each time coverage
+      // improves; do NOT lower to accommodate new untested files —
+      // add tests instead.
+      thresholds: {
+        lines: 5,
+        statements: 5,
+        functions: 45,
+        branches: 55,
+      },
     },
   },
 });
