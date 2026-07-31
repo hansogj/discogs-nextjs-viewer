@@ -35,9 +35,13 @@ export default async function DuplicatesPage() {
           <div className="space-y-8">
             {duplicateGroups.map((group, index) => {
               const firstItem = group[0].basic_information;
+              const groupKey =
+                firstItem.master_id > 0
+                  ? `m-${firstItem.master_id}`
+                  : `r-${firstItem.id}`;
               return (
                 <section
-                  key={firstItem.master_id}
+                  key={groupKey}
                   className="animate-slide-up rounded-xl border border-discogs-border bg-discogs-bg-light p-4 shadow-lg transition-shadow duration-300 hover:shadow-glow-blue/20 sm:p-6"
                   style={{ animationDelay: `${index * 50}ms` }}
                 >

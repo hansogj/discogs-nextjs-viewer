@@ -31,11 +31,7 @@ async function ensureCacheDir() {
 }
 
 type CacheKey =
-  | "collection"
-  | "wantlist"
-  | "folders"
-  | "custom_fields"
-  | "wantlist_prices";
+  "collection" | "wantlist" | "folders" | "custom_fields" | "wantlist_prices";
 
 // Strip any character that can't appear in a safe filename (anything outside
 // [A-Za-z0-9]). Returns a deterministic, traversal-safe slug derived from the
@@ -165,21 +161,43 @@ export async function clearSyncProgress(username: string): Promise<void> {
 }
 
 // --- Main Data Cache ---
+
+// In-memory cache of parsed JSON, keyed by absolute file path. Each entry is
+// tagged with the file's mtimeMs at read time; on subsequent calls we stat
+// the file and reuse the parsed object only if mtime is unchanged. This
+// avoids re-parsing 20 MB+ JSON on every request when the underlying cache
+// file only changes on sync.
+const parsedCache = new Map<string, { mtimeMs: number; data: unknown }>();
+
 export async function getCachedData<T>(
   username: string,
   key: CacheKey,
 ): Promise<T | null> {
   const filePath = getCachePath(username, key);
+  // Open once and reuse the same file descriptor for stat + read so mtime
+  // check and content read cannot refer to different files (TOCTOU).
+  let handle: fs.FileHandle | undefined;
   try {
-    const fileContent = await fs.readFile(filePath, "utf-8");
-    return JSON.parse(fileContent) as T;
+    handle = await fs.open(filePath, "r");
+    const stat = await handle.stat();
+    const cached = parsedCache.get(filePath);
+    if (cached && cached.mtimeMs === stat.mtimeMs) {
+      return cached.data as T;
+    }
+    const fileContent = await handle.readFile("utf-8");
+    const parsed = JSON.parse(fileContent) as T;
+    parsedCache.set(filePath, { mtimeMs: stat.mtimeMs, data: parsed });
+    return parsed;
   } catch (error) {
     // If file doesn't exist (ENOENT), it's a cache miss, which is normal.
     // @ts-ignore
     if ((error as { code?: string }).code !== "ENOENT") {
       console.error(`Failed to read cache for ${key}:`, error);
     }
+    parsedCache.delete(filePath);
     return null;
+  } finally {
+    await handle?.close().catch(() => {});
   }
 }
 

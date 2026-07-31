@@ -24,6 +24,23 @@
   --color-success-dark: #15803d;
   --color-danger: #dc2626;
   --color-danger-dark: #b91c1c;
+  /* Chart ramp: sea + sky spectrum for the navy background */
+  --chart-1: #3498db;
+  --chart-2: #5fb6a8;
+  --chart-3: #7fb0e0;
+  --chart-4: #9b6bd6;
+  --chart-5: #f0b429;
+  --chart-6: #2f8074;
+  --chart-7: #e07b53;
+  --chart-8: #4ea1d3;
+  --chart-9: #a3c644;
+  --chart-10: #d05a80;
+  --chart-11: #62c98b;
+  --chart-12: #b784e0;
+  --chart-13: #f4a261;
+  --chart-14: #4dd0c6;
+  --chart-15: #ff8fa3;
+  --chart-other: #626c78;
 }
 
 [data-theme="earthy"] {
@@ -40,6 +57,23 @@
   --color-success-dark: #5e7a2a;
   --color-danger: #b04a2a;
   --color-danger-dark: #8a3618;
+  /* Chart ramp: amber + terracotta with jewel accents */
+  --chart-1: #e8a33d;
+  --chart-2: #5fb6a8;
+  --chart-3: #c56a1e;
+  --chart-4: #9e6b86;
+  --chart-5: #f4d08a;
+  --chart-6: #2f8074;
+  --chart-7: #c4694e;
+  --chart-8: #a07a33;
+  --chart-9: #8e7cc3;
+  --chart-10: #6fa8dc;
+  --chart-11: #b45f06;
+  --chart-12: #674ea7;
+  --chart-13: #76a5af;
+  --chart-14: #cc7a6f;
+  --chart-15: #38761d;
+  --chart-other: #7d7259;
 }
 
 [data-theme="olive"] {
@@ -56,6 +90,23 @@
   --color-success-dark: #2f8074;
   --color-danger: #a3431f;
   --color-danger-dark: #7a3217;
+  /* Chart ramp: greens with amber/rust accents */
+  --chart-1: #8db342;
+  --chart-2: #5fb6a8;
+  --chart-3: #d2a13a;
+  --chart-4: #c96f3a;
+  --chart-5: #a3c644;
+  --chart-6: #2f8074;
+  --chart-7: #9b6bd6;
+  --chart-8: #d99a2b;
+  --chart-9: #b0b47a;
+  --chart-10: #6b8a2f;
+  --chart-11: #cd6c47;
+  --chart-12: #4a8d6f;
+  --chart-13: #e6b85c;
+  --chart-14: #7a9a4e;
+  --chart-15: #b56847;
+  --chart-other: #6a704e;
 }
 
 [data-theme="light"] {
@@ -72,6 +123,23 @@
   --color-success-dark: #3f5519;
   --color-danger: #8a2f1c;
   --color-danger-dark: #5f200f;
+  /* Chart ramp: readable saturated hues against cream */
+  --chart-1: #c56a1e;
+  --chart-2: #2f8074;
+  --chart-3: #7a3217;
+  --chart-4: #674ea7;
+  --chart-5: #8a4810;
+  --chart-6: #2b6b57;
+  --chart-7: #a3431f;
+  --chart-8: #5c5a2a;
+  --chart-9: #4a3a91;
+  --chart-10: #2c5e8a;
+  --chart-11: #8a3618;
+  --chart-12: #5c7a2a;
+  --chart-13: #6b3f83;
+  --chart-14: #a0532c;
+  --chart-15: #395d3c;
+  --chart-other: #a89579;
 }
 
 body {

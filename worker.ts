@@ -33,9 +33,7 @@ console.log(
 console.log("[Worker Init] Attempting to create BullMQ Worker instance.");
 
 type DetailResourceType =
-  | "collection_details"
-  | "wantlist_details"
-  | "collection_masters";
+  "collection_details" | "wantlist_details" | "collection_masters";
 
 const TOTAL_STEPS = 11;
 
