@@ -39,7 +39,7 @@ type CacheKey =
 // within CACHE_DIR — defense in depth so a future change to the sanitizer
 // can't introduce a path-traversal regression. CodeQL also recognises this
 // pattern as a sanitizer.
-function safeCachePath(username: string, filename: string) {
+export function safeCachePath(username: string, filename: string) {
   const safeUsername = username.replace(/[^a-z0-9]/gi, "_").toLowerCase();
   const resolved = path.resolve(CACHE_DIR, `${safeUsername}-${filename}`);
   if (resolved !== CACHE_DIR && !resolved.startsWith(CACHE_DIR_PREFIX)) {
