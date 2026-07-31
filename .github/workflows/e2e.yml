@@ -10,10 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-# Non-blocking Playwright suite. Most tests need cached collection JSON at
-# .next/cache/discogs-data/{user}-*.json plus a real AUTH_SECRET, neither of
-# which is provisioned in this workflow yet — so the test step is marked
-# continue-on-error and treated as informational until fixtures land.
+# Playwright suite. Fixture data is seeded by tests/e2e/global-setup.ts
+# before specs run; AUTH_SECRET falls back to the same ci-stub the other
+# CI jobs use. Failures block merges.
 
 env:
   DISCOGS_CONSUMER_KEY: ${{ secrets.DISCOGS_CONSUMER_KEY || 'ci-stub' }}
@@ -25,7 +24,7 @@ env:
 
 jobs:
   e2e:
-    name: Playwright (informational)
+    name: Playwright
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
@@ -50,10 +49,6 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
       - name: Run Playwright tests
-        # Non-blocking: tests that require committed cache fixtures or real
-        # Discogs credentials will fail until those land. Surface results
-        # via the uploaded report rather than gating merges.
-        continue-on-error: true
         run: pnpm test:e2e
       - name: Upload Playwright report
         if: always()
