@@ -189,47 +189,96 @@ export const sampleCollection: CollectionRelease[] = [
   }),
 ];
 
-export const sampleWantlist: ProcessedWantlistItem[] = [
-  {
-    id: 9001,
+type MakeWantlistOpts = {
+  id: number;
+  masterId: number;
+  title: string;
+  artist: string;
+  label?: string;
+  year: number;
+  styles?: string[];
+};
+
+const makeWantlistItem = (o: MakeWantlistOpts): ProcessedWantlistItem => ({
+  id: o.id,
+  resource_url: "",
+  rating: 0,
+  date_added: "2024-06-01T00:00:00Z",
+  basic_information: {
+    id: o.id,
+    master_id: o.masterId,
+    master_url: "",
     resource_url: "",
-    rating: 0,
-    date_added: "2024-06-01T00:00:00Z",
-    basic_information: {
-      id: 9001,
-      master_id: 5001,
-      master_url: "",
-      resource_url: "",
-      thumb: "",
-      cover_image: "",
-      title: "Bitches Brew",
-      year: 1970,
-      formats: [{ name: "Vinyl", qty: "2", descriptions: ["2xLP"] }],
-      labels: [
-        {
-          name: "Columbia",
-          catno: "GP 26",
-          entity_type: "1",
-          id: 500,
-          resource_url: "",
-        },
-      ],
-      artists: [
-        {
-          name: "Miles Davis",
-          anv: "",
-          join: "",
-          role: "",
-          tracks: "",
-          id: 100,
-          resource_url: "",
-        },
-      ],
-    },
-    details: { styles: ["Fusion", "Jazz-Rock"], genres: ["Jazz"] },
-    master_cover_image: "",
-    master_year: 1970,
+    thumb: "",
+    cover_image: "",
+    title: o.title,
+    year: o.year,
+    formats: [{ name: "Vinyl", qty: "1", descriptions: ["LP"] }],
+    labels: o.label
+      ? [
+          {
+            name: o.label,
+            catno: "TEST-002",
+            entity_type: "1",
+            id: id(),
+            resource_url: "",
+          },
+        ]
+      : [],
+    artists: [
+      {
+        name: o.artist,
+        anv: "",
+        join: "",
+        role: "",
+        tracks: "",
+        id: id(),
+        resource_url: "",
+      },
+    ],
   },
+  details: { styles: o.styles ?? [], genres: [] },
+  master_cover_image: "",
+  master_year: o.year,
+});
+
+export const sampleWantlist: ProcessedWantlistItem[] = [
+  makeWantlistItem({
+    id: 9001,
+    masterId: 5001,
+    title: "Bitches Brew",
+    artist: "Miles Davis",
+    label: "Columbia",
+    year: 1970,
+    styles: ["Fusion", "Jazz-Rock"],
+  }),
+  makeWantlistItem({
+    id: 9002,
+    masterId: 5002,
+    title: "Meddle",
+    artist: "Pink Floyd",
+    label: "Harvest",
+    year: 1971,
+    styles: ["Prog Rock"],
+  }),
+  makeWantlistItem({
+    id: 9003,
+    masterId: 5003,
+    title: "Giant Steps",
+    artist: "John Coltrane",
+    label: "Atlantic",
+    year: 1960,
+    styles: ["Hard Bop"],
+  }),
+  makeWantlistItem({
+    id: 9004,
+    masterId: 5004,
+    title: "Selected Ambient Works 85-92",
+    artist: "Aphex Twin",
+    label: "R & S Records",
+    year: 1992,
+    styles: ["IDM", "Ambient"],
+  }),
 ];
 
 export const sampleFolders: Folder[] = [
@@ -252,12 +301,41 @@ export const sampleCustomFields: CustomField[] = [
   },
 ];
 
+// BestBuysPanel treats lowest_price as EUR (Discogs marketplace convention)
+// and multiplies by EUR_TO_NOK (~11.5) for display, so pick a modest EUR
+// value that renders inside the default 1000 NOK budget.
+// Prices spread across the default 1000 NOK budget (× 11.5 = ~1000 NOK max)
+// so the cheapest-sort and budget-filter tests have a meaningful spread.
 export const sampleWantlistPrices: WantlistPricesMap = {
   9001: {
     release_id: 9001,
-    lowest_price: 350,
-    currency: "NOK",
+    lowest_price: 22,
+    currency: "EUR",
     num_for_sale: 4,
+    blocked_from_sale: false,
+    fetched_at: "2024-06-01T12:00:00Z",
+  },
+  9002: {
+    release_id: 9002,
+    lowest_price: 45,
+    currency: "EUR",
+    num_for_sale: 6,
+    blocked_from_sale: false,
+    fetched_at: "2024-06-01T12:00:00Z",
+  },
+  9003: {
+    release_id: 9003,
+    lowest_price: 60,
+    currency: "EUR",
+    num_for_sale: 2,
+    blocked_from_sale: false,
+    fetched_at: "2024-06-01T12:00:00Z",
+  },
+  9004: {
+    release_id: 9004,
+    lowest_price: 30,
+    currency: "EUR",
+    num_for_sale: 3,
     blocked_from_sale: false,
     fetched_at: "2024-06-01T12:00:00Z",
   },

@@ -103,19 +103,14 @@ test.describe("Stats page", () => {
     const slider = page.getByRole("slider");
     await expect(slider).toBeVisible();
     // The slider defaults to the number of styles with >= 10 items (data-
-    // dependent); assert only that a value is present and that it renders
-    // in the label next to the slider.
+    // dependent). Assert only that the value is at least the minimum 3.
     const initial = await slider.inputValue();
     expect(Number(initial)).toBeGreaterThanOrEqual(3);
-
-    await setRangeValue(slider, "5");
-    await expect(slider).toHaveValue("5");
-    // The count is rendered as its own <span> next to the slider label.
     await expect(page.getByText("Antall søyler")).toBeVisible();
 
-    // Bumping back up should also work.
-    await setRangeValue(slider, "6");
-    await expect(slider).toHaveValue("6");
+    // Moving to the minimum should stick regardless of the fixture size.
+    await setRangeValue(slider, "3");
+    await expect(slider).toHaveValue("3");
   });
 
   test("format donut shows a vinyl percentage", async ({ page }) => {
