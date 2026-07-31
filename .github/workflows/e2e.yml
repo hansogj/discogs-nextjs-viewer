@@ -1,0 +1,64 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel in-progress runs when a new commit is pushed to the same PR/branch.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Non-blocking Playwright suite. Most tests need cached collection JSON at
+# .next/cache/discogs-data/{user}-*.json plus a real AUTH_SECRET, neither of
+# which is provisioned in this workflow yet — so the test step is marked
+# continue-on-error and treated as informational until fixtures land.
+
+env:
+  DISCOGS_CONSUMER_KEY: ${{ secrets.DISCOGS_CONSUMER_KEY || 'ci-stub' }}
+  DISCOGS_CONSUMER_SECRET: ${{ secrets.DISCOGS_CONSUMER_SECRET || 'ci-stub' }}
+  DISCOGS_CALLBACK_URL: http://localhost:3000/api/oauth/callback
+  AUTH_SECRET: ${{ secrets.AUTH_SECRET || 'ci-stub-auth-secret-at-least-32-characters-long' }}
+  REDIS_URL: redis://localhost:6379
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  e2e:
+    name: Playwright (informational)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      redis:
+        image: redis:7.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10.13.1
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run Playwright tests
+        # Non-blocking: tests that require committed cache fixtures or real
+        # Discogs credentials will fail until those land. Surface results
+        # via the uploaded report rather than gating merges.
+        continue-on-error: true
+        run: pnpm test:e2e
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
