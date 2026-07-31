@@ -46,6 +46,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Claude Code — commit shared skills, keep local tool-permission overrides out
+.claude/settings.local.json
+
 # TypeScript
 *.tsbuildinfo
 
