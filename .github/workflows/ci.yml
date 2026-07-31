@@ -112,3 +112,5 @@ jobs:
       - uses: actions/dependency-review-action@v5
         with:
           fail-on-severity: high
+          # Kept in lock-step with .github/osv-scanner.toml.
+          allow-ghsas: GHSA-mh99-v99m-4gvg

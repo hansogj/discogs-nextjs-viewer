@@ -31,11 +31,7 @@ async function ensureCacheDir() {
 }
 
 type CacheKey =
-  | "collection"
-  | "wantlist"
-  | "folders"
-  | "custom_fields"
-  | "wantlist_prices";
+  "collection" | "wantlist" | "folders" | "custom_fields" | "wantlist_prices";
 
 // Strip any character that can't appear in a safe filename (anything outside
 // [A-Za-z0-9]). Returns a deterministic, traversal-safe slug derived from the
