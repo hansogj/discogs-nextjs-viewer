@@ -180,6 +180,10 @@ export interface FoldersResponse {
 export interface SyncInfo {
   collectionLastAdded?: string;
   wantlistLastAdded?: string;
+  // Wall-clock ms of the last successful sync. Used to enforce the Discogs
+  // API TOU rule that Content may not be displayed if it is more than 6h
+  // older than what's on Discogs' own properties.
+  syncedAt?: number;
 }
 
 export interface SessionData {
