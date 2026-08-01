@@ -24,13 +24,21 @@ const log1p = (n: number) => Math.log(1 + n);
 
 export type SortMode = "taste" | "cheap" | "value";
 
+// Structured reasons so the UI can render them under the active locale.
+// Previously these were pre-formatted English strings baked in here.
+export type Reason =
+  | { kind: "artist"; name: string; count: number }
+  | { kind: "pressings"; count: number }
+  | { kind: "label"; name: string; count: number }
+  | { kind: "style"; name: string; count: number };
+
 export type Ranked = {
   item: ProcessedWantlistItem;
   priceNok: number;
   priceEur: number;
   numForSale: number;
   tasteScore: number;
-  reasons: string[];
+  reasons: Reason[];
 };
 
 export interface ComputeBestBuysInput {
@@ -94,15 +102,23 @@ export function computeBestBuys({
       W_PRESSINGS * log1p(pressings) +
       W_LABEL * log1p(labelMatch);
 
-    const reasons: string[] = [];
+    const reasons: Reason[] = [];
     if (artistMatch >= 3 && primaryArtist) {
-      reasons.push(`★ ${primaryArtist} (${artistMatch} in collection)`);
+      reasons.push({
+        kind: "artist",
+        name: primaryArtist,
+        count: artistMatch,
+      });
     }
     if (pressings >= 3) {
-      reasons.push(`${pressings} pressings wanted`);
+      reasons.push({ kind: "pressings", count: pressings });
     }
     if (labelMatch >= 20 && primaryLabel) {
-      reasons.push(`${primaryLabel} (${labelMatch})`);
+      reasons.push({
+        kind: "label",
+        name: primaryLabel,
+        count: labelMatch,
+      });
     }
     // Top style match — surface the single strongest style hit
     if (styles.length > 0) {
@@ -114,7 +130,11 @@ export function computeBestBuys({
         }
       }
       if (bestStyle && bestStyle.count >= 10) {
-        reasons.push(`${bestStyle.name} (${bestStyle.count})`);
+        reasons.push({
+          kind: "style",
+          name: bestStyle.name,
+          count: bestStyle.count,
+        });
       }
     }
 

@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import clsx from "clsx";
+import { useTranslations } from "next-intl";
 import { useDebounce } from "@/lib/use-debounce";
 
 export type SortKey = "date_added" | "title" | "year" | "artist";
@@ -27,13 +28,6 @@ interface SortControlsProps {
   viewType: "collection" | "wantlist";
 }
 
-const SORT_OPTIONS: { key: SortKey; label: string }[] = [
-  { key: "title", label: "Title" },
-  { key: "artist", label: "Artist" },
-  { key: "year", label: "Year" },
-  { key: "date_added", label: "Date Added" },
-];
-
 const SortControls: React.FC<SortControlsProps> = ({
   sortKey,
   sortOrder,
@@ -46,6 +40,17 @@ const SortControls: React.FC<SortControlsProps> = ({
   onSearchQueryChange,
   viewType,
 }) => {
+  const tSort = useTranslations("sort");
+  const tNav = useTranslations("nav");
+  const SORT_OPTIONS: { key: SortKey; label: string }[] = useMemo(
+    () => [
+      { key: "title", label: tSort("keyTitle") },
+      { key: "artist", label: tSort("keyArtist") },
+      { key: "year", label: tSort("keyYear") },
+      { key: "date_added", label: tSort("keyDateAdded") },
+    ],
+    [tSort],
+  );
   const [searchQuery, setSearchQuery] = useState(initialSearchQuery);
   // Track the prop value with state so we can detect changes during render
   // and resync without an effect — see https://react.dev/learn/you-might-not-need-an-effect.
@@ -88,7 +93,7 @@ const SortControls: React.FC<SortControlsProps> = ({
           </div>
           <input
             type="search"
-            placeholder={`Search ${viewType}...`}
+            placeholder={`${tSort("search")} ${tNav(viewType).toLowerCase()}…`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="block w-full rounded-lg border border-discogs-border bg-discogs-bg p-2.5 pl-10 text-sm text-white placeholder-discogs-text-secondary/50 focus:border-discogs-blue focus:ring-discogs-blue"
@@ -96,7 +101,7 @@ const SortControls: React.FC<SortControlsProps> = ({
         </div>
         <div className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
           <span className="hidden px-3 text-sm font-medium text-discogs-text-secondary sm:inline">
-            Sort by:
+            {tSort("sortBy")}
           </span>
           {SORT_OPTIONS.map((option) => (
             <button
@@ -117,11 +122,13 @@ const SortControls: React.FC<SortControlsProps> = ({
               inactiveButtonClasses,
               "ml-2 flex items-center space-x-2",
             )}
-            aria-label={`Sort order: ${
-              sortOrder === "asc" ? "Ascending" : "Descending"
-            }`}
+            aria-label={
+              sortOrder === "asc" ? tSort("orderAsc") : tSort("orderDesc")
+            }
           >
-            <span>{sortOrder === "asc" ? "Asc" : "Desc"}</span>
+            <span>
+              {sortOrder === "asc" ? tSort("orderAsc") : tSort("orderDesc")}
+            </span>
             {sortOrder === "asc" ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -194,7 +201,7 @@ const SortControls: React.FC<SortControlsProps> = ({
                 ? "bg-discogs-blue text-white"
                 : "text-discogs-text-secondary hover:bg-discogs-border",
             )}
-            aria-label="Grid View"
+            aria-label={tSort("grid")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +221,7 @@ const SortControls: React.FC<SortControlsProps> = ({
                 ? "bg-discogs-blue text-white"
                 : "text-discogs-text-secondary hover:bg-discogs-border",
             )}
-            aria-label="List View"
+            aria-label={tSort("list")}
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"

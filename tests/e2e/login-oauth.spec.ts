@@ -42,16 +42,18 @@ test.describe("OAuth Login Flow", () => {
   });
 
   /**
-   * Automated: verifies that the middleware protects /collection and
-   * allows access when a valid session cookie is present.
+   * Automated: verifies that the middleware protects a gated route and
+   * allows access when a valid session cookie is present. Hits the
+   * locale-prefixed URL directly to bypass the i18n middleware's
+   * auto-redirect for unprefixed paths.
    */
-  test("middleware should protect /collection and allow with session", async ({
+  test("middleware should protect /en/collection and allow with session", async ({
     request,
   }) => {
-    // Without auth → redirect to /
-    const noAuth = await request.get("/collection", { maxRedirects: 0 });
+    // Without auth → redirect to /en (the login page for that locale).
+    const noAuth = await request.get("/en/collection", { maxRedirects: 0 });
     expect(noAuth.status()).toBe(307);
-    expect(noAuth.headers()["location"]).toBe("/");
+    expect(noAuth.headers()["location"]).toBe("/en");
 
     // With a programmatically sealed session → 200
     const { sealData } = await import("iron-session");
@@ -69,7 +71,7 @@ test.describe("OAuth Login Flow", () => {
       { password: process.env.AUTH_SECRET! },
     );
 
-    const withAuth = await request.get("/collection", {
+    const withAuth = await request.get("/en/collection", {
       maxRedirects: 0,
       headers: { cookie: `discogs-viewer-session=${sealed}` },
     });

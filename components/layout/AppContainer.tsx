@@ -2,7 +2,8 @@
 
 // Fix: Import `useState` from React to manage component state.
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import Header from "./Header";
 import ErrorMessage from "../ErrorMessage";
 import {
@@ -37,6 +38,8 @@ export default function AppContainer({
   const router = useRouter();
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { saveUser } = useRememberedUsers();
+  const tHeader = useTranslations("header");
+  const tErrors = useTranslations("errors");
 
   // Remember this user for the login screen
   useEffect(() => {
@@ -78,10 +81,10 @@ export default function AppContainer({
         pollRef.current = null;
         setIsSyncing(false);
         setSyncProgress(null);
-        setSyncError("Failed to get sync progress.");
+        setSyncError(tErrors("syncFailedProgress"));
       }
     }, 2000);
-  }, [router]);
+  }, [router, tErrors]);
 
   // On mount: pick up any sync already in progress, then enforce the Discogs
   // TOU 6h freshness rule — if the cached data is older than the threshold
@@ -111,7 +114,7 @@ export default function AppContainer({
         setIsSyncing(true);
         setSyncProgress({
           status: "starting",
-          message: "Refreshing your Discogs data...",
+          message: tHeader("refreshingMessage"),
         });
         await syncAllData();
         startPolling();
@@ -124,23 +127,22 @@ export default function AppContainer({
       if (pollRef.current) clearInterval(pollRef.current);
       pollRef.current = null;
     };
-  }, [startPolling]);
+  }, [startPolling, tHeader]);
 
   const handleSync = async () => {
     setIsSyncing(true);
     setSyncError(null);
-    setSyncProgress({ status: "starting", message: "Initiating sync..." });
+    setSyncProgress({
+      status: "starting",
+      message: tHeader("refreshingMessage"),
+    });
 
     await syncAllData();
     startPolling();
   };
 
   const handleClearCache = async () => {
-    if (
-      window.confirm(
-        "Are you sure you want to clear the local cache? This will require a full sync with Discogs.",
-      )
-    ) {
+    if (window.confirm(tHeader("clearCacheConfirm"))) {
       await clearCacheAction();
       router.refresh();
     }

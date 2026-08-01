@@ -2,11 +2,13 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type { ProcessedWantlistItem, WantlistPricesMap } from "@/lib/types";
 import {
   computeBestBuys,
   DEFAULT_BUDGET_NOK,
   type Ranked,
+  type Reason,
   type SortMode,
 } from "@/lib/best-buys";
 
@@ -37,11 +39,25 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
   pressingCounts,
   onItemClick,
 }) => {
+  const t = useTranslations("bestBuys");
+  const tCommon = useTranslations("common");
   const [budget, setBudget] = useState<number>(DEFAULT_BUDGET_NOK);
   const [budgetInput, setBudgetInput] = useState<string>(
     String(DEFAULT_BUDGET_NOK),
   );
   const [sortMode, setSortMode] = useState<SortMode>("taste");
+
+  const formatReason = (r: Reason): string => {
+    switch (r.kind) {
+      case "artist":
+        return t("reasonArtist", { name: r.name, count: r.count });
+      case "pressings":
+        return t("reasonPressings", { count: r.count });
+      case "label":
+      case "style":
+        return `${r.name} (${r.count})`;
+    }
+  };
 
   // Tests + a11y tools use data-hydrated to detect when the panel's onClick
   // handlers are wired up. Set the attribute via DOM mutation after mount —
@@ -106,7 +122,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
       className="mb-4 rounded-lg border border-discogs-border bg-discogs-bg-light p-4"
     >
       <h2 className="mb-3 text-lg font-semibold text-discogs-text">
-        Best buys
+        {t("title")}
       </h2>
 
       <a
@@ -114,14 +130,14 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
         target="_blank"
         rel="noopener noreferrer"
         className="mb-3 block rounded-md bg-discogs-blue px-3 py-2 text-center text-xs font-medium text-white transition-colors hover:bg-discogs-blue-dark"
-        title="Open Discogs marketplace filtered to your wantlist. Discogs ranks sellers by how many of your wantlist items they stock."
+        title={t("findBestSellerTitle")}
       >
-        Find best seller on Discogs →
+        {t("findBestSeller")}
       </a>
 
       <form onSubmit={handleBudgetSubmit} className="mb-3">
         <label className="mb-1 block text-xs text-discogs-text-secondary">
-          Max budget per item (NOK)
+          {t("budgetLabel")}
         </label>
         <div className="flex gap-2">
           <input
@@ -136,7 +152,7 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
             type="submit"
             className="rounded-md bg-discogs-border px-3 py-1 text-sm text-discogs-text transition-colors hover:bg-discogs-blue hover:text-white"
           >
-            Apply
+            {t("apply")}
           </button>
         </div>
       </form>
@@ -147,46 +163,62 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
           onClick={() => setSortMode("taste")}
           aria-pressed={sortMode === "taste"}
           className={sortButtonClass("taste")}
-          title="Items closest to your collection's taste profile"
+          title={t("sortTasteTitle")}
         >
-          Taste match
+          {t("sortTaste")}
         </button>
         <button
           type="button"
           onClick={() => setSortMode("value")}
           aria-pressed={sortMode === "value"}
           className={sortButtonClass("value")}
-          title="Taste score per NOK spent"
+          title={t("sortValueTitle")}
         >
-          Value
+          {t("sortValue")}
         </button>
         <button
           type="button"
           onClick={() => setSortMode("cheap")}
           aria-pressed={sortMode === "cheap"}
           className={sortButtonClass("cheap")}
-          title="Sorted by price ascending"
+          title={t("sortCheapTitle")}
         >
-          Cheapest
+          {t("sortCheap")}
         </button>
       </div>
 
       <p className="mb-3 text-xs text-discogs-text-secondary">
         {pricedCount > 0
-          ? `${pricedCount} priced items. Showing top ${ranked.length} ≤ ${budget} NOK by ${sortMode === "taste" ? "taste match" : sortMode === "value" ? "value" : "price"}.`
-          : "No prices cached yet. Run a sync to populate marketplace prices."}
+          ? sortMode === "taste"
+            ? t("statusPricedTaste", {
+                count: pricedCount,
+                shown: ranked.length,
+                budget,
+              })
+            : sortMode === "value"
+              ? t("statusPricedValue", {
+                  count: pricedCount,
+                  shown: ranked.length,
+                  budget,
+                })
+              : t("statusPricedCheap", {
+                  count: pricedCount,
+                  shown: ranked.length,
+                  budget,
+                })
+          : t("statusNoPrices")}
       </p>
 
       {ranked.length === 0 && pricedCount > 0 && (
         <p className="text-sm text-discogs-text-secondary">
-          No items found under {budget} NOK. Try a higher budget.
+          {t("noneUnderBudget", { budget })}
         </p>
       )}
 
       <ul className="max-h-[60vh] space-y-2 overflow-y-auto pr-1">
         {ranked.map((r) => {
           const info = r.item.basic_information;
-          const artist = info.artists?.[0]?.name || "Unknown Artist";
+          const artist = info.artists?.[0]?.name || tCommon("unknownArtist");
           const cover =
             r.item.master_cover_image || info.cover_image || info.thumb;
           return (
@@ -218,27 +250,31 @@ const BestBuysPanel: React.FC<BestBuysPanelProps> = ({
                       className="font-semibold text-discogs-blue"
                       title={`${r.priceEur.toFixed(2)} EUR`}
                     >
-                      ~{Math.round(r.priceNok)} NOK
+                      {t("priceNok", { price: Math.round(r.priceNok) })}
                     </span>
                     <span className="text-discogs-text-secondary">
-                      {r.numForSale} for sale
+                      {t("forSale", { count: r.numForSale })}
                     </span>
                   </div>
-                  {r.reasons.length > 0 && (
-                    <div
-                      className="mt-1 truncate text-[10px] text-discogs-text-secondary"
-                      title={r.reasons.join(" · ")}
-                    >
-                      {r.reasons.join(" · ")}
-                    </div>
-                  )}
+                  {r.reasons.length > 0 &&
+                    (() => {
+                      const formatted = r.reasons.map(formatReason).join(" · ");
+                      return (
+                        <div
+                          className="mt-1 truncate text-[10px] text-discogs-text-secondary"
+                          title={formatted}
+                        >
+                          {formatted}
+                        </div>
+                      );
+                    })()}
                   <a
                     href={buildDiscogsMarketplaceUrl(info.id)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-discogs-text-secondary hover:text-discogs-blue"
                   >
-                    Open marketplace →
+                    {t("openMarketplace")}
                   </a>
                 </div>
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo } from "react";
+import { useTranslations } from "next-intl";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -41,6 +42,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   onFilterClear,
   customFields,
 }) => {
+  const t = useTranslations("filters");
   const filterData = useMemo(() => {
     const artists = new Map<string, number>();
     const formats = new Map<string, number>();
@@ -170,18 +172,20 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
   return (
     <div className="sticky top-24 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-discogs-text">Filters</h2>
+        <h2 className="text-lg font-semibold text-discogs-text">
+          {t("title")}
+        </h2>
         <button
           onClick={() => onFilterClear("all")}
           className="text-sm text-discogs-blue hover:underline"
         >
-          Clear All
+          {t("reset")}
         </button>
       </div>
 
       {filterData.artists.length > 0 && (
         <FilterGroup
-          title="Artist"
+          title={t("artist")}
           onClear={() => onFilterClear("artists")}
           selectedCount={activeFilters.artists.size}
           defaultOpen={true}
@@ -203,7 +207,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {filterData.composers.length > 0 && (
         <FilterGroup
-          title="Composer"
+          title={t("composer")}
           onClear={() => onFilterClear("composers")}
           selectedCount={activeFilters.composers.size}
         >
@@ -224,7 +228,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {filterData.styles.length > 0 && (
         <FilterGroup
-          title="Style"
+          title={t("style")}
           onClear={() => onFilterClear("styles")}
           selectedCount={activeFilters.styles.size}
           defaultOpen={activeFilters.styles.size > 0}
@@ -244,7 +248,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {filterData.labels.length > 0 && (
         <FilterGroup
-          title="Label"
+          title={t("label")}
           onClear={() => onFilterClear("labels")}
           selectedCount={activeFilters.labels.size}
           defaultOpen={activeFilters.labels.size > 0}
@@ -292,7 +296,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {filterData.formats.length > 0 && (
         <FilterGroup
-          title="Format"
+          title={t("format")}
           onClear={() => onFilterClear("formats")}
           selectedCount={activeFilters.formats.size}
         >
@@ -313,7 +317,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {filterData.years.length > 0 && (
         <FilterGroup
-          title="Year"
+          title={t("year")}
           onClear={() => onFilterClear("years")}
           selectedCount={activeFilters.years.size}
         >
@@ -334,7 +338,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({
 
       {folders.length > 0 && filterData.folders.length > 0 && (
         <FilterGroup
-          title="Folder"
+          title={t("folder")}
           onClear={() => onFilterClear("folders")}
           selectedCount={activeFilters.folders.size}
         >

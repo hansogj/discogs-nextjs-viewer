@@ -2,6 +2,7 @@ import AppLayout from "@/components/layout/AppLayout";
 import { getUserProfile } from "@/lib/data";
 import Image from "next/image";
 import React from "react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 const StatCard: React.FC<{
   label: string;
@@ -15,19 +16,23 @@ const StatCard: React.FC<{
   </div>
 );
 
-export default async function UserProfilePage() {
+export default async function UserProfilePage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("user");
   const profile = await getUserProfile();
 
   if (!profile) {
     return (
-      // FIX: The AppLayout component requires a 'children' prop, which is now provided by wrapping the content.
       <AppLayout activeView="user">
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-lg text-discogs-text-secondary">
-            User profile not found.
-          </p>
+          <p className="text-lg text-discogs-text-secondary">{t("notFound")}</p>
           <p className="mt-2 text-discogs-text-secondary">
-            It should have been loaded on login. Try logging out and back in.
+            {t("notFoundHint")}
           </p>
         </div>
       </AppLayout>
@@ -35,7 +40,7 @@ export default async function UserProfilePage() {
   }
 
   const registeredDate = new Date(profile.registered).toLocaleDateString(
-    "en-US",
+    locale === "en" ? "en-US" : locale,
     { year: "numeric", month: "long", day: "numeric" },
   );
 
@@ -67,7 +72,7 @@ export default async function UserProfilePage() {
                 </p>
               )}
               <p className="mt-2 text-xs text-discogs-text-secondary/70">
-                Member since {registeredDate}
+                {t("memberSince", { date: registeredDate })}
               </p>
             </div>
           </header>
@@ -75,7 +80,7 @@ export default async function UserProfilePage() {
           {profile.profile && (
             <section className="mb-8 rounded-xl border border-discogs-border bg-discogs-bg-light p-6">
               <h2 className="mb-3 text-lg font-semibold text-discogs-blue">
-                Profile
+                {t("profileHeading")}
               </h2>
               <p className="whitespace-pre-wrap text-discogs-text">
                 {profile.profile}
@@ -85,11 +90,11 @@ export default async function UserProfilePage() {
 
           <section>
             <h2 className="mb-4 text-xl font-semibold text-discogs-text">
-              Discogs Stats
+              {t("statsHeading")}
             </h2>
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               <StatCard
-                label="In Collection"
+                label={t("statInCollection")}
                 value={profile.num_collection}
                 icon={
                   <svg
@@ -109,7 +114,7 @@ export default async function UserProfilePage() {
                 }
               />
               <StatCard
-                label="In Wantlist"
+                label={t("statInWantlist")}
                 value={profile.num_wantlist}
                 icon={
                   <svg
@@ -129,7 +134,7 @@ export default async function UserProfilePage() {
                 }
               />
               <StatCard
-                label="Contributions"
+                label={t("statContributions")}
                 value={profile.releases_contributed}
                 icon={
                   <svg
@@ -149,7 +154,7 @@ export default async function UserProfilePage() {
                 }
               />
               <StatCard
-                label="Ratings"
+                label={t("statRatings")}
                 value={profile.releases_rated}
                 icon={
                   <svg
@@ -169,7 +174,7 @@ export default async function UserProfilePage() {
                 }
               />
               <StatCard
-                label="Lists"
+                label={t("statLists")}
                 value={profile.num_lists}
                 icon={
                   <svg
@@ -201,7 +206,7 @@ export default async function UserProfilePage() {
                     rel="noopener noreferrer"
                     className="text-discogs-blue hover:underline"
                   >
-                    Personal Website
+                    {t("personalWebsite")}
                   </a>
                 )}
                 {profile.uri && (
@@ -211,7 +216,7 @@ export default async function UserProfilePage() {
                     rel="noopener noreferrer"
                     className="text-discogs-blue hover:underline"
                   >
-                    View on Discogs
+                    {t("viewOnDiscogs")}
                   </a>
                 )}
               </div>
