@@ -7,8 +7,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import type { SyncProgress } from "@/lib/cache"; // Import SyncProgress type
-import ThemePicker from "./ThemePicker";
-import LanguagePicker from "./LanguagePicker";
+import HeaderMenu from "./HeaderMenu";
 
 interface HeaderProps {
   user: DiscogsUser;
@@ -56,11 +55,6 @@ export default function Header({
       clearInterval(intervalId);
     };
   }, [isSyncing]);
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    router.refresh(); // This will re-trigger the middleware, which will redirect to the login page.
-  };
 
   const getProgressPercentage = (progress: SyncProgress): number => {
     if (!progress.step || !progress.totalSteps) return 0;
@@ -310,46 +304,11 @@ export default function Header({
           </Link>
         </nav>
 
-        <div className="flex items-center space-x-2">
-          <LanguagePicker />
-          <ThemePicker />
-          <button
-            onClick={onSync}
-            disabled={isSyncing} // Disable when syncing
-            className={clsx(
-              "px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg",
-              isSyncing
-                ? "bg-discogs-border text-discogs-text-secondary cursor-not-allowed"
-                : "bg-discogs-success text-white hover:bg-discogs-success-dark focus:ring-discogs-success",
-            )}
-          >
-            {isSyncing ? tHeader("syncing") : tHeader("sync")}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg bg-discogs-danger px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-discogs-danger-dark focus:outline-none focus:ring-2 focus:ring-discogs-danger focus:ring-offset-2 focus:ring-offset-discogs-bg"
-          >
-            {tHeader("logout")}
-          </button>
-          <button
-            onClick={onClearCache}
-            className="rounded-lg p-2 text-discogs-text-secondary transition-colors hover:bg-discogs-border hover:text-discogs-text"
-            title={tHeader("clearCache")}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
+        <HeaderMenu
+          onSync={onSync}
+          onClearCache={onClearCache}
+          isSyncing={isSyncing}
+        />
       </div>
     </header>
   );
@@ -360,56 +319,46 @@ export function HeaderSkeleton({
 }: {
   activeView: "collection" | "wantlist" | "duplicates" | "stats" | "user";
 }) {
-  const buttonBaseClasses =
-    "focus:outline-none rounded-md px-4 py-2 text-sm font-medium";
-  const activeButtonClasses = "bg-discogs-blue";
-  const inactiveButtonClasses = "bg-discogs-bg-light";
+  // Mirrors the real header layout so the loading state doesn't jump:
+  // avatar cluster on the left, nav pill with 4 items in the middle, and
+  // a single burger square on the right.
+  const activeClass = "bg-discogs-blue/70";
+  const inactiveClass = "bg-discogs-bg-light";
+  const navItems: {
+    key: "collection" | "wantlist" | "duplicates" | "stats";
+    width: string;
+  }[] = [
+    { key: "collection", width: "w-36" },
+    { key: "wantlist", width: "w-32" },
+    { key: "duplicates", width: "w-32" },
+    { key: "stats", width: "w-20" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-discogs-border bg-discogs-bg/80 p-4 shadow-lg backdrop-blur-sm">
       <div className="container mx-auto flex animate-pulse items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 rounded-full bg-discogs-border"></div>
+          <div className="h-12 w-12 rounded-full bg-discogs-border" />
           <div>
-            <div className="mb-2 h-4 w-24 rounded bg-discogs-border"></div>
-            <div className="h-3 w-32 rounded bg-discogs-border"></div>
+            <div className="mb-2 h-4 w-24 rounded bg-discogs-border" />
+            <div className="h-3 w-20 rounded bg-discogs-border" />
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
-          <div
-            className={clsx(
-              buttonBaseClasses,
-              activeView === "collection"
-                ? activeButtonClasses
-                : inactiveButtonClasses,
-              "h-9 w-32",
-            )}
-          ></div>
-          <div
-            className={clsx(
-              buttonBaseClasses,
-              activeView === "wantlist"
-                ? activeButtonClasses
-                : inactiveButtonClasses,
-              "h-9 w-32",
-            )}
-          ></div>
-          <div
-            className={clsx(
-              buttonBaseClasses,
-              activeView === "duplicates"
-                ? activeButtonClasses
-                : inactiveButtonClasses,
-              "h-9 w-32",
-            )}
-          ></div>
-        </div>
+        <nav className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
+          {navItems.map(({ key, width }) => (
+            <div
+              key={key}
+              className={clsx(
+                "h-9 rounded-md",
+                width,
+                activeView === key ? activeClass : inactiveClass,
+              )}
+            />
+          ))}
+        </nav>
 
-        <div className="flex items-center space-x-2">
-          <div className="h-10 w-36 rounded-lg bg-discogs-border"></div>
-          <div className="h-10 w-24 rounded-lg bg-discogs-border"></div>
-        </div>
+        <div className="h-10 w-10 rounded-lg border border-discogs-border bg-discogs-bg-light" />
       </div>
     </header>
   );
