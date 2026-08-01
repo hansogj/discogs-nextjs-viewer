@@ -6,30 +6,39 @@ import {
 } from "@/lib/data";
 import type { CollectionRelease } from "@/lib/types";
 import AlbumListItem from "@/components/AlbumListItem";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
-const getArtistName = (item: CollectionRelease): string => {
-  return item.basic_information.artists?.[0]?.name || "Unknown Artist";
+const getArtistName = (item: CollectionRelease, unknown: string): string => {
+  return item.basic_information.artists?.[0]?.name || unknown;
 };
 
-export default async function DuplicatesPage() {
+export default async function DuplicatesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("duplicates");
+  const tCommon = await getTranslations("common");
   const [collection, folders] = await Promise.all([
     getCachedCollection(),
     getCachedFolders(),
   ]);
   const duplicateGroups = getCollectionDuplicates(collection);
+  const unknownArtist = tCommon("unknownArtist");
 
   return (
     <AppLayout activeView="duplicates">
       <div className="p-4 sm:p-6">
         <h1 className="mb-6 text-2xl font-bold text-discogs-text">
-          Duplicate Releases in Collection
+          {t("pageTitle")}
         </h1>
         {duplicateGroups.length === 0 ? (
           <p className="mt-10 text-center text-discogs-text-secondary">
-            No duplicate releases found in your cached collection. Try syncing
-            with Discogs.
+            {t("empty")}
           </p>
         ) : (
           <div className="space-y-8">
@@ -52,7 +61,8 @@ export default async function DuplicatesPage() {
                       rel="noopener noreferrer"
                       className="hover:underline"
                     >
-                      {getArtistName(group[0])} - {firstItem.title}
+                      {getArtistName(group[0], unknownArtist)} -{" "}
+                      {firstItem.title}
                     </a>
                   </h2>
                   <ul className="space-y-3">

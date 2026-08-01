@@ -1,0 +1,184 @@
+{
+  "_note": "PLACEHOLDER. Every string below is copied from en.json and needs to be translated to Kobaïan / Zeuhl by hand. Until translations land, users who pick Zeuhl in the language picker will see the English text unchanged. The `_note` key itself is ignored by next-intl.",
+  "common": {
+    "appTitle": "Discogs Collection Viewer",
+    "appDescription": "View your Discogs collection and wantlist with a modern interface.",
+    "unknownArtist": "Unknown Artist",
+    "viewOnDiscogs": "View on Discogs"
+  },
+  "footer": {
+    "aboutLink": "About & privacy"
+  },
+  "language": {
+    "picker": "Language",
+    "en": "English",
+    "nb": "Norsk",
+    "de": "Deutsch",
+    "fr": "Français",
+    "zeuhl": "Zeuhl"
+  },
+  "login": {
+    "title": "Discogs Viewer",
+    "subtitle": "Connect your Discogs account to view your collection and wantlist.",
+    "oauthNote": "This application uses Discogs OAuth to securely access your data.",
+    "signInAs": "Sign in as:",
+    "orDivider": "or",
+    "lastLogin": "Last login: {date}",
+    "removeUser": "Remove from list",
+    "loginWithAnother": "Login with another account",
+    "loginWithDiscogs": "Login with Discogs"
+  },
+  "header": {
+    "sync": "Sync with Discogs",
+    "syncing": "Syncing…",
+    "syncingFallback": "Syncing…",
+    "logout": "Logout",
+    "clearCache": "Clear local cache",
+    "clearCacheConfirm": "Are you sure you want to clear the local cache? This will require a full sync with Discogs.",
+    "refreshingMessage": "Refreshing your Discogs data…",
+    "etaLabel": "ETA: {value}",
+    "etaLessThanMinute": "less than a minute",
+    "etaMinutes": "~{n} min",
+    "etaHoursMinutes": "~{h}h {m}m",
+    "detailItems": "{processed}/{total} items",
+    "detailPage": "page {page}/{pages}"
+  },
+  "nav": {
+    "collection": "Collection",
+    "wantlist": "Wantlist",
+    "duplicates": "Duplicates",
+    "stats": "Stats",
+    "user": "User"
+  },
+  "about": {
+    "backToSignIn": "← Back to sign in",
+    "pageTitle": "About this application",
+    "pageSubtitle": "A personal viewer for your Discogs vinyl collection and wantlist.",
+    "sectionWhatThisIs": "What this is",
+    "sectionAttribution": "Discogs attribution",
+    "sectionWhatWeStore": "What we store",
+    "sectionSessionCookie": "The session cookie",
+    "sectionHowToRemove": "How to remove your data",
+    "sectionThirdParty": "Third-party links",
+    "whatThisIs": "Discogs Viewer is a personal-scale web application for browsing your own Discogs collection and wantlist with filtering, sorting, and statistics that go beyond what the Discogs site itself offers.",
+    "sourceOnGithub": "Source code lives on {githubLink}.",
+    "githubLinkText": "GitHub",
+    "attributionNoticeVerbatim": "This application uses Discogs' API but is not affiliated with, sponsored or endorsed by Discogs.",
+    "attributionExplanation": "Discogs® is a registered trademark of Zink Media, LLC. Their public site lives at {discogsLink} and their API terms of use are documented at {touLink}.",
+    "storeIntro": "When you sign in and trigger a sync, the server writes the following per-user JSON files, keyed by your Discogs username, to a local cache directory:",
+    "storeItemCollection": "Your collection release list (with folder + notes metadata)",
+    "storeItemWantlist": "Your wantlist release list",
+    "storeItemFolders": "Your collection folders",
+    "storeItemCustomFields": "Your custom-field definitions",
+    "storeItemPrices": "Wantlist price snapshots",
+    "storeItemDetails": "Per-release and per-master detail metadata for items already in your lists",
+    "refreshPolicy": "To comply with the Discogs API terms of use, cached data is automatically refreshed at least every 6 hours — any page load triggers a re-sync if the last one was longer ago than that. A fresh sync also runs automatically when you sign in.",
+    "tokensPolicy": "Ephemeral job state (sync progress) lives in Redis with a 1-hour expiry. No copy of your Discogs OAuth tokens is written to disk; they live only inside the encrypted session cookie described below.",
+    "sharingPolicy": "No analytics or third-party trackers are loaded. No data is shared with any party other than Discogs (whose API returned it).",
+    "cookieBody1prefix": "A single HTTP-only, encrypted session cookie named ",
+    "cookieBody1suffix": " is used to keep you signed in. It expires 8 hours after issue and is not readable by JavaScript. It carries your Discogs OAuth access token and username so the server can talk to Discogs on your behalf; it is not used for advertising or tracking.",
+    "cookieBody2": "This is a functional cookie required for the application to work. No consent banner is shown for it because no non-functional cookies are set.",
+    "removeSignOut": "<strong>Sign out</strong> from the header menu — this destroys the session cookie immediately.",
+    "removeClearCache": "<strong>Clear cache</strong> from the header menu — this deletes all cached JSON files for your username plus any ephemeral Redis state.",
+    "removeGithubIssue": "To request full removal (including any residual on-disk files from an inactive account), open an issue on the {githubIssuesLink}.",
+    "githubIssuesLinkText": "GitHub repository",
+    "thirdPartyBody": "Item cards link out to their release pages on discogs.com. No other third-party services are contacted."
+  },
+  "collection": {
+    "emptyTitle": "Your collection is empty.",
+    "emptyHint": "Try syncing with Discogs to load your data."
+  },
+  "wantlist": {
+    "emptyTitle": "Your wantlist is empty.",
+    "emptyHint": "Try syncing with Discogs to load your data."
+  },
+  "duplicates": {
+    "pageTitle": "Duplicate Releases in Collection",
+    "empty": "No duplicate releases found in your cached collection. Try syncing with Discogs."
+  },
+  "stats": {
+    "pageTitle": "Collection Statistics",
+    "totalReleases": "Total Releases",
+    "uniqueArtists": "Unique Artists",
+    "uniqueLabels": "Unique Labels",
+    "vinylPercentage": "Vinyl %",
+    "topArtists": "Top Artists",
+    "topLabels": "Top Labels",
+    "styles": "Styles",
+    "decades": "Decades",
+    "formats": "Formats",
+    "conditions": "Conditions",
+    "pillarSlider": "Show top {n} styles",
+    "noData": "No collection data cached yet. Sync with Discogs to populate stats."
+  },
+  "user": {
+    "notFound": "User profile not found.",
+    "notFoundHint": "It should have been loaded on login. Try logging out and back in.",
+    "memberSince": "Member since {date}",
+    "profileHeading": "Profile",
+    "statsHeading": "Discogs Stats",
+    "statInCollection": "In Collection",
+    "statInWantlist": "In Wantlist",
+    "statContributions": "Contributions",
+    "statRatings": "Ratings",
+    "statLists": "Lists",
+    "personalWebsite": "Personal Website",
+    "viewOnDiscogs": "View on Discogs"
+  },
+  "sort": {
+    "sortBy": "Sort by",
+    "view": "View",
+    "grid": "Grid",
+    "list": "List",
+    "search": "Search",
+    "searchPlaceholder": "Search title, artist, label…",
+    "orderAsc": "Ascending",
+    "orderDesc": "Descending",
+    "keyDateAdded": "Date added",
+    "keyArtist": "Artist",
+    "keyTitle": "Title",
+    "keyYear": "Year",
+    "keyLabel": "Label",
+    "keyFormat": "Format",
+    "keyRating": "Rating",
+    "keyValue": "Value",
+    "filterInCollection": "In collection"
+  },
+  "filters": {
+    "title": "Filters",
+    "reset": "Reset",
+    "artist": "Artist",
+    "format": "Format",
+    "year": "Year",
+    "folder": "Folder",
+    "composer": "Composer",
+    "style": "Style",
+    "label": "Label",
+    "customField": "Custom field",
+    "searchInGroup": "Search…"
+  },
+  "album": {
+    "labelField": "Label",
+    "formatField": "Format",
+    "yearField": "Year",
+    "addedField": "Added",
+    "folderField": "Folder",
+    "yearPrefix": "Year:"
+  },
+  "loading": "Loading…",
+  "grid": {
+    "noItems": "No items to display."
+  },
+  "theme": {
+    "picker": "Theme",
+    "darkBlue": "Dark blue",
+    "earthy": "Earthy",
+    "olive": "Olive",
+    "light": "Light"
+  },
+  "errors": {
+    "generic": "Something went wrong.",
+    "syncFailedProgress": "Failed to get sync progress.",
+    "dismiss": "Dismiss"
+  }
+}

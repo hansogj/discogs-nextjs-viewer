@@ -1,0 +1,183 @@
+{
+  "common": {
+    "appTitle": "Visionneuse de collection Discogs",
+    "appDescription": "Consultez votre collection et votre liste de souhaits Discogs avec une interface moderne.",
+    "unknownArtist": "Artiste inconnu",
+    "viewOnDiscogs": "Voir sur Discogs"
+  },
+  "footer": {
+    "aboutLink": "À propos & confidentialité"
+  },
+  "language": {
+    "picker": "Langue",
+    "en": "English",
+    "nb": "Norsk",
+    "de": "Deutsch",
+    "fr": "Français",
+    "zeuhl": "Zeuhl"
+  },
+  "login": {
+    "title": "Visionneuse Discogs",
+    "subtitle": "Connectez votre compte Discogs pour voir votre collection et votre liste de souhaits.",
+    "oauthNote": "Cette application utilise Discogs OAuth pour accéder à vos données en toute sécurité.",
+    "signInAs": "Se connecter en tant que :",
+    "orDivider": "ou",
+    "lastLogin": "Dernière connexion : {date}",
+    "removeUser": "Retirer de la liste",
+    "loginWithAnother": "Se connecter avec un autre compte",
+    "loginWithDiscogs": "Se connecter avec Discogs"
+  },
+  "header": {
+    "sync": "Synchroniser avec Discogs",
+    "syncing": "Synchronisation …",
+    "syncingFallback": "Synchronisation …",
+    "logout": "Se déconnecter",
+    "clearCache": "Vider le cache local",
+    "clearCacheConfirm": "Voulez-vous vraiment vider le cache local ? Cela nécessitera une synchronisation complète avec Discogs.",
+    "refreshingMessage": "Actualisation de vos données Discogs …",
+    "etaLabel": "Restant : {value}",
+    "etaLessThanMinute": "moins d’une minute",
+    "etaMinutes": "~{n} min",
+    "etaHoursMinutes": "~{h} h {m} m",
+    "detailItems": "{processed}/{total} éléments",
+    "detailPage": "page {page}/{pages}"
+  },
+  "nav": {
+    "collection": "Collection",
+    "wantlist": "Liste de souhaits",
+    "duplicates": "Doublons",
+    "stats": "Statistiques",
+    "user": "Utilisateur"
+  },
+  "about": {
+    "backToSignIn": "← Retour à la connexion",
+    "pageTitle": "À propos de cette application",
+    "pageSubtitle": "Une visionneuse personnelle pour votre collection de vinyles Discogs et votre liste de souhaits.",
+    "sectionWhatThisIs": "De quoi il s’agit",
+    "sectionAttribution": "Attribution Discogs",
+    "sectionWhatWeStore": "Ce que nous stockons",
+    "sectionSessionCookie": "Le cookie de session",
+    "sectionHowToRemove": "Comment supprimer vos données",
+    "sectionThirdParty": "Liens tiers",
+    "whatThisIs": "Discogs Viewer est une application web à échelle personnelle pour parcourir votre propre collection Discogs et votre liste de souhaits avec des fonctions de filtrage, de tri et de statistiques qui vont au-delà de ce que le site Discogs lui-même propose.",
+    "sourceOnGithub": "Le code source vit sur {githubLink}.",
+    "githubLinkText": "GitHub",
+    "attributionNoticeVerbatim": "This application uses Discogs' API but is not affiliated with, sponsored or endorsed by Discogs.",
+    "attributionExplanation": "Discogs® est une marque déposée de Zink Media, LLC. Leur site public se trouve sur {discogsLink} et leurs conditions d’utilisation de l’API sont documentées sur {touLink}.",
+    "storeIntro": "Lorsque vous vous connectez et déclenchez une synchronisation, le serveur écrit les fichiers JSON par utilisateur suivants, indexés par votre nom d’utilisateur Discogs, dans un répertoire de cache local :",
+    "storeItemCollection": "Votre liste de disques (avec métadonnées de dossiers et notes)",
+    "storeItemWantlist": "Votre liste de souhaits",
+    "storeItemFolders": "Vos dossiers de collection",
+    "storeItemCustomFields": "Vos définitions de champs personnalisés",
+    "storeItemPrices": "Instantanés de prix de la liste de souhaits",
+    "storeItemDetails": "Métadonnées détaillées par disque et par master pour les éléments déjà dans vos listes",
+    "refreshPolicy": "Pour respecter les conditions d’utilisation de l’API Discogs, les données en cache sont automatiquement rafraîchies au moins toutes les 6 heures — tout chargement de page déclenche une nouvelle synchronisation si la précédente est plus ancienne. Une synchronisation fraîche s’exécute aussi automatiquement à la connexion.",
+    "tokensPolicy": "L’état éphémère des tâches (progression de synchronisation) vit dans Redis avec une expiration d’une heure. Aucune copie de vos jetons OAuth Discogs n’est écrite sur le disque ; ils vivent uniquement dans le cookie de session chiffré décrit ci-dessous.",
+    "sharingPolicy": "Aucun outil d’analyse ni traceur tiers n’est chargé. Aucune donnée n’est partagée avec une partie autre que Discogs (dont l’API les a renvoyées).",
+    "cookieBody1prefix": "Un unique cookie de session chiffré et HTTP-only nommé ",
+    "cookieBody1suffix": " sert à vous maintenir connecté. Il expire 8 heures après émission et n’est pas lisible par JavaScript. Il porte votre jeton d’accès OAuth Discogs et votre nom d’utilisateur pour que le serveur puisse parler à Discogs en votre nom ; il n’est pas utilisé pour la publicité ou le suivi.",
+    "cookieBody2": "C’est un cookie fonctionnel nécessaire au fonctionnement de l’application. Aucune bannière de consentement n’est affichée car aucun cookie non fonctionnel n’est posé.",
+    "removeSignOut": "<strong>Se déconnecter</strong> depuis le menu de l’en-tête — cela détruit immédiatement le cookie de session.",
+    "removeClearCache": "<strong>Vider le cache</strong> depuis le menu de l’en-tête — cela supprime tous les fichiers JSON en cache pour votre nom d’utilisateur ainsi que tout état Redis éphémère.",
+    "removeGithubIssue": "Pour demander une suppression complète (y compris tout fichier résiduel d’un compte inactif), ouvrez un ticket dans le {githubIssuesLink}.",
+    "githubIssuesLinkText": "dépôt GitHub",
+    "thirdPartyBody": "Les cartes d’article renvoient vers leur page de disque sur discogs.com. Aucun autre service tiers n’est contacté."
+  },
+  "collection": {
+    "emptyTitle": "Votre collection est vide.",
+    "emptyHint": "Essayez de synchroniser avec Discogs pour charger vos données."
+  },
+  "wantlist": {
+    "emptyTitle": "Votre liste de souhaits est vide.",
+    "emptyHint": "Essayez de synchroniser avec Discogs pour charger vos données."
+  },
+  "duplicates": {
+    "pageTitle": "Doublons dans la collection",
+    "empty": "Aucun doublon trouvé dans votre collection en cache. Essayez de synchroniser avec Discogs."
+  },
+  "stats": {
+    "pageTitle": "Statistiques de collection",
+    "totalReleases": "Disques au total",
+    "uniqueArtists": "Artistes uniques",
+    "uniqueLabels": "Labels uniques",
+    "vinylPercentage": "% Vinyle",
+    "topArtists": "Meilleurs artistes",
+    "topLabels": "Meilleurs labels",
+    "styles": "Styles",
+    "decades": "Décennies",
+    "formats": "Formats",
+    "conditions": "États",
+    "pillarSlider": "Afficher les {n} styles principaux",
+    "noData": "Aucune donnée de collection en cache pour le moment. Synchronisez avec Discogs pour remplir les statistiques."
+  },
+  "user": {
+    "notFound": "Profil utilisateur introuvable.",
+    "notFoundHint": "Il aurait dû être chargé à la connexion. Essayez de vous déconnecter puis reconnecter.",
+    "memberSince": "Membre depuis {date}",
+    "profileHeading": "Profil",
+    "statsHeading": "Statistiques Discogs",
+    "statInCollection": "Dans la collection",
+    "statInWantlist": "Dans la liste de souhaits",
+    "statContributions": "Contributions",
+    "statRatings": "Notes",
+    "statLists": "Listes",
+    "personalWebsite": "Site personnel",
+    "viewOnDiscogs": "Voir sur Discogs"
+  },
+  "sort": {
+    "sortBy": "Trier par",
+    "view": "Affichage",
+    "grid": "Grille",
+    "list": "Liste",
+    "search": "Recherche",
+    "searchPlaceholder": "Rechercher un titre, un artiste, un label …",
+    "orderAsc": "Croissant",
+    "orderDesc": "Décroissant",
+    "keyDateAdded": "Date d’ajout",
+    "keyArtist": "Artiste",
+    "keyTitle": "Titre",
+    "keyYear": "Année",
+    "keyLabel": "Label",
+    "keyFormat": "Format",
+    "keyRating": "Note",
+    "keyValue": "Valeur",
+    "filterInCollection": "Dans la collection"
+  },
+  "filters": {
+    "title": "Filtres",
+    "reset": "Réinitialiser",
+    "artist": "Artiste",
+    "format": "Format",
+    "year": "Année",
+    "folder": "Dossier",
+    "composer": "Compositeur",
+    "style": "Style",
+    "label": "Label",
+    "customField": "Champ personnalisé",
+    "searchInGroup": "Rechercher …"
+  },
+  "album": {
+    "labelField": "Label",
+    "formatField": "Format",
+    "yearField": "Année",
+    "addedField": "Ajouté",
+    "folderField": "Dossier",
+    "yearPrefix": "Année :"
+  },
+  "loading": "Chargement …",
+  "grid": {
+    "noItems": "Aucun élément à afficher."
+  },
+  "theme": {
+    "picker": "Thème",
+    "darkBlue": "Bleu foncé",
+    "earthy": "Terreux",
+    "olive": "Olive",
+    "light": "Clair"
+  },
+  "errors": {
+    "generic": "Un problème est survenu.",
+    "syncFailedProgress": "Échec de la récupération de l’état de la synchronisation.",
+    "dismiss": "Fermer"
+  }
+}

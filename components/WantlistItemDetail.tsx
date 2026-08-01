@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useTranslations } from "next-intl";
 import type { ProcessedWantlistItem } from "@/lib/types";
 
 interface WantlistItemDetailProps {
@@ -16,8 +17,10 @@ const buildDiscogsUrl = (item: ProcessedWantlistItem): string => {
 };
 
 const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
+  const tCommon = useTranslations("common");
+  const tAlbum = useTranslations("album");
   const { basic_information: info } = item;
-  const artist = info.artists?.[0]?.name || "Unknown Artist";
+  const artist = info.artists?.[0]?.name || tCommon("unknownArtist");
   const discogsUrl = buildDiscogsUrl(item);
 
   const year = item.master_year || info.year || null;
@@ -35,7 +38,11 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
 
         {(year || label || genres || styles) && (
           <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-discogs-text-secondary">
-            {year && <span>Year: {year}</span>}
+            {year && (
+              <span>
+                {tAlbum("yearPrefix")} {year}
+              </span>
+            )}
             {label && (
               <span>
                 {label.name}
@@ -67,7 +74,7 @@ const WantlistItemDetail: React.FC<WantlistItemDetailProps> = ({ item }) => {
                 d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
               />
             </svg>
-            View on Discogs
+            {tCommon("viewOnDiscogs")}
           </a>
         </div>
       </div>

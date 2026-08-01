@@ -1,0 +1,183 @@
+{
+  "common": {
+    "appTitle": "Discogs-samlingsviser",
+    "appDescription": "Se din Discogs-samling og ønskeliste med et moderne grensesnitt.",
+    "unknownArtist": "Ukjent artist",
+    "viewOnDiscogs": "Se på Discogs"
+  },
+  "footer": {
+    "aboutLink": "Om og personvern"
+  },
+  "language": {
+    "picker": "Språk",
+    "en": "English",
+    "nb": "Norsk",
+    "de": "Deutsch",
+    "fr": "Français",
+    "zeuhl": "Zeuhl"
+  },
+  "login": {
+    "title": "Discogs-viser",
+    "subtitle": "Koble til Discogs-kontoen din for å se samlingen og ønskelisten din.",
+    "oauthNote": "Denne applikasjonen bruker Discogs OAuth for å få sikker tilgang til dataene dine.",
+    "signInAs": "Logg inn som:",
+    "orDivider": "eller",
+    "lastLogin": "Sist innlogget: {date}",
+    "removeUser": "Fjern fra listen",
+    "loginWithAnother": "Logg inn med en annen konto",
+    "loginWithDiscogs": "Logg inn med Discogs"
+  },
+  "header": {
+    "sync": "Synkroniser med Discogs",
+    "syncing": "Synkroniserer …",
+    "syncingFallback": "Synkroniserer …",
+    "logout": "Logg ut",
+    "clearCache": "Tøm lokal buffer",
+    "clearCacheConfirm": "Er du sikker på at du vil tømme den lokale bufferen? Dette krever en full synkronisering med Discogs.",
+    "refreshingMessage": "Oppdaterer Discogs-dataene dine …",
+    "etaLabel": "Beregnet tid: {value}",
+    "etaLessThanMinute": "under ett minutt",
+    "etaMinutes": "~{n} min",
+    "etaHoursMinutes": "~{h}t {m}m",
+    "detailItems": "{processed}/{total} elementer",
+    "detailPage": "side {page}/{pages}"
+  },
+  "nav": {
+    "collection": "Samling",
+    "wantlist": "Ønskeliste",
+    "duplicates": "Duplikater",
+    "stats": "Statistikk",
+    "user": "Bruker"
+  },
+  "about": {
+    "backToSignIn": "← Tilbake til innlogging",
+    "pageTitle": "Om denne applikasjonen",
+    "pageSubtitle": "En personlig viser for Discogs-vinylsamlingen og ønskelisten din.",
+    "sectionWhatThisIs": "Hva dette er",
+    "sectionAttribution": "Discogs-anerkjennelse",
+    "sectionWhatWeStore": "Hva vi lagrer",
+    "sectionSessionCookie": "Øktinformasjonskapselen",
+    "sectionHowToRemove": "Hvordan fjerne dataene dine",
+    "sectionThirdParty": "Tredjepartslenker",
+    "whatThisIs": "Discogs Viewer er en personlig webapplikasjon for å bla i din egen Discogs-samling og ønskeliste med filtrering, sortering og statistikk utover det Discogs-siden selv tilbyr.",
+    "sourceOnGithub": "Kildekoden ligger på {githubLink}.",
+    "githubLinkText": "GitHub",
+    "attributionNoticeVerbatim": "This application uses Discogs' API but is not affiliated with, sponsored or endorsed by Discogs.",
+    "attributionExplanation": "Discogs® er et registrert varemerke for Zink Media, LLC. Den offentlige nettsiden ligger på {discogsLink} og API-vilkårene er dokumentert på {touLink}.",
+    "storeIntro": "Når du logger inn og starter en synkronisering, skriver serveren følgende JSON-filer per bruker, nøklet på Discogs-brukernavnet ditt, til en lokal bufferkatalog:",
+    "storeItemCollection": "Din samlingsutgivelsesliste (med mappe- og notatmetadata)",
+    "storeItemWantlist": "Din ønskeliste",
+    "storeItemFolders": "Dine samlingsmapper",
+    "storeItemCustomFields": "Dine egendefinerte felt",
+    "storeItemPrices": "Prisøyeblikksbilder for ønskelisten",
+    "storeItemDetails": "Detaljmetadata per utgivelse og hovedutgivelse for elementer som allerede er i listene dine",
+    "refreshPolicy": "For å overholde Discogs API-vilkår oppdateres bufrede data automatisk minst hver 6. time — enhver sidevisning utløser en ny synkronisering hvis den forrige er eldre enn det. En ny synkronisering starter også automatisk når du logger inn.",
+    "tokensPolicy": "Efemer jobbtilstand (synkroniseringsfremdrift) ligger i Redis med 1 times utløp. Ingen kopi av dine Discogs OAuth-nøkler skrives til disk; de finnes bare inne i den krypterte øktinformasjonskapselen beskrevet nedenfor.",
+    "sharingPolicy": "Ingen analyseverktøy eller tredjepartssporing lastes inn. Ingen data deles med noen andre enn Discogs (som API-et returnerte dem fra).",
+    "cookieBody1prefix": "En enkelt HTTP-only-kryptert øktinformasjonskapsel kalt ",
+    "cookieBody1suffix": " brukes til å holde deg innlogget. Den utløper 8 timer etter utstedelse og kan ikke leses av JavaScript. Den bærer Discogs OAuth-tilgangstoken og brukernavn slik at serveren kan snakke med Discogs på dine vegne; den brukes ikke til reklame eller sporing.",
+    "cookieBody2": "Dette er en funksjonell informasjonskapsel som er nødvendig for at applikasjonen skal fungere. Ingen samtykkebanner vises for den fordi ingen ikke-funksjonelle informasjonskapsler settes.",
+    "removeSignOut": "<strong>Logg ut</strong> fra topplinjen — dette ødelegger øktinformasjonskapselen umiddelbart.",
+    "removeClearCache": "<strong>Tøm buffer</strong> fra topplinjen — dette sletter alle bufrede JSON-filer for brukernavnet ditt samt eventuelt Redis-tilstand.",
+    "removeGithubIssue": "For å be om full fjerning (inkludert eventuelle gjenværende filer fra en inaktiv konto), åpne en sak i {githubIssuesLink}.",
+    "githubIssuesLinkText": "GitHub-repositoriet",
+    "thirdPartyBody": "Utgivelseskort lenker ut til utgivelsessidene på discogs.com. Ingen andre tredjepartstjenester kontaktes."
+  },
+  "collection": {
+    "emptyTitle": "Samlingen din er tom.",
+    "emptyHint": "Prøv å synkronisere med Discogs for å laste inn dataene dine."
+  },
+  "wantlist": {
+    "emptyTitle": "Ønskelisten din er tom.",
+    "emptyHint": "Prøv å synkronisere med Discogs for å laste inn dataene dine."
+  },
+  "duplicates": {
+    "pageTitle": "Dupliserte utgivelser i samlingen",
+    "empty": "Ingen dupliserte utgivelser funnet i den bufrede samlingen din. Prøv å synkronisere med Discogs."
+  },
+  "stats": {
+    "pageTitle": "Samlingsstatistikk",
+    "totalReleases": "Utgivelser totalt",
+    "uniqueArtists": "Unike artister",
+    "uniqueLabels": "Unike plateselskaper",
+    "vinylPercentage": "Vinyl-%",
+    "topArtists": "Topp artister",
+    "topLabels": "Topp plateselskaper",
+    "styles": "Stiler",
+    "decades": "Tiår",
+    "formats": "Formater",
+    "conditions": "Tilstander",
+    "pillarSlider": "Vis topp {n} stiler",
+    "noData": "Ingen samlingsdata bufret ennå. Synkroniser med Discogs for å fylle statistikken."
+  },
+  "user": {
+    "notFound": "Brukerprofil ikke funnet.",
+    "notFoundHint": "Den skulle vært lastet inn ved innlogging. Prøv å logge ut og inn igjen.",
+    "memberSince": "Medlem siden {date}",
+    "profileHeading": "Profil",
+    "statsHeading": "Discogs-statistikk",
+    "statInCollection": "I samling",
+    "statInWantlist": "På ønskeliste",
+    "statContributions": "Bidrag",
+    "statRatings": "Vurderinger",
+    "statLists": "Lister",
+    "personalWebsite": "Personlig nettside",
+    "viewOnDiscogs": "Se på Discogs"
+  },
+  "sort": {
+    "sortBy": "Sorter etter",
+    "view": "Visning",
+    "grid": "Rutenett",
+    "list": "Liste",
+    "search": "Søk",
+    "searchPlaceholder": "Søk tittel, artist, plateselskap …",
+    "orderAsc": "Stigende",
+    "orderDesc": "Synkende",
+    "keyDateAdded": "Lagt til",
+    "keyArtist": "Artist",
+    "keyTitle": "Tittel",
+    "keyYear": "År",
+    "keyLabel": "Plateselskap",
+    "keyFormat": "Format",
+    "keyRating": "Vurdering",
+    "keyValue": "Verdi",
+    "filterInCollection": "I samling"
+  },
+  "filters": {
+    "title": "Filter",
+    "reset": "Nullstill",
+    "artist": "Artist",
+    "format": "Format",
+    "year": "År",
+    "folder": "Mappe",
+    "composer": "Komponist",
+    "style": "Stil",
+    "label": "Plateselskap",
+    "customField": "Egendefinert felt",
+    "searchInGroup": "Søk …"
+  },
+  "album": {
+    "labelField": "Plateselskap",
+    "formatField": "Format",
+    "yearField": "År",
+    "addedField": "Lagt til",
+    "folderField": "Mappe",
+    "yearPrefix": "År:"
+  },
+  "loading": "Laster …",
+  "grid": {
+    "noItems": "Ingen elementer å vise."
+  },
+  "theme": {
+    "picker": "Tema",
+    "darkBlue": "Mørkeblå",
+    "earthy": "Jordfarger",
+    "olive": "Oliven",
+    "light": "Lys"
+  },
+  "errors": {
+    "generic": "Noe gikk galt.",
+    "syncFailedProgress": "Klarte ikke å hente synkroniseringsstatus.",
+    "dismiss": "Lukk"
+  }
+}

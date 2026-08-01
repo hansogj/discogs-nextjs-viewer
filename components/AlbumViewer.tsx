@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useRef,
 } from "react";
+import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
 import type {
   CollectionRelease,
@@ -42,6 +43,9 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   customFields,
   wantlistPrices,
 }) => {
+  const tCollection = useTranslations("collection");
+  const tWantlist = useTranslations("wantlist");
+  const tSort = useTranslations("sort");
   const [sortKey, setSortKey] = useState<SortKey>("date_added");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
   const [showOnlyInCollection, setShowOnlyInCollection] = useState(false);
@@ -529,7 +533,7 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
                   {
                     isEnabled: showOnlyInCollection,
                     onToggle: () => setShowOnlyInCollection((prev) => !prev),
-                    label: "In collection",
+                    label: tSort("filterInCollection"),
                   },
                 ]
               : undefined
@@ -538,10 +542,14 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <p className="text-lg text-discogs-text-secondary">
-              Your {viewType} is empty.
+              {viewType === "collection"
+                ? tCollection("emptyTitle")
+                : tWantlist("emptyTitle")}
             </p>
             <p className="mt-2 text-discogs-text-secondary">
-              Try syncing with Discogs to load your data.
+              {viewType === "collection"
+                ? tCollection("emptyHint")
+                : tWantlist("emptyHint")}
             </p>
           </div>
         ) : view === "grid" ? (

@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslations } from "next-intl";
 import type { CollectionRelease, ProcessedWantlistItem } from "@/lib/types";
 import AlbumCard from "./AlbumCard";
 import WantlistItemDetail from "./WantlistItemDetail";
@@ -12,8 +13,9 @@ interface GridProps {
 
 const getArtistName = (
   item: CollectionRelease | ProcessedWantlistItem,
+  fallback: string,
 ): string => {
-  return item.basic_information.artists?.[0]?.name || "Unknown Artist";
+  return item.basic_information.artists?.[0]?.name || fallback;
 };
 
 const Grid: React.FC<GridProps> = ({
@@ -22,10 +24,13 @@ const Grid: React.FC<GridProps> = ({
   expandedItemId,
   onToggleExpand,
 }) => {
+  const tCommon = useTranslations("common");
+  const tGrid = useTranslations("grid");
+  const unknownArtist = tCommon("unknownArtist");
   if (!items || items.length === 0) {
     return (
       <p className="mt-10 text-center text-discogs-text-secondary">
-        No items to display.
+        {tGrid("noItems")}
       </p>
     );
   }
@@ -49,7 +54,7 @@ const Grid: React.FC<GridProps> = ({
             >
               <AlbumCard
                 title={item.basic_information.title}
-                artist={getArtistName(item)}
+                artist={getArtistName(item, unknownArtist)}
                 imageUrl={
                   "master_cover_image" in item
                     ? item.master_cover_image

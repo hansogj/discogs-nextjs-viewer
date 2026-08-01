@@ -1,0 +1,183 @@
+{
+  "common": {
+    "appTitle": "Discogs-Sammlungs-Viewer",
+    "appDescription": "Betrachte deine Discogs-Sammlung und Wunschliste mit einer modernen Oberfläche.",
+    "unknownArtist": "Unbekannter Künstler",
+    "viewOnDiscogs": "Auf Discogs ansehen"
+  },
+  "footer": {
+    "aboutLink": "Über & Datenschutz"
+  },
+  "language": {
+    "picker": "Sprache",
+    "en": "English",
+    "nb": "Norsk",
+    "de": "Deutsch",
+    "fr": "Français",
+    "zeuhl": "Zeuhl"
+  },
+  "login": {
+    "title": "Discogs-Viewer",
+    "subtitle": "Verbinde dein Discogs-Konto, um deine Sammlung und Wunschliste zu sehen.",
+    "oauthNote": "Diese Anwendung nutzt Discogs OAuth für sicheren Zugriff auf deine Daten.",
+    "signInAs": "Anmelden als:",
+    "orDivider": "oder",
+    "lastLogin": "Letzte Anmeldung: {date}",
+    "removeUser": "Aus Liste entfernen",
+    "loginWithAnother": "Mit einem anderen Konto anmelden",
+    "loginWithDiscogs": "Mit Discogs anmelden"
+  },
+  "header": {
+    "sync": "Mit Discogs synchronisieren",
+    "syncing": "Synchronisiere …",
+    "syncingFallback": "Synchronisiere …",
+    "logout": "Abmelden",
+    "clearCache": "Lokalen Cache leeren",
+    "clearCacheConfirm": "Bist du sicher, dass du den lokalen Cache leeren möchtest? Dies erfordert eine vollständige Synchronisation mit Discogs.",
+    "refreshingMessage": "Deine Discogs-Daten werden aktualisiert …",
+    "etaLabel": "Verbleibend: {value}",
+    "etaLessThanMinute": "weniger als eine Minute",
+    "etaMinutes": "~{n} Min.",
+    "etaHoursMinutes": "~{h}h {m}m",
+    "detailItems": "{processed}/{total} Einträge",
+    "detailPage": "Seite {page}/{pages}"
+  },
+  "nav": {
+    "collection": "Sammlung",
+    "wantlist": "Wunschliste",
+    "duplicates": "Duplikate",
+    "stats": "Statistiken",
+    "user": "Benutzer"
+  },
+  "about": {
+    "backToSignIn": "← Zurück zur Anmeldung",
+    "pageTitle": "Über diese Anwendung",
+    "pageSubtitle": "Ein persönlicher Viewer für deine Discogs-Vinylsammlung und Wunschliste.",
+    "sectionWhatThisIs": "Worum es geht",
+    "sectionAttribution": "Discogs-Kennzeichnung",
+    "sectionWhatWeStore": "Was wir speichern",
+    "sectionSessionCookie": "Der Session-Cookie",
+    "sectionHowToRemove": "So entfernst du deine Daten",
+    "sectionThirdParty": "Links zu Dritten",
+    "whatThisIs": "Discogs Viewer ist eine persönliche Webanwendung zum Durchstöbern deiner eigenen Discogs-Sammlung und Wunschliste mit Filter-, Sortier- und Statistikfunktionen, die über die eigentliche Discogs-Seite hinausgehen.",
+    "sourceOnGithub": "Der Quellcode liegt auf {githubLink}.",
+    "githubLinkText": "GitHub",
+    "attributionNoticeVerbatim": "This application uses Discogs' API but is not affiliated with, sponsored or endorsed by Discogs.",
+    "attributionExplanation": "Discogs® ist eine eingetragene Marke von Zink Media, LLC. Die öffentliche Website befindet sich unter {discogsLink} und die API-Nutzungsbedingungen sind unter {touLink} dokumentiert.",
+    "storeIntro": "Wenn du dich anmeldest und eine Synchronisation auslöst, schreibt der Server folgende benutzerbezogene JSON-Dateien, verschlüsselt nach deinem Discogs-Benutzernamen, in ein lokales Cache-Verzeichnis:",
+    "storeItemCollection": "Deine Sammlungsliste (mit Ordner- und Notiz-Metadaten)",
+    "storeItemWantlist": "Deine Wunschliste",
+    "storeItemFolders": "Deine Sammlungs-Ordner",
+    "storeItemCustomFields": "Deine benutzerdefinierten Felder",
+    "storeItemPrices": "Preis-Snapshots der Wunschliste",
+    "storeItemDetails": "Detail-Metadaten pro Release und Master für Einträge, die bereits in deinen Listen sind",
+    "refreshPolicy": "Um den Discogs-API-Nutzungsbedingungen zu entsprechen, werden zwischengespeicherte Daten mindestens alle 6 Stunden automatisch aktualisiert — jeder Seitenaufruf löst eine erneute Synchronisation aus, wenn die letzte länger her ist. Eine frische Synchronisation läuft außerdem automatisch beim Anmelden.",
+    "tokensPolicy": "Kurzlebiger Job-Zustand (Sync-Fortschritt) liegt in Redis mit 1-Stunden-Ablauf. Es wird keine Kopie deiner Discogs-OAuth-Tokens auf die Festplatte geschrieben; sie leben ausschließlich im verschlüsselten Session-Cookie unten.",
+    "sharingPolicy": "Es werden weder Analyse- noch Drittanbieter-Tracker geladen. Keine Daten werden mit anderen Parteien als Discogs (deren API sie zurückgab) geteilt.",
+    "cookieBody1prefix": "Ein einzelner HTTP-only-verschlüsselter Session-Cookie namens ",
+    "cookieBody1suffix": " hält dich angemeldet. Er läuft 8 Stunden nach Ausstellung ab und ist nicht per JavaScript lesbar. Er trägt dein Discogs-OAuth-Access-Token und deinen Benutzernamen, damit der Server in deinem Namen mit Discogs sprechen kann; er dient nicht der Werbung oder dem Tracking.",
+    "cookieBody2": "Dies ist ein funktionaler Cookie, der für den Betrieb der Anwendung nötig ist. Es wird kein Zustimmungsbanner angezeigt, weil keine nicht-funktionalen Cookies gesetzt werden.",
+    "removeSignOut": "<strong>Abmelden</strong> aus dem Kopfmenü — dies zerstört den Session-Cookie sofort.",
+    "removeClearCache": "<strong>Cache leeren</strong> aus dem Kopfmenü — dies löscht alle zwischengespeicherten JSON-Dateien für deinen Benutzernamen sowie flüchtigen Redis-Zustand.",
+    "removeGithubIssue": "Um eine vollständige Entfernung zu beantragen (einschließlich verbleibender Dateien eines inaktiven Kontos), öffne ein Issue im {githubIssuesLink}.",
+    "githubIssuesLinkText": "GitHub-Repository",
+    "thirdPartyBody": "Item-Karten verlinken zu ihren Release-Seiten auf discogs.com. Es werden keine weiteren Drittanbieter-Dienste kontaktiert."
+  },
+  "collection": {
+    "emptyTitle": "Deine Sammlung ist leer.",
+    "emptyHint": "Synchronisiere mit Discogs, um deine Daten zu laden."
+  },
+  "wantlist": {
+    "emptyTitle": "Deine Wunschliste ist leer.",
+    "emptyHint": "Synchronisiere mit Discogs, um deine Daten zu laden."
+  },
+  "duplicates": {
+    "pageTitle": "Doppelte Releases in der Sammlung",
+    "empty": "Keine doppelten Releases in deiner zwischengespeicherten Sammlung gefunden. Synchronisiere mit Discogs."
+  },
+  "stats": {
+    "pageTitle": "Sammlungs-Statistik",
+    "totalReleases": "Releases insgesamt",
+    "uniqueArtists": "Verschiedene Künstler",
+    "uniqueLabels": "Verschiedene Labels",
+    "vinylPercentage": "Vinyl-%",
+    "topArtists": "Top-Künstler",
+    "topLabels": "Top-Labels",
+    "styles": "Stile",
+    "decades": "Jahrzehnte",
+    "formats": "Formate",
+    "conditions": "Zustände",
+    "pillarSlider": "Top-{n}-Stile anzeigen",
+    "noData": "Noch keine Sammlungsdaten im Cache. Synchronisiere mit Discogs, um die Statistiken zu füllen."
+  },
+  "user": {
+    "notFound": "Benutzerprofil nicht gefunden.",
+    "notFoundHint": "Es hätte beim Anmelden geladen werden sollen. Versuche, dich ab- und wieder anzumelden.",
+    "memberSince": "Mitglied seit {date}",
+    "profileHeading": "Profil",
+    "statsHeading": "Discogs-Statistik",
+    "statInCollection": "In der Sammlung",
+    "statInWantlist": "Auf der Wunschliste",
+    "statContributions": "Beiträge",
+    "statRatings": "Bewertungen",
+    "statLists": "Listen",
+    "personalWebsite": "Persönliche Website",
+    "viewOnDiscogs": "Auf Discogs ansehen"
+  },
+  "sort": {
+    "sortBy": "Sortieren nach",
+    "view": "Ansicht",
+    "grid": "Raster",
+    "list": "Liste",
+    "search": "Suche",
+    "searchPlaceholder": "Titel, Künstler, Label suchen …",
+    "orderAsc": "Aufsteigend",
+    "orderDesc": "Absteigend",
+    "keyDateAdded": "Hinzugefügt",
+    "keyArtist": "Künstler",
+    "keyTitle": "Titel",
+    "keyYear": "Jahr",
+    "keyLabel": "Label",
+    "keyFormat": "Format",
+    "keyRating": "Bewertung",
+    "keyValue": "Wert",
+    "filterInCollection": "In Sammlung"
+  },
+  "filters": {
+    "title": "Filter",
+    "reset": "Zurücksetzen",
+    "artist": "Künstler",
+    "format": "Format",
+    "year": "Jahr",
+    "folder": "Ordner",
+    "composer": "Komponist",
+    "style": "Stil",
+    "label": "Label",
+    "customField": "Benutzerdefiniert",
+    "searchInGroup": "Suchen …"
+  },
+  "album": {
+    "labelField": "Label",
+    "formatField": "Format",
+    "yearField": "Jahr",
+    "addedField": "Hinzugefügt",
+    "folderField": "Ordner",
+    "yearPrefix": "Jahr:"
+  },
+  "loading": "Lade …",
+  "grid": {
+    "noItems": "Keine Einträge anzuzeigen."
+  },
+  "theme": {
+    "picker": "Design",
+    "darkBlue": "Dunkelblau",
+    "earthy": "Erdig",
+    "olive": "Oliv",
+    "light": "Hell"
+  },
+  "errors": {
+    "generic": "Etwas ist schiefgelaufen.",
+    "syncFailedProgress": "Sync-Fortschritt konnte nicht geladen werden.",
+    "dismiss": "Schließen"
+  }
+}

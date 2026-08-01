@@ -1,8 +1,15 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces, Space_Mono } from "next/font/google";
-import Link from "next/link";
-import "./globals.css";
+import { NextIntlClientProvider, hasLocale } from "next-intl";
+import {
+  getMessages,
+  getTranslations,
+  setRequestLocale,
+} from "next-intl/server";
+import { notFound } from "next/navigation";
+import "../globals.css";
 import React from "react";
+import { Link, routing } from "@/i18n/routing";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -22,11 +29,22 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
-export const metadata: Metadata = {
-  title: "Discogs Collection Viewer",
-  description:
-    "View your Discogs collection and wantlist with a modern interface.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "common" });
+  return {
+    title: t("appTitle"),
+    description: t("appDescription"),
+  };
+}
+
+export function generateStaticParams() {
+  return routing.locales.map((locale) => ({ locale }));
+}
 
 // Inline, render-blocking so the theme is set before first paint.
 // Without this, the page would flash in the default theme before React
@@ -42,14 +60,24 @@ const themeInitScript = `
 })();
 `;
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
+  params,
 }: Readonly<{
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }>) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) {
+    notFound();
+  }
+  setRequestLocale(locale);
+  const messages = await getMessages();
+  const t = await getTranslations("footer");
+
   return (
     <html
-      lang="en"
+      lang={locale}
       // The inline themeInitScript below sets data-theme on this element
       // before hydration, so the server tree (without data-theme) and the
       // client tree (with it) intentionally differ. suppressHydrationWarning
@@ -62,14 +90,20 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body className="flex min-h-screen flex-col bg-discogs-bg font-sans text-discogs-text">
-        <div className="flex-1">{children}</div>
-        <footer className="border-t border-discogs-border px-4 py-3 text-center text-xs text-discogs-text-secondary">
-          This application uses Discogs&apos; API but is not affiliated with,
-          sponsored or endorsed by Discogs.{" "}
-          <Link href="/about" className="text-discogs-blue hover:underline">
-            About &amp; privacy
-          </Link>
-        </footer>
+        <NextIntlClientProvider messages={messages} locale={locale}>
+          <div className="flex-1">{children}</div>
+          <footer className="border-t border-discogs-border px-4 py-3 text-center text-xs text-discogs-text-secondary">
+            {/*
+              The Discogs TOU-mandated attribution phrase MUST stay verbatim
+              in English regardless of locale — it's a legal/trademark notice.
+            */}
+            This application uses Discogs&apos; API but is not affiliated with,
+            sponsored or endorsed by Discogs.{" "}
+            <Link href="/about" className="text-discogs-blue hover:underline">
+              {t("aboutLink")}
+            </Link>
+          </footer>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

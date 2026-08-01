@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -13,8 +14,9 @@ const PLACEHOLDER_IMAGE_URL =
 
 const getArtistName = (
   item: CollectionRelease | ProcessedWantlistItem,
+  fallback: string,
 ): string => {
-  return item.basic_information.artists?.[0]?.name || "Unknown Artist";
+  return item.basic_information.artists?.[0]?.name || fallback;
 };
 
 const formatMedia = (formats: BasicInformation["formats"]): string => {
@@ -57,6 +59,9 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
   isExpanded,
   onToggle,
 }) => {
+  const tAlbum = useTranslations("album");
+  const tCommon = useTranslations("common");
+  const unknownArtist = tCommon("unknownArtist");
   const { basic_information: info } = item;
   const discogsUrl = `https://www.discogs.com/release/${info.id}`;
   const imageUrl =
@@ -87,7 +92,7 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
           <div className="block flex-shrink-0">
             <Image
               src={imageUrl || PLACEHOLDER_IMAGE_URL}
-              alt={`${getArtistName(item)} - ${info.title}`}
+              alt={`${getArtistName(item, unknownArtist)} - ${info.title}`}
               width={96}
               height={96}
               className="aspect-square w-24 rounded-md object-cover shadow-md"
@@ -104,7 +109,7 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
           >
             <Image
               src={imageUrl || PLACEHOLDER_IMAGE_URL}
-              alt={`${getArtistName(item)} - ${info.title}`}
+              alt={`${getArtistName(item, unknownArtist)} - ${info.title}`}
               width={96}
               height={96}
               className="aspect-square w-24 rounded-md object-cover shadow-md transition-transform duration-300 hover:scale-105"
@@ -121,7 +126,7 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
                   {info.title}
                 </h3>
                 <p className="truncate text-sm text-discogs-text-secondary">
-                  {getArtistName(item)}
+                  {getArtistName(item, unknownArtist)}
                 </p>
               </div>
             ) : (
@@ -135,23 +140,26 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
                   {info.title}
                 </h3>
                 <p className="truncate text-sm text-discogs-text-secondary">
-                  {getArtistName(item)}
+                  {getArtistName(item, unknownArtist)}
                 </p>
               </a>
             )}
           </div>
           <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3 md:grid-cols-4">
-            <DetailItem label="Label" value={labelString} />
-            <DetailItem label="Format" value={formatMedia(info.formats)} />
-            <DetailItem label="Year" value={year} />
+            <DetailItem label={tAlbum("labelField")} value={labelString} />
+            <DetailItem
+              label={tAlbum("formatField")}
+              value={formatMedia(info.formats)}
+            />
+            <DetailItem label={tAlbum("yearField")} value={year} />
             {"date_added" in item && (
               <DetailItem
-                label="Added"
+                label={tAlbum("addedField")}
                 value={new Date(item.date_added).toLocaleDateString()}
               />
             )}
             {"folder_id" in item && (
-              <DetailItem label="Folder" value={folderName} />
+              <DetailItem label={tAlbum("folderField")} value={folderName} />
             )}
           </div>
         </div>
