@@ -13,7 +13,6 @@ interface AlbumCardProps {
   discogsUrl: string;
   onClick?: () => void;
   isExpanded?: boolean;
-  badgeCount?: number | null;
 }
 
 const AlbumCard: React.FC<AlbumCardProps> = ({
@@ -23,7 +22,6 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
   discogsUrl,
   onClick,
   isExpanded,
-  badgeCount,
 }) => {
   const imageToDisplay = imageUrl || PLACEHOLDER_IMAGE_URL;
 
@@ -40,11 +38,6 @@ const AlbumCard: React.FC<AlbumCardProps> = ({
         placeholder="blur"
         blurDataURL={PLACEHOLDER_IMAGE_URL}
       />
-      {badgeCount != null && badgeCount > 0 && (
-        <span className="absolute right-2 top-2 z-10 flex min-w-[1.5rem] items-center justify-center rounded-full bg-blue-600 px-1.5 py-0.5 text-xs font-bold text-white shadow-lg">
-          {badgeCount}
-        </span>
-      )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent"></div>
       <div className="absolute bottom-0 left-0 w-full p-4">
         <h3 className="truncate text-base font-bold leading-tight text-white drop-shadow-md">

@@ -24,7 +24,6 @@ import SortControls, {
 import AlbumList from "./AlbumList";
 import FilterSidebar from "./FilterSidebar";
 import BestBuysPanel from "./BestBuysPanel";
-import { useFinnCounts } from "@/hooks/useFinnCounts";
 
 interface AlbumViewerProps {
   items: (CollectionRelease | ProcessedWantlistItem)[];
@@ -49,7 +48,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
   const [view, setView] = useState<View>("grid");
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedItemId, setExpandedItemId] = useState<number | null>(null);
-  const [showOnlyFinnHits, setShowOnlyFinnHits] = useState(false);
 
   // Seed filter state from URL search params (e.g. links from the /stats
   // page: `/collection?style=Jazz`, `?decade=1970s`, `?artist=X`,
@@ -195,12 +193,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     return counts;
   }, [items, viewType]);
 
-  const { counts: finnCounts } = useFinnCounts(
-    viewType === "wantlist"
-      ? (uniqueWantlistItems as ProcessedWantlistItem[])
-      : [],
-  );
-
   const sortedAndFilteredItems = useMemo(() => {
     let itemsToDisplay = viewType === "wantlist" ? uniqueWantlistItems : items;
 
@@ -311,13 +303,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
       });
     }
 
-    if (viewType === "wantlist" && showOnlyFinnHits) {
-      itemsToDisplay = itemsToDisplay.filter((item) => {
-        const count = finnCounts.get(item.id);
-        return count != null && count > 0;
-      });
-    }
-
     // --- Sorting ---
     return [...itemsToDisplay].sort((a, b) => {
       const aInfo = a.basic_information;
@@ -371,8 +356,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
     sortKey,
     sortOrder,
     showOnlyInCollection,
-    showOnlyFinnHits,
-    finnCounts,
     viewType,
     collectionMasterIds,
     searchQuery,
@@ -548,11 +531,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
                     onToggle: () => setShowOnlyInCollection((prev) => !prev),
                     label: "In collection",
                   },
-                  {
-                    isEnabled: showOnlyFinnHits,
-                    onToggle: () => setShowOnlyFinnHits((prev) => !prev),
-                    label: "Found on Finn.no",
-                  },
                 ]
               : undefined
           }
@@ -575,7 +553,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
                 ? (id) => setExpandedItemId((prev) => (prev === id ? null : id))
                 : undefined
             }
-            finnCounts={viewType === "wantlist" ? finnCounts : undefined}
           />
         ) : (
           <AlbumList
@@ -587,7 +564,6 @@ const AlbumViewer: React.FC<AlbumViewerProps> = ({
                 ? (id) => setExpandedItemId((prev) => (prev === id ? null : id))
                 : undefined
             }
-            finnCounts={viewType === "wantlist" ? finnCounts : undefined}
           />
         )}
       </div>

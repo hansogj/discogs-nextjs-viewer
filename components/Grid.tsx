@@ -8,7 +8,6 @@ interface GridProps {
   gridClassNames?: string;
   expandedItemId?: number | null;
   onToggleExpand?: (id: number) => void;
-  finnCounts?: Map<number, number | null>;
 }
 
 const getArtistName = (
@@ -22,7 +21,6 @@ const Grid: React.FC<GridProps> = ({
   gridClassNames,
   expandedItemId,
   onToggleExpand,
-  finnCounts,
 }) => {
   if (!items || items.length === 0) {
     return (
@@ -62,7 +60,6 @@ const Grid: React.FC<GridProps> = ({
                   onToggleExpand ? () => onToggleExpand(item.id) : undefined
                 }
                 isExpanded={isExpanded}
-                badgeCount={finnCounts?.get(item.id)}
               />
             </div>
             {isExpanded && (
