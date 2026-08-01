@@ -27,6 +27,7 @@
     "loginWithDiscogs": "Se connecter avec Discogs"
   },
   "header": {
+    "menu": "Menu",
     "sync": "Synchroniser avec Discogs",
     "syncing": "Synchronisation …",
     "syncingFallback": "Synchronisation …",

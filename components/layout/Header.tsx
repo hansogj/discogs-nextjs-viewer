@@ -7,8 +7,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import type { SyncProgress } from "@/lib/cache"; // Import SyncProgress type
-import ThemePicker from "./ThemePicker";
-import LanguagePicker from "./LanguagePicker";
+import HeaderMenu from "./HeaderMenu";
 
 interface HeaderProps {
   user: DiscogsUser;
@@ -56,11 +55,6 @@ export default function Header({
       clearInterval(intervalId);
     };
   }, [isSyncing]);
-
-  const handleLogout = async () => {
-    await fetch("/api/logout", { method: "POST" });
-    router.refresh(); // This will re-trigger the middleware, which will redirect to the login page.
-  };
 
   const getProgressPercentage = (progress: SyncProgress): number => {
     if (!progress.step || !progress.totalSteps) return 0;
@@ -310,46 +304,11 @@ export default function Header({
           </Link>
         </nav>
 
-        <div className="flex items-center space-x-2">
-          <LanguagePicker />
-          <ThemePicker />
-          <button
-            onClick={onSync}
-            disabled={isSyncing} // Disable when syncing
-            className={clsx(
-              "px-4 py-2 text-sm font-bold rounded-lg transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-discogs-bg",
-              isSyncing
-                ? "bg-discogs-border text-discogs-text-secondary cursor-not-allowed"
-                : "bg-discogs-success text-white hover:bg-discogs-success-dark focus:ring-discogs-success",
-            )}
-          >
-            {isSyncing ? tHeader("syncing") : tHeader("sync")}
-          </button>
-          <button
-            onClick={handleLogout}
-            className="rounded-lg bg-discogs-danger px-4 py-2 text-sm font-bold text-white transition-colors duration-300 hover:bg-discogs-danger-dark focus:outline-none focus:ring-2 focus:ring-discogs-danger focus:ring-offset-2 focus:ring-offset-discogs-bg"
-          >
-            {tHeader("logout")}
-          </button>
-          <button
-            onClick={onClearCache}
-            className="rounded-lg p-2 text-discogs-text-secondary transition-colors hover:bg-discogs-border hover:text-discogs-text"
-            title={tHeader("clearCache")}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
+        <HeaderMenu
+          onSync={onSync}
+          onClearCache={onClearCache}
+          isSyncing={isSyncing}
+        />
       </div>
     </header>
   );
