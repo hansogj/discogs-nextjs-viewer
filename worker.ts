@@ -491,7 +491,16 @@ const worker = new Worker(
       });
     }
   },
-  { connection, lockDuration: 60 * 1000 * 30 }, // Keep job lock for 30 minutes
+  {
+    connection,
+    // Serialise sync jobs so simultaneous user triggers share the
+    // consumer-key rate budget cleanly instead of compound-429ing each
+    // other. This holds only for a single worker instance — scaling the
+    // worker service horizontally would need a Redis-based distributed
+    // lock to preserve the invariant.
+    concurrency: 1,
+    lockDuration: 60 * 1000 * 30, // Keep job lock for 30 minutes
+  },
 );
 console.log("[Worker Init] BullMQ Worker instance created.");
 
