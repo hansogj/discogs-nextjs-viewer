@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces, Space_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 import React from "react";
 
@@ -64,7 +65,10 @@ export default function RootLayout({
         <div className="flex-1">{children}</div>
         <footer className="border-t border-discogs-border px-4 py-3 text-center text-xs text-discogs-text-secondary">
           This application uses Discogs&apos; API but is not affiliated with,
-          sponsored or endorsed by Discogs.
+          sponsored or endorsed by Discogs.{" "}
+          <Link href="/about" className="text-discogs-blue hover:underline">
+            About &amp; privacy
+          </Link>
         </footer>
       </body>
     </html>
