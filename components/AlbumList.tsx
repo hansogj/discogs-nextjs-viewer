@@ -11,7 +11,6 @@ interface AlbumListProps {
   folders: Folder[];
   expandedItemId?: number | null;
   onToggleExpand?: (id: number) => void;
-  finnCounts?: Map<number, number | null>;
 }
 
 const AlbumList: React.FC<AlbumListProps> = ({
@@ -19,7 +18,6 @@ const AlbumList: React.FC<AlbumListProps> = ({
   folders,
   expandedItemId,
   onToggleExpand,
-  finnCounts,
 }) => {
   if (!items || items.length === 0) {
     return (
@@ -45,7 +43,6 @@ const AlbumList: React.FC<AlbumListProps> = ({
             onToggle={
               onToggleExpand ? () => onToggleExpand(item.id) : undefined
             }
-            badgeCount={finnCounts?.get(item.id)}
           />
         </div>
       ))}

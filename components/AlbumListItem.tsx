@@ -34,7 +34,6 @@ interface AlbumListItemProps {
   folders: Folder[];
   isExpanded?: boolean;
   onToggle?: () => void;
-  badgeCount?: number | null;
 }
 
 const DetailItem: React.FC<{
@@ -57,7 +56,6 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
   folders,
   isExpanded,
   onToggle,
-  badgeCount,
 }) => {
   const { basic_information: info } = item;
   const discogsUrl = `https://www.discogs.com/release/${info.id}`;
@@ -86,12 +84,7 @@ const AlbumListItem: React.FC<AlbumListItemProps> = ({
         className={`flex w-full space-x-4 rounded-lg border border-discogs-border/50 bg-discogs-bg p-3 text-left transition-colors hover:bg-discogs-border/30 ${onToggle ? "cursor-pointer" : ""} ${isExpanded ? "ring-2 ring-discogs-blue" : ""}`}
       >
         {onToggle ? (
-          <div className="relative block flex-shrink-0">
-            {badgeCount != null && badgeCount > 0 && (
-              <span className="absolute -right-1 -top-1 z-10 flex min-w-[1.25rem] items-center justify-center rounded-full bg-blue-600 px-1 py-0.5 text-[10px] font-bold text-white shadow-lg">
-                {badgeCount}
-              </span>
-            )}
+          <div className="block flex-shrink-0">
             <Image
               src={imageUrl || PLACEHOLDER_IMAGE_URL}
               alt={`${getArtistName(item)} - ${info.title}`}

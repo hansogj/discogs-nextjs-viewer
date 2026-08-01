@@ -87,8 +87,7 @@ export default function AboutPage() {
           </p>
           <p>
             No analytics or third-party trackers are loaded. No data is shared
-            with any party other than Discogs (whose API returned it) and — for
-            wantlist searches — Finn.no, as described below.
+            with any party other than Discogs (whose API returned it).
           </p>
         </Section>
 
@@ -132,19 +131,11 @@ export default function AboutPage() {
           </ul>
         </Section>
 
-        <Section title="Third-party links and integrations">
-          <ul className="list-inside list-disc space-y-1 pl-2">
-            <li>
-              <strong>Discogs release pages</strong> — each item links out to
-              its release on discogs.com.
-            </li>
-            <li>
-              <strong>Finn.no marketplace search</strong> — for wantlist items
-              the server proxies a lookup against Finn.no&apos;s public
-              recommerce search and displays the resulting hit count. Only
-              artist + title are sent; no personal data leaves the server.
-            </li>
-          </ul>
+        <Section title="Third-party links">
+          <p>
+            Item cards link out to their release pages on discogs.com. No other
+            third-party services are contacted.
+          </p>
         </Section>
       </article>
     </main>
