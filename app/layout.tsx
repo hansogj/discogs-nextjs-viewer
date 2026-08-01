@@ -60,8 +60,12 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="bg-discogs-bg font-sans text-discogs-text">
-        {children}
+      <body className="flex min-h-screen flex-col bg-discogs-bg font-sans text-discogs-text">
+        <div className="flex-1">{children}</div>
+        <footer className="border-t border-discogs-border px-4 py-3 text-center text-xs text-discogs-text-secondary">
+          This application uses Discogs&apos; API but is not affiliated with,
+          sponsored or endorsed by Discogs.
+        </footer>
       </body>
     </html>
   );

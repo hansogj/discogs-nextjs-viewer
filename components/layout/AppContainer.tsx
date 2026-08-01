@@ -5,7 +5,11 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Header from "./Header";
 import ErrorMessage from "../ErrorMessage";
-import { syncAllData, clearCacheAction } from "@/app/actions";
+import {
+  syncAllData,
+  clearCacheAction,
+  getCacheStaleness,
+} from "@/app/actions";
 import type { DiscogsUser } from "@/lib/types";
 import type { SyncProgress } from "@/lib/cache";
 import { useRememberedUsers } from "@/hooks/useRememberedUsers";
@@ -79,27 +83,40 @@ export default function AppContainer({
     }, 2000);
   }, [router]);
 
-  // On mount, check if a sync is already in progress
+  // On mount: pick up any sync already in progress, then enforce the Discogs
+  // TOU 6h freshness rule — if the cached data is older than the threshold
+  // and nothing is running, kick off a background sync automatically so
+  // whatever we render is <6h old by the time the polling loop refreshes.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const res = await fetch("/api/sync-progress");
-        if (res.ok && !cancelled) {
-          const progress = await res.json();
-          if (
-            progress.status &&
-            progress.status !== "idle" &&
-            progress.status !== "done" &&
-            progress.status !== "error"
-          ) {
-            setIsSyncing(true);
-            setSyncProgress(progress);
-            startPolling();
-          }
+        if (!res.ok || cancelled) return;
+        const progress = await res.json();
+        const running =
+          progress.status &&
+          progress.status !== "idle" &&
+          progress.status !== "done" &&
+          progress.status !== "error";
+        if (running) {
+          setIsSyncing(true);
+          setSyncProgress(progress);
+          startPolling();
+          return;
         }
+        // No sync running — check freshness and self-trigger if stale.
+        const { isStale } = await getCacheStaleness();
+        if (cancelled || !isStale) return;
+        setIsSyncing(true);
+        setSyncProgress({
+          status: "starting",
+          message: "Refreshing your Discogs data...",
+        });
+        await syncAllData();
+        startPolling();
       } catch {
-        // ignore — no sync in progress
+        // ignore — network hiccup, next navigation will retry
       }
     })();
     return () => {

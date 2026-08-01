@@ -419,7 +419,7 @@ const worker = new Worker(
       await setCachedData(user.username, "custom_fields", customFields.fields);
 
       // --- Update sync info ---
-      const newSyncInfo: SyncInfo = {};
+      const newSyncInfo: SyncInfo = { syncedAt: Date.now() };
       if (finalCollection.length > 0) {
         newSyncInfo.collectionLastAdded = finalCollection[0].date_added;
       }

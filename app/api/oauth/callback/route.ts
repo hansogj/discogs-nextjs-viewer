@@ -6,6 +6,8 @@ import {
   getIdentity,
   getUserProfile,
 } from "@/lib/discogs";
+import { enqueueSyncForSession } from "@/app/actions";
+import type { DiscogsUser } from "@/lib/types";
 
 export async function GET(request: Request) {
   try {
@@ -66,15 +68,24 @@ export async function GET(request: Request) {
       oauth_token_secret: accessTokenSecret,
     });
 
-    session.user = {
+    const sessionUser: DiscogsUser = {
       id: identity.id,
       username: identity.username,
       avatar_url: userProfile.avatar_url,
       resource_url: identity.resource_url,
     };
+    session.user = sessionUser;
     session.userProfile = userProfile;
 
     await session.save(); // This will modify the 'redirectResponse' object's headers
+
+    // Kick off a background sync so freshly logged-in users see current data
+    // rather than a stale cache from a previous session. Enqueue is dedup'd
+    // per-username, so repeated logins won't stack jobs.
+    await enqueueSyncForSession(sessionUser, {
+      oauth_token: accessToken,
+      oauth_token_secret: accessTokenSecret,
+    });
 
     return redirectResponse;
   } catch (error) {

@@ -8,7 +8,7 @@ allowed-tools: Bash
 
 Perform a clean image rebuild of the Discogs viewer stack (web + worker + redis cache) via Docker Compose, **without** wiping the persistent `discogs-data` volume. The cached collection/wantlist JSON survives every redeploy, so the user does not need to re-sync from Discogs.
 
-If the user *does* want a factory-reset that also nukes the data volume, they should ask for it explicitly ("wipe volumes", "factory reset", "clear cache and redeploy"). See "Full wipe" section at the bottom.
+If the user _does_ want a factory-reset that also nukes the data volume, they should ask for it explicitly ("wipe volumes", "factory reset", "clear cache and redeploy"). See "Full wipe" section at the bottom.
 
 ## Preconditions
 
