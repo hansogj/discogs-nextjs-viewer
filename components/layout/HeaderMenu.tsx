@@ -104,9 +104,19 @@ export default function HeaderMenu({
   useEffect(() => {
     if (!open) return;
 
+    // Use composedPath() rather than rootRef.current.contains(e.target).
+    // React 18 flushes state updates from event handlers before the event
+    // finishes bubbling, so by the time this document listener runs, a
+    // clicked sub-menu row may already be detached from the DOM — and
+    // `contains()` on a detached node returns false, which would spuriously
+    // close the menu. composedPath() returns the path captured at dispatch
+    // time, so the rootRef node is still in it regardless of re-renders.
     const onDocClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      if (!rootRef.current?.contains(target)) close();
+      const root = rootRef.current;
+      if (!root) return;
+      const path = e.composedPath();
+      if (path.includes(root)) return;
+      close();
     };
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
