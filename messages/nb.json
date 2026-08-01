@@ -179,5 +179,28 @@
     "generic": "Noe gikk galt.",
     "syncFailedProgress": "Klarte ikke å hente synkroniseringsstatus.",
     "dismiss": "Lukk"
+  },
+  "bestBuys": {
+    "title": "Beste kjøp",
+    "findBestSeller": "Finn beste selger på Discogs →",
+    "findBestSellerTitle": "Åpne Discogs' markedsplass filtrert på ønskelisten din. Discogs rangerer selgere etter hvor mange av dine ønskelisteelementer de har.",
+    "budgetLabel": "Maks budsjett per element (NOK)",
+    "apply": "Bruk",
+    "sortTaste": "Smakstreff",
+    "sortTasteTitle": "Elementer nærmest samlingens smaksprofil",
+    "sortValue": "Verdi",
+    "sortValueTitle": "Smakspoeng per NOK brukt",
+    "sortCheap": "Billigst",
+    "sortCheapTitle": "Sortert etter stigende pris",
+    "statusPricedTaste": "{count} prissatte elementer. Viser topp {shown} ≤ {budget} NOK etter smakstreff.",
+    "statusPricedValue": "{count} prissatte elementer. Viser topp {shown} ≤ {budget} NOK etter verdi.",
+    "statusPricedCheap": "{count} prissatte elementer. Viser topp {shown} ≤ {budget} NOK etter pris.",
+    "statusNoPrices": "Ingen priser bufret ennå. Kjør en synkronisering for å hente markedsplass-priser.",
+    "noneUnderBudget": "Fant ingen elementer under {budget} NOK. Prøv et høyere budsjett.",
+    "priceNok": "~{price} NOK",
+    "forSale": "{count} til salgs",
+    "openMarketplace": "Åpne markedsplass →",
+    "reasonArtist": "★ {name} ({count} i samlingen)",
+    "reasonPressings": "{count} pressinger ønsket"
   }
 }

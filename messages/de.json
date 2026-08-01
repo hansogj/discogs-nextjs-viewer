@@ -179,5 +179,28 @@
     "generic": "Etwas ist schiefgelaufen.",
     "syncFailedProgress": "Sync-Fortschritt konnte nicht geladen werden.",
     "dismiss": "Schließen"
+  },
+  "bestBuys": {
+    "title": "Beste Käufe",
+    "findBestSeller": "Besten Verkäufer auf Discogs finden →",
+    "findBestSellerTitle": "Öffnet den Discogs-Marktplatz gefiltert auf deine Wunschliste. Discogs sortiert Verkäufer danach, wie viele deiner Wunschlisten-Einträge sie im Angebot haben.",
+    "budgetLabel": "Max. Budget pro Eintrag (NOK)",
+    "apply": "Anwenden",
+    "sortTaste": "Geschmackstreffer",
+    "sortTasteTitle": "Einträge, die am ehesten zum Geschmacksprofil deiner Sammlung passen",
+    "sortValue": "Wert",
+    "sortValueTitle": "Geschmackspunkte pro ausgegebener NOK",
+    "sortCheap": "Am günstigsten",
+    "sortCheapTitle": "Nach aufsteigendem Preis sortiert",
+    "statusPricedTaste": "{count} bepreiste Einträge. Zeige Top {shown} ≤ {budget} NOK nach Geschmackstreffer.",
+    "statusPricedValue": "{count} bepreiste Einträge. Zeige Top {shown} ≤ {budget} NOK nach Wert.",
+    "statusPricedCheap": "{count} bepreiste Einträge. Zeige Top {shown} ≤ {budget} NOK nach Preis.",
+    "statusNoPrices": "Noch keine Preise im Cache. Synchronisiere, um Marktplatzpreise abzurufen.",
+    "noneUnderBudget": "Keine Einträge unter {budget} NOK gefunden. Versuch ein höheres Budget.",
+    "priceNok": "~{price} NOK",
+    "forSale": "{count} zum Verkauf",
+    "openMarketplace": "Marktplatz öffnen →",
+    "reasonArtist": "★ {name} ({count} in der Sammlung)",
+    "reasonPressings": "{count} Pressungen gewünscht"
   }
 }

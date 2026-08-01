@@ -173,7 +173,11 @@ describe("computeBestBuys — reasons", () => {
       }),
     );
     const miles = result.find((r) => r.item.id === 9001)!;
-    expect(miles.reasons.some((s) => s.startsWith("★ Miles Davis"))).toBe(true);
+    expect(
+      miles.reasons.some(
+        (r) => r.kind === "artist" && r.name === "Miles Davis" && r.count === 5,
+      ),
+    ).toBe(true);
   });
 
   it("does not add an artist reason when artistMatch < 3", () => {
@@ -183,7 +187,7 @@ describe("computeBestBuys — reasons", () => {
       }),
     );
     const miles = result.find((r) => r.item.id === 9001)!;
-    expect(miles.reasons.some((s) => s.startsWith("★"))).toBe(false);
+    expect(miles.reasons.some((r) => r.kind === "artist")).toBe(false);
   });
 
   it("adds a pressings reason when >= 3 pressings wanted", () => {
@@ -193,7 +197,9 @@ describe("computeBestBuys — reasons", () => {
       }),
     );
     const miles = result.find((r) => r.item.id === 9001)!;
-    expect(miles.reasons.some((s) => s.includes("4 pressings"))).toBe(true);
+    expect(
+      miles.reasons.some((r) => r.kind === "pressings" && r.count === 4),
+    ).toBe(true);
   });
 
   it("adds a style reason only when the top-style count is >= 10", () => {
@@ -202,14 +208,20 @@ describe("computeBestBuys — reasons", () => {
       withOverride({ styleCounts: new Map([["Prog Rock", 5]]) }),
     );
     const meddle = below.find((r) => r.item.id === 9002)!;
-    expect(meddle.reasons.some((s) => s.startsWith("Prog Rock"))).toBe(false);
+    expect(
+      meddle.reasons.some((r) => r.kind === "style" && r.name === "Prog Rock"),
+    ).toBe(false);
 
     // Above the threshold — style reason surfaces.
     const above = computeBestBuys(
       withOverride({ styleCounts: new Map([["Prog Rock", 12]]) }),
     );
     const meddle2 = above.find((r) => r.item.id === 9002)!;
-    expect(meddle2.reasons.some((s) => s.startsWith("Prog Rock"))).toBe(true);
+    expect(
+      meddle2.reasons.some(
+        (r) => r.kind === "style" && r.name === "Prog Rock" && r.count === 12,
+      ),
+    ).toBe(true);
   });
 });
 

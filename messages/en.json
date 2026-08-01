@@ -179,5 +179,28 @@
     "generic": "Something went wrong.",
     "syncFailedProgress": "Failed to get sync progress.",
     "dismiss": "Dismiss"
+  },
+  "bestBuys": {
+    "title": "Best buys",
+    "findBestSeller": "Find best seller on Discogs →",
+    "findBestSellerTitle": "Open Discogs marketplace filtered to your wantlist. Discogs ranks sellers by how many of your wantlist items they stock.",
+    "budgetLabel": "Max budget per item (NOK)",
+    "apply": "Apply",
+    "sortTaste": "Taste match",
+    "sortTasteTitle": "Items closest to your collection's taste profile",
+    "sortValue": "Value",
+    "sortValueTitle": "Taste score per NOK spent",
+    "sortCheap": "Cheapest",
+    "sortCheapTitle": "Sorted by price ascending",
+    "statusPricedTaste": "{count} priced items. Showing top {shown} ≤ {budget} NOK by taste match.",
+    "statusPricedValue": "{count} priced items. Showing top {shown} ≤ {budget} NOK by value.",
+    "statusPricedCheap": "{count} priced items. Showing top {shown} ≤ {budget} NOK by price.",
+    "statusNoPrices": "No prices cached yet. Run a sync to populate marketplace prices.",
+    "noneUnderBudget": "No items found under {budget} NOK. Try a higher budget.",
+    "priceNok": "~{price} NOK",
+    "forSale": "{count} for sale",
+    "openMarketplace": "Open marketplace →",
+    "reasonArtist": "★ {name} ({count} in collection)",
+    "reasonPressings": "{count} pressings wanted"
   }
 }

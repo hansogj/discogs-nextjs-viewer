@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useTranslations } from "next-intl";
 import clsx from "clsx";
 
 interface FilterGroupProps {
@@ -19,6 +20,7 @@ const FilterGroup: React.FC<FilterGroupProps> = ({
   defaultOpen = false,
 }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const tFilters = useTranslations("filters");
 
   return (
     <div className="border-b border-discogs-border pb-4">
@@ -44,7 +46,7 @@ const FilterGroup: React.FC<FilterGroupProps> = ({
               }}
               className="mr-2 text-xs text-discogs-blue hover:underline"
             >
-              Clear
+              {tFilters("reset")}
             </span>
           )}
           <svg

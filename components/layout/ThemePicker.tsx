@@ -3,24 +3,26 @@
 import React, {
   useCallback,
   useEffect,
+  useMemo,
   useState,
   useSyncExternalStore,
 } from "react";
+import { useTranslations } from "next-intl";
 
 type Theme = "dark-blue" | "earthy" | "olive" | "light";
 
 interface ThemeOption {
   id: Theme;
-  label: string;
+  labelKey: "darkBlue" | "earthy" | "olive" | "light";
   // Two-stop preview swatch: background + accent.
   swatch: [string, string];
 }
 
 const THEMES: ThemeOption[] = [
-  { id: "dark-blue", label: "Dark blue", swatch: ["#101114", "#3498db"] },
-  { id: "earthy", label: "Earthy", swatch: ["#15120c", "#e8a33d"] },
-  { id: "olive", label: "Olive", swatch: ["#1a1d12", "#8db342"] },
-  { id: "light", label: "Light", swatch: ["#ece3d1", "#c56a1e"] },
+  { id: "dark-blue", labelKey: "darkBlue", swatch: ["#101114", "#3498db"] },
+  { id: "earthy", labelKey: "earthy", swatch: ["#15120c", "#e8a33d"] },
+  { id: "olive", labelKey: "olive", swatch: ["#1a1d12", "#8db342"] },
+  { id: "light", labelKey: "light", swatch: ["#ece3d1", "#c56a1e"] },
 ];
 
 const STORAGE_KEY = "theme";
@@ -56,6 +58,8 @@ function getServerThemeSnapshot(): Theme {
 }
 
 export default function ThemePicker() {
+  const t = useTranslations("theme");
+  const themeLabel = useMemo(() => (opt: ThemeOption) => t(opt.labelKey), [t]);
   // Subscribe to the data-theme attribute on <html>. The inline init script in
   // app/layout.tsx applies the persisted choice before this component mounts,
   // so we just mirror what's already on the DOM.
@@ -90,10 +94,10 @@ export default function ThemePicker() {
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={`Theme: ${active.label}`}
+        aria-label={`${t("picker")}: ${themeLabel(active)}`}
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-2 rounded-lg border border-discogs-border bg-discogs-bg-light px-3 py-2 text-sm text-discogs-text transition-colors hover:bg-discogs-border focus:outline-none focus:ring-2 focus:ring-discogs-blue"
-        title="Switch theme"
+        title={t("picker")}
       >
         <span
           className="block h-4 w-6 overflow-hidden rounded-sm border border-discogs-border"
@@ -108,12 +112,12 @@ export default function ThemePicker() {
             style={{ background: active.swatch[1] }}
           />
         </span>
-        <span className="hidden sm:inline">{active.label}</span>
+        <span className="hidden sm:inline">{themeLabel(active)}</span>
       </button>
       {open && (
         <ul
           role="listbox"
-          aria-label="Theme"
+          aria-label={t("picker")}
           className="absolute right-0 z-50 mt-1 min-w-[160px] overflow-hidden rounded-lg border border-discogs-border bg-discogs-bg-light shadow-lg"
         >
           {THEMES.map((opt) => {
@@ -142,7 +146,7 @@ export default function ThemePicker() {
                       style={{ background: opt.swatch[1] }}
                     />
                   </span>
-                  <span>{opt.label}</span>
+                  <span>{themeLabel(opt)}</span>
                 </button>
               </li>
             );

@@ -179,5 +179,28 @@
     "generic": "Un problème est survenu.",
     "syncFailedProgress": "Échec de la récupération de l’état de la synchronisation.",
     "dismiss": "Fermer"
+  },
+  "bestBuys": {
+    "title": "Meilleures affaires",
+    "findBestSeller": "Trouver le meilleur vendeur sur Discogs →",
+    "findBestSellerTitle": "Ouvre la place de marché Discogs filtrée sur votre liste de souhaits. Discogs classe les vendeurs selon le nombre d’articles de votre liste qu’ils proposent.",
+    "budgetLabel": "Budget max. par article (NOK)",
+    "apply": "Appliquer",
+    "sortTaste": "Correspondance de goût",
+    "sortTasteTitle": "Articles les plus proches du profil de goût de votre collection",
+    "sortValue": "Valeur",
+    "sortValueTitle": "Points de goût par NOK dépensée",
+    "sortCheap": "Le moins cher",
+    "sortCheapTitle": "Trié par prix croissant",
+    "statusPricedTaste": "{count} articles tarifés. Affichage des {shown} premiers ≤ {budget} NOK par correspondance de goût.",
+    "statusPricedValue": "{count} articles tarifés. Affichage des {shown} premiers ≤ {budget} NOK par valeur.",
+    "statusPricedCheap": "{count} articles tarifés. Affichage des {shown} premiers ≤ {budget} NOK par prix.",
+    "statusNoPrices": "Aucun prix en cache. Lancez une synchronisation pour récupérer les prix de la place de marché.",
+    "noneUnderBudget": "Aucun article trouvé sous {budget} NOK. Essayez un budget plus élevé.",
+    "priceNok": "~{price} NOK",
+    "forSale": "{count} à vendre",
+    "openMarketplace": "Ouvrir la place de marché →",
+    "reasonArtist": "★ {name} ({count} dans la collection)",
+    "reasonPressings": "{count} pressages souhaités"
   }
 }
