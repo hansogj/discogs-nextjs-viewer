@@ -7,7 +7,7 @@ const intlMiddleware = createMiddleware(routing);
 
 // Routes that require authentication, matched *after* the locale prefix.
 const GATED_ROUTE_PATTERN =
-  /^\/(en|nb|de|fr|zeuhl)\/(collection|wantlist|duplicates|stats|user)(?:\/|$)/;
+  /^\/(en|nb|de|fr)\/(collection|wantlist|duplicates|stats|user)(?:\/|$)/;
 
 export async function middleware(req: NextRequest) {
   const pathname = req.nextUrl.pathname;

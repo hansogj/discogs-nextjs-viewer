@@ -10,11 +10,10 @@
   },
   "language": {
     "picker": "Langue",
-    "en": "English",
-    "nb": "Norsk",
-    "de": "Deutsch",
-    "fr": "Français",
-    "zeuhl": "Zeuhl"
+    "en": "Anglais",
+    "nb": "Norvégien",
+    "de": "Allemand",
+    "fr": "Français"
   },
   "login": {
     "title": "Visionneuse Discogs",

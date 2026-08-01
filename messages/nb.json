@@ -10,11 +10,10 @@
   },
   "language": {
     "picker": "Språk",
-    "en": "English",
+    "en": "Engelsk",
     "nb": "Norsk",
-    "de": "Deutsch",
-    "fr": "Français",
-    "zeuhl": "Zeuhl"
+    "de": "Tysk",
+    "fr": "Fransk"
   },
   "login": {
     "title": "Discogs-viser",

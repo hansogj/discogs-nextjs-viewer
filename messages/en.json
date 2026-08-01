@@ -11,10 +11,9 @@
   "language": {
     "picker": "Language",
     "en": "English",
-    "nb": "Norsk",
-    "de": "Deutsch",
-    "fr": "Français",
-    "zeuhl": "Zeuhl"
+    "nb": "Norwegian",
+    "de": "German",
+    "fr": "French"
   },
   "login": {
     "title": "Discogs Viewer",

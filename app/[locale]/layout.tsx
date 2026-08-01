@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Fraunces, Space_Mono } from "next/font/google";
+import Script from "next/script";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import {
   getMessages,
@@ -87,7 +88,15 @@ export default async function RootLayout({
       className={`${inter.variable} ${fraunces.variable} ${spaceMono.variable}`}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/*
+          `next/script` with `beforeInteractive` inlines this into the
+          document head and runs it before hydration, so the theme is
+          applied before first paint. Using a raw <script> here trips
+          React 19's "scripts inside components aren't executed" guard.
+        */}
+        <Script id="theme-init" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
       </head>
       <body className="flex min-h-screen flex-col bg-discogs-bg font-sans text-discogs-text">
         <NextIntlClientProvider messages={messages} locale={locale}>

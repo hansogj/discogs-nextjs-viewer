@@ -5,11 +5,9 @@ export const routing = defineRouting({
   // Supported locales, in the order shown in the language picker.
   // - en: source of truth (all string keys originate here)
   // - nb: Norwegian Bokmål
-  // - de: Deutsch
-  // - fr: Français
-  // - zeuhl: Magma's invented Kobaïan language — placeholder values in the
-  //   messages file until a human fills them in.
-  locales: ["en", "nb", "de", "fr", "zeuhl"],
+  // - de: German
+  // - fr: French
+  locales: ["en", "nb", "de", "fr"],
   defaultLocale: "en",
   // Read the `NEXT_LOCALE` cookie to persist the user's picker choice
   // across navigations.
