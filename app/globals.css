@@ -5,8 +5,8 @@
 /*
  * Theme tokens. The Tailwind classes (bg-discogs-bg, text-discogs-text, etc.)
  * resolve to these custom properties — see tailwind.config.ts. Switch themes
- * by setting `data-theme` on the <html> element; the ThemePicker component
- * does this and persists the choice in localStorage.
+ * by setting `data-theme` on the <html> element; the theme sub-menu in
+ * HeaderMenu does this and persists the choice in localStorage.
  */
 
 :root,

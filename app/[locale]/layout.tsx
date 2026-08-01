@@ -49,7 +49,7 @@ export function generateStaticParams() {
 
 // Inline, render-blocking so the theme is set before first paint.
 // Without this, the page would flash in the default theme before React
-// hydrates and the ThemePicker can apply the persisted choice.
+// hydrates and the theme picker sub-menu can mirror the persisted choice.
 const themeInitScript = `
 (function(){
   try {

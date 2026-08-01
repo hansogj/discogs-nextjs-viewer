@@ -33,7 +33,7 @@ const useResolvedPalette = () => {
       });
     };
     compute();
-    // Re-resolve if the ThemePicker flips data-theme on <html>.
+    // Re-resolve if the theme sub-menu flips data-theme on <html>.
     const obs = new MutationObserver(compute);
     obs.observe(document.documentElement, {
       attributes: true,

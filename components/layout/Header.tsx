@@ -319,56 +319,46 @@ export function HeaderSkeleton({
 }: {
   activeView: "collection" | "wantlist" | "duplicates" | "stats" | "user";
 }) {
-  const buttonBaseClasses =
-    "focus:outline-none rounded-md px-4 py-2 text-sm font-medium";
-  const activeButtonClasses = "bg-discogs-blue";
-  const inactiveButtonClasses = "bg-discogs-bg-light";
+  // Mirrors the real header layout so the loading state doesn't jump:
+  // avatar cluster on the left, nav pill with 4 items in the middle, and
+  // a single burger square on the right.
+  const activeClass = "bg-discogs-blue/70";
+  const inactiveClass = "bg-discogs-bg-light";
+  const navItems: {
+    key: "collection" | "wantlist" | "duplicates" | "stats";
+    width: string;
+  }[] = [
+    { key: "collection", width: "w-36" },
+    { key: "wantlist", width: "w-32" },
+    { key: "duplicates", width: "w-32" },
+    { key: "stats", width: "w-20" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-discogs-border bg-discogs-bg/80 p-4 shadow-lg backdrop-blur-sm">
       <div className="container mx-auto flex animate-pulse items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="h-12 w-12 rounded-full bg-discogs-border"></div>
+          <div className="h-12 w-12 rounded-full bg-discogs-border" />
           <div>
-            <div className="mb-2 h-4 w-24 rounded bg-discogs-border"></div>
-            <div className="h-3 w-32 rounded bg-discogs-border"></div>
+            <div className="mb-2 h-4 w-24 rounded bg-discogs-border" />
+            <div className="h-3 w-20 rounded bg-discogs-border" />
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
-          <div
-            className={clsx(
-              buttonBaseClasses,
-              activeView === "collection"
-                ? activeButtonClasses
-                : inactiveButtonClasses,
-              "h-9 w-32",
-            )}
-          ></div>
-          <div
-            className={clsx(
-              buttonBaseClasses,
-              activeView === "wantlist"
-                ? activeButtonClasses
-                : inactiveButtonClasses,
-              "h-9 w-32",
-            )}
-          ></div>
-          <div
-            className={clsx(
-              buttonBaseClasses,
-              activeView === "duplicates"
-                ? activeButtonClasses
-                : inactiveButtonClasses,
-              "h-9 w-32",
-            )}
-          ></div>
-        </div>
+        <nav className="flex items-center space-x-2 rounded-lg border border-discogs-border/50 bg-discogs-bg p-1">
+          {navItems.map(({ key, width }) => (
+            <div
+              key={key}
+              className={clsx(
+                "h-9 rounded-md",
+                width,
+                activeView === key ? activeClass : inactiveClass,
+              )}
+            />
+          ))}
+        </nav>
 
-        <div className="flex items-center space-x-2">
-          <div className="h-10 w-36 rounded-lg bg-discogs-border"></div>
-          <div className="h-10 w-24 rounded-lg bg-discogs-border"></div>
-        </div>
+        <div className="h-10 w-10 rounded-lg border border-discogs-border bg-discogs-bg-light" />
       </div>
     </header>
   );
