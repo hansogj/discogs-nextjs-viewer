@@ -14,7 +14,6 @@ import { usePathname, useRouter, routing, type Locale } from "@/i18n/routing";
 
 interface HeaderMenuProps {
   onSync: () => void;
-  onClearCache: () => void;
   isSyncing: boolean;
 }
 
@@ -69,14 +68,9 @@ function getServerThemeSnapshot(): Theme {
 }
 
 // Consolidates the header's right-side controls (sync, language, theme,
-// clear cache, sign out) behind a single burger button. Language and theme
-// each open as a sub-view within the same dropdown panel so nothing spills
-// out sideways.
-export default function HeaderMenu({
-  onSync,
-  onClearCache,
-  isSyncing,
-}: HeaderMenuProps) {
+// sign out) behind a single burger button. Language and theme each open as
+// a sub-view within the same dropdown panel so nothing spills out sideways.
+export default function HeaderMenu({ onSync, isSyncing }: HeaderMenuProps) {
   const t = useTranslations("header");
   const tLang = useTranslations("language");
   const tTheme = useTranslations("theme");
@@ -136,11 +130,6 @@ export default function HeaderMenu({
     if (isSyncing) return;
     close();
     onSync();
-  };
-
-  const handleClearCacheClick = () => {
-    close();
-    onClearCache();
   };
 
   const handleLogoutClick = async () => {
@@ -245,18 +234,6 @@ export default function HeaderMenu({
                   value={tTheme(activeTheme.labelKey)}
                   onClick={() => setView("theme")}
                 />
-              </div>
-
-              <div className="border-t border-discogs-border/60">
-                <button
-                  role="menuitem"
-                  type="button"
-                  onClick={handleClearCacheClick}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-discogs-text-secondary transition-colors hover:bg-discogs-border hover:text-discogs-text"
-                >
-                  <TrashIcon />
-                  <span>{t("clearCache")}</span>
-                </button>
               </div>
 
               <div className="border-t border-discogs-border/60">
@@ -489,24 +466,6 @@ function PaletteIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"
-      />
-    </svg>
-  );
-}
-
-function TrashIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      className="h-5 w-5 flex-shrink-0"
-      viewBox="0 0 20 20"
-      fill="currentColor"
-      aria-hidden="true"
-    >
-      <path
-        fillRule="evenodd"
-        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z"
-        clipRule="evenodd"
       />
     </svg>
   );

@@ -16,7 +16,6 @@ interface HeaderProps {
   wantlistCount: number;
   duplicatesCount: number;
   onSync: () => void;
-  onClearCache: () => void;
   isSyncing: boolean; // New prop
   syncProgress: SyncProgress | null; // New prop
 }
@@ -28,7 +27,6 @@ export default function Header({
   wantlistCount,
   duplicatesCount,
   onSync,
-  onClearCache,
   isSyncing, // Destructure new prop
   syncProgress, // Destructure new prop
 }: HeaderProps) {
@@ -304,11 +302,7 @@ export default function Header({
           </Link>
         </nav>
 
-        <HeaderMenu
-          onSync={onSync}
-          onClearCache={onClearCache}
-          isSyncing={isSyncing}
-        />
+        <HeaderMenu onSync={onSync} isSyncing={isSyncing} />
       </div>
     </header>
   );

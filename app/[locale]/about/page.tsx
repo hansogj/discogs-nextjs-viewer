@@ -113,10 +113,6 @@ export default async function AboutPage({
               {t("removeSignOutAfter")}
             </li>
             <li>
-              <strong>{t("removeClearCacheStrong")}</strong>
-              {t("removeClearCacheAfter")}
-            </li>
-            <li>
               {t("removeGithubIssueBefore")}
               <ExternalLink href="https://github.com/hansogj/discogs-nextjs-viewer/issues">
                 {t("githubIssuesLinkText")}

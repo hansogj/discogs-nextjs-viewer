@@ -6,11 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import Header from "./Header";
 import ErrorMessage from "../ErrorMessage";
-import {
-  syncAllData,
-  clearCacheAction,
-  getCacheStaleness,
-} from "@/app/actions";
+import { syncAllData, getCacheStaleness } from "@/app/actions";
 import type { DiscogsUser } from "@/lib/types";
 import type { SyncProgress } from "@/lib/cache";
 import { useRememberedUsers } from "@/hooks/useRememberedUsers";
@@ -141,13 +137,6 @@ export default function AppContainer({
     startPolling();
   };
 
-  const handleClearCache = async () => {
-    if (window.confirm(tHeader("clearCacheConfirm"))) {
-      await clearCacheAction();
-      router.refresh();
-    }
-  };
-
   return (
     <>
       <Header
@@ -157,7 +146,6 @@ export default function AppContainer({
         wantlistCount={wantlistCount}
         duplicatesCount={duplicatesCount}
         onSync={handleSync}
-        onClearCache={handleClearCache}
         isSyncing={isSyncing}
         syncProgress={syncProgress}
       />
