@@ -2,8 +2,7 @@
 
 import { getIronSession } from "iron-session";
 import { syncQueue } from "@/lib/queue";
-import { clearUserCache, getSyncInfo } from "@/lib/cache";
-import { revalidatePath } from "next/cache";
+import { getSyncInfo } from "@/lib/cache";
 import { cookies } from "next/headers";
 import { sessionOptions, SessionData } from "@/lib/session-options";
 import type { DiscogsUser } from "@/lib/types";
@@ -116,22 +115,4 @@ export async function getSyncJobStatus() {
   }
 
   return null;
-}
-
-export async function clearCacheAction() {
-  const session = await getIronSession<SessionData>(
-    await cookies(),
-    sessionOptions,
-  );
-  const isTokenLoggedIn = !!session.token && !!session.user;
-  const isOAuthLoggedIn =
-    !!session.accessToken && !!session.accessTokenSecret && !!session.user;
-
-  if (!isTokenLoggedIn && !isOAuthLoggedIn) {
-    throw new Error("Not authenticated");
-  }
-  await clearUserCache(session.user!.username);
-  revalidatePath("/", "layout");
-  console.log(`[Action] Cache cleared for ${session.user!.username}`);
-  return { success: true };
 }
