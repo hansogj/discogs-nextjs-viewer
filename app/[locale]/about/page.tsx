@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 
-export const dynamic = "force-dynamic";
-
 export async function generateMetadata({
   params,
 }: {
@@ -43,16 +41,20 @@ export default async function AboutPage({
           </p>
         </header>
 
+        {/*
+          Prose sections that embed links are assembled from plain `t()`
+          calls plus inline anchor JSX rather than `t.rich` with callbacks,
+          because callback functions don't survive the RSC serialisation
+          boundary in Next 16. Each linked phrase is split into before/link
+          text/after keys per locale so the whole tree stays JSON-safe.
+        */}
         <Section title={t("sectionWhatThisIs")}>
           <p>
-            {t("whatThisIs")}{" "}
-            {t.rich("sourceOnGithub", {
-              githubLink: (chunks) => (
-                <ExternalLink href="https://github.com/hansogj/discogs-nextjs-viewer">
-                  {chunks}
-                </ExternalLink>
-              ),
-            })}
+            {t("whatThisIs")} {t("sourceOnGithubBefore")}
+            <ExternalLink href="https://github.com/hansogj/discogs-nextjs-viewer">
+              {t("githubLinkText")}
+            </ExternalLink>
+            {t("sourceOnGithubAfter")}
           </p>
         </Section>
 
@@ -66,18 +68,15 @@ export default async function AboutPage({
             sponsored or endorsed by Discogs.
           </p>
           <p>
-            {t.rich("attributionExplanation", {
-              discogsLink: (chunks) => (
-                <ExternalLink href="https://www.discogs.com">
-                  {chunks}
-                </ExternalLink>
-              ),
-              touLink: (chunks) => (
-                <ExternalLink href="https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use">
-                  {chunks}
-                </ExternalLink>
-              ),
-            })}
+            {t("attribExplanationBefore")}
+            <ExternalLink href="https://www.discogs.com">
+              {t("discogsLinkText")}
+            </ExternalLink>
+            {t("attribExplanationBetween")}
+            <ExternalLink href="https://support.discogs.com/hc/en-us/articles/360009334593-API-Terms-of-Use">
+              {t("touLinkText")}
+            </ExternalLink>
+            {t("attribExplanationAfter")}
           </p>
         </Section>
 
@@ -110,23 +109,19 @@ export default async function AboutPage({
         <Section title={t("sectionHowToRemove")}>
           <ul className="list-inside list-disc space-y-1 pl-2">
             <li>
-              {t.rich("removeSignOut", {
-                strong: (chunks) => <strong>{chunks}</strong>,
-              })}
+              <strong>{t("removeSignOutStrong")}</strong>
+              {t("removeSignOutAfter")}
             </li>
             <li>
-              {t.rich("removeClearCache", {
-                strong: (chunks) => <strong>{chunks}</strong>,
-              })}
+              <strong>{t("removeClearCacheStrong")}</strong>
+              {t("removeClearCacheAfter")}
             </li>
             <li>
-              {t.rich("removeGithubIssue", {
-                githubIssuesLink: (chunks) => (
-                  <ExternalLink href="https://github.com/hansogj/discogs-nextjs-viewer/issues">
-                    {chunks}
-                  </ExternalLink>
-                ),
-              })}
+              {t("removeGithubIssueBefore")}
+              <ExternalLink href="https://github.com/hansogj/discogs-nextjs-viewer/issues">
+                {t("githubIssuesLinkText")}
+              </ExternalLink>
+              {t("removeGithubIssueAfter")}
             </li>
           </ul>
         </Section>
