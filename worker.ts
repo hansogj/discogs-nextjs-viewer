@@ -16,6 +16,13 @@ import {
   setSyncInfo,
   setSyncProgress,
 } from "./lib/cache";
+import {
+  getStorageBackend,
+  setSyncInfoInStore,
+  setUserData,
+  type StoreDataByKey,
+  type StoreKey,
+} from "./lib/store";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -24,6 +31,35 @@ import type {
   WantlistPricesMap,
 } from "./lib/types";
 import connection from "./lib/redis";
+
+// Dispatch a cache write to the file backend, the Redis store, or both,
+// per the STORAGE_BACKEND env flag. Called instead of setCachedData
+// directly so Epic-3 can flip readers to Redis without touching the
+// worker again. Each backend swallows its own errors internally, so a
+// Redis outage during dual-write doesn't lose the file write.
+async function writeCache<K extends StoreKey>(
+  username: string,
+  key: K,
+  data: StoreDataByKey[K],
+): Promise<void> {
+  const backend = getStorageBackend();
+  if (backend === "file" || backend === "dual") {
+    await setCachedData(username, key, data);
+  }
+  if (backend === "redis" || backend === "dual") {
+    await setUserData(username, key, data);
+  }
+}
+
+async function writeSyncInfo(username: string, info: SyncInfo): Promise<void> {
+  const backend = getStorageBackend();
+  if (backend === "file" || backend === "dual") {
+    await setSyncInfo(username, info);
+  }
+  if (backend === "redis" || backend === "dual") {
+    await setSyncInfoInStore(username, info);
+  }
+}
 
 // --- ADDED LOGGING ---
 console.log("[Worker Init] Starting worker.ts execution.");
@@ -117,12 +153,12 @@ async function fetchWantlistPrices(
     processed++;
     // Persist intermittently so a long sync survives a crash
     if (processed % 25 === 0 || processed === total) {
-      await setCachedData(username, "wantlist_prices", prices);
+      await writeCache(username, "wantlist_prices", prices);
     }
     await reportProgress({ processed, total });
   }
 
-  await setCachedData(username, "wantlist_prices", prices);
+  await writeCache(username, "wantlist_prices", prices);
 
   return {
     fetched: processed,
@@ -413,10 +449,10 @@ const worker = new Worker(
         stepName: "Saving data",
         message: "Saving data locally...",
       });
-      await setCachedData(user.username, "collection", finalCollection);
-      await setCachedData(user.username, "wantlist", finalWantlist);
-      await setCachedData(user.username, "folders", folders);
-      await setCachedData(user.username, "custom_fields", customFields.fields);
+      await writeCache(user.username, "collection", finalCollection);
+      await writeCache(user.username, "wantlist", finalWantlist);
+      await writeCache(user.username, "folders", folders);
+      await writeCache(user.username, "custom_fields", customFields.fields);
 
       // --- Update sync info ---
       const newSyncInfo: SyncInfo = { syncedAt: Date.now() };
@@ -426,7 +462,7 @@ const worker = new Worker(
       if (finalWantlist.length > 0) {
         newSyncInfo.wantlistLastAdded = finalWantlist[0].date_added;
       }
-      await setSyncInfo(user.username, newSyncInfo);
+      await writeSyncInfo(user.username, newSyncInfo);
       console.log("[Worker] Sync complete.", {
         collection: {
           total: finalCollection.length,

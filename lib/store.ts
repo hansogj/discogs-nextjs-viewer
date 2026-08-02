@@ -18,7 +18,7 @@ const KEY_PREFIX = "discogs-viewer";
 export type StoreKey =
   "collection" | "wantlist" | "folders" | "custom_fields" | "wantlist_prices";
 
-type StoreDataByKey = {
+export type StoreDataByKey = {
   collection: CollectionRelease[];
   wantlist: ProcessedWantlistItem[];
   folders: Folder[];
