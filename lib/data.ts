@@ -1,7 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { getIronSession } from "iron-session";
-import { readCache } from "./storage";
+import { getUserData } from "./store";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -194,7 +194,7 @@ function trimWantlistForClient(
 export const getCachedCollection = cache(
   async (): Promise<CollectionRelease[]> => {
     const { user } = await getAuthenticatedUser();
-    const data = await readCache(user.username, "collection");
+    const data = await getUserData(user.username, "collection");
     return data ? trimCollectionForClient(data) : [];
   },
 );
@@ -202,7 +202,7 @@ export const getCachedCollection = cache(
 export const getCachedWantlist = cache(
   async (): Promise<ProcessedWantlistItem[]> => {
     const { user } = await getAuthenticatedUser();
-    const data = await readCache(user.username, "wantlist");
+    const data = await getUserData(user.username, "wantlist");
     return data ? trimWantlistForClient(data) : [];
   },
 );
@@ -219,20 +219,20 @@ export const getUserProfile = cache(
 
 export const getCachedFolders = cache(async (): Promise<Folder[]> => {
   const { user } = await getAuthenticatedUser();
-  const data = await readCache(user.username, "folders");
+  const data = await getUserData(user.username, "folders");
   return data ?? [];
 });
 
 export const getCachedCustomFields = cache(async (): Promise<CustomField[]> => {
   const { user } = await getAuthenticatedUser();
-  const data = await readCache(user.username, "custom_fields");
+  const data = await getUserData(user.username, "custom_fields");
   return data ?? [];
 });
 
 export const getCachedWantlistPrices = cache(
   async (): Promise<WantlistPricesMap> => {
     const { user } = await getAuthenticatedUser();
-    const data = await readCache(user.username, "wantlist_prices");
+    const data = await getUserData(user.username, "wantlist_prices");
     return data ?? {};
   },
 );

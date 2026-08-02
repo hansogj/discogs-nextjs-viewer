@@ -36,15 +36,15 @@ docker compose up --build
 
 ### Data Flow
 
-**Page load**: Pages use `lib/data.ts` helper functions (`getCachedCollection()`, `getCachedWantlist()`, etc.) which read from file cache at `.next/cache/discogs-data/{username}-{key}.json`. No live API calls on page render.
+**Page load**: Pages use `lib/data.ts` helper functions (`getCachedCollection()`, `getCachedWantlist()`, etc.) which read from Redis keys at `discogs-viewer:user:{sanitizedUsername}:{key}` via `lib/store.ts`. No live API calls on page render.
 
-**Sync**: User triggers sync → `syncAllData()` server action (`app/actions.ts`) → enqueues job to BullMQ `'sync'` queue → `worker.ts` fetches full lists from Discogs API → diffs against cached data → fetches details only for new items → merges with cached details → writes back to cache files. Frontend polls `/api/sync-progress` for status.
+**Sync**: User triggers sync → `syncAllData()` server action (`app/actions.ts`) → enqueues job to BullMQ `'sync'` queue → `worker.ts` fetches full lists from Discogs API → diffs against cached data → fetches details only for new items → merges with cached details → writes back to Redis. Frontend polls `/api/sync-progress` for status.
 
 **Sync strategy**: The worker always fetches the complete collection/wantlist from the Discogs API (all pages), then compares with cached data to identify new and removed items. Only new items (or items missing details) trigger additional API calls for release details and master info. Cached details are reused for unchanged items.
 
 ### Docker Deployment
 
-Three services in `compose/docker-compose.yml`: `cache` (Redis), `web` (Next.js), `worker` (BullMQ). The `web` and `worker` containers share a `discogs-data` Docker volume mounted at `/app/.next/cache/discogs-data` so the worker's cache writes are visible to the web server.
+Three services in `compose/docker-compose.yml`: `cache` (Redis), `web` (Next.js), `worker` (BullMQ). Redis is configured with **AOF (fsync every second) + RDB snapshots (every 20s if ≥1 change)** for durability — cached user data lives exclusively in Redis, so persistence is now the whole reliability story. The `cache` service mounts a `cache` Docker volume at `/data` where Redis writes both AOF and RDB files.
 
 ### Authentication
 
@@ -66,14 +66,15 @@ Adaptive rate limiter in `lib/discogs.ts`: starts at 2s between requests, double
 ### Key Modules
 
 - **`lib/discogs.ts`** — All Discogs API calls: OAuth signing, pagination, release detail fetching, adaptive rate limiting
-- **`lib/cache.ts`** — Read/write JSON cache files, sync info (timestamps), sync progress (via Redis)
-- **`lib/data.ts`** — Server-only data access layer for pages: `getCachedCollection()`, `getCachedWantlist()`, `getHeaderData()`, `getCollectionStats()`. Imports `server-only` so it cannot be pulled into a client or test module.
-- **`lib/stats.ts`** — Pure aggregation helpers (`computeCollectionStats`, `getCollectionDuplicates`, `StatsPayload`). Split from `lib/data.ts` so unit tests can exercise them without the server-only auth/cache chain. Re-exported from `lib/data.ts` for existing call sites.
+- **`lib/store.ts`** — Redis-backed persistent store for per-user data (collection, wantlist, folders, custom_fields, wantlist_prices, sync_info). Key layout: `discogs-viewer:user:{sanitizedUsername}:{key}`. `deleteAllUserData` uses `SCAN` for safe bulk deletion.
+- **`lib/cache.ts`** — Sync progress state only (Redis-backed, ephemeral, 1h TTL). Everything else that used to live here moved to `lib/store.ts` when the file cache was retired.
+- **`lib/data.ts`** — Server-only data access layer for pages: `getCachedCollection()`, `getCachedWantlist()`, `getHeaderData()`, `getCollectionStats()`. Imports `server-only` so it cannot be pulled into a client or test module. Reads from `lib/store.ts`.
+- **`lib/stats.ts`** — Pure aggregation helpers (`computeCollectionStats`, `getCollectionDuplicates`, `StatsPayload`). Split from `lib/data.ts` so unit tests can exercise them without the server-only auth/store chain. Re-exported from `lib/data.ts` for existing call sites.
 - **`lib/queue.ts`** — BullMQ queue instance (`'sync'` queue)
 - **`lib/redis.ts`** — ioredis connection (env: `REDIS_URL`, `REDIS_PASSWORD`)
 - **`lib/session-options.ts`** — iron-session config (env: `AUTH_SECRET`)
-- **`worker.ts`** — BullMQ worker: fetches Discogs data, diffs with cache, processes new items, writes cache; `lockDuration: 30min`
-- **`app/actions.ts`** — Server actions: `syncAllData()`, `clearCacheAction()`
+- **`worker.ts`** — BullMQ worker: fetches Discogs data, diffs with the Redis-cached data, processes new items, writes back to Redis via `lib/store.ts`; `lockDuration: 30min`
+- **`app/actions.ts`** — Server actions: `syncAllData()`, `getCacheStaleness()`
 
 ### Environment Variables
 
@@ -102,7 +103,7 @@ NEXT_PUBLIC_APP_URL=      # e.g. http://localhost:3000
 
 - Unit tests live alongside source (`*.test.ts` / `*.test.tsx`). Vitest config in `vitest.config.ts`; it aliases `@/*` to the project root and stubs `server-only` so pure modules like `lib/stats.ts` can be tested. `vitest.setup.ts` seeds the env vars that server modules validate on import.
 - Shared test fixtures live in `tests/fixtures/` (e.g. `sample-collection.ts`) and are consumed by both unit tests and the Playwright E2E setup.
-- E2E tests in `tests/e2e/` use Playwright. `tests/e2e/global-setup.ts` writes the fixtures into `.next/cache/discogs-data/` before any spec runs so `/stats`, `/duplicates`, and `/wantlist` render against known data.
+- E2E tests in `tests/e2e/` use Playwright. `tests/e2e/global-setup.ts` seeds fixtures into Redis under `discogs-viewer:user:{safe}:{key}` before any spec runs so `/stats`, `/duplicates`, and `/wantlist` render against known data.
 - CI runs Vitest + Playwright as separate workflows (`.github/workflows/ci.yml` and `.github/workflows/e2e.yml`).
 
 ### CI Workflows

@@ -7,7 +7,10 @@ services:
       - "6379:6379"
     env_file:
       - ../.env.local
-    command: sh -c "redis-server --save 20 1 --loglevel warning --requirepass $$REDIS_PASSWORD"
+    # AOF (fsync every second) + RDB snapshot (every 20s if >=1 change)
+    # give us belt-and-braces durability for cached user data, which now
+    # lives exclusively in Redis after the file cache was retired.
+    command: sh -c "redis-server --appendonly yes --appendfsync everysec --save 20 1 --loglevel warning --requirepass $$REDIS_PASSWORD"
     volumes:
       - cache:/data
     healthcheck:
@@ -27,8 +30,6 @@ services:
       - ../.env.local
     environment:
       NODE_ENV: development
-    volumes:
-      - discogs-data:/app/.next/cache/discogs-data
     command: pnpm dev
     depends_on:
       cache:
@@ -43,8 +44,6 @@ services:
       - ../.env.local
     environment:
       NODE_ENV: development
-    volumes:
-      - discogs-data:/app/.next/cache/discogs-data
     command: pnpm dev:worker
     depends_on:
       cache:
@@ -52,6 +51,4 @@ services:
 
 volumes:
   cache:
-    driver: local
-  discogs-data:
     driver: local
