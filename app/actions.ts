@@ -2,7 +2,7 @@
 
 import { getIronSession } from "iron-session";
 import { syncQueue } from "@/lib/queue";
-import { getSyncInfo } from "@/lib/cache";
+import { readSyncInfo } from "@/lib/storage";
 import { cookies } from "next/headers";
 import { sessionOptions, SessionData } from "@/lib/session-options";
 import type { DiscogsUser } from "@/lib/types";
@@ -69,7 +69,7 @@ export async function getCacheStaleness(): Promise<{
   syncedAt: number | null;
 }> {
   const { user } = await getSessionAuth();
-  const info = await getSyncInfo(user.username);
+  const info = await readSyncInfo(user.username);
   const syncedAt = info?.syncedAt ?? null;
   const isStale = syncedAt == null || Date.now() - syncedAt >= STALE_AFTER_MS;
   return { isStale, syncedAt };
