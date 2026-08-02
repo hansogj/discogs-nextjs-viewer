@@ -11,7 +11,6 @@ import {
 } from "./lib/discogs";
 import {
   clearSyncProgress,
-  getCachedData,
   setCachedData,
   setSyncInfo,
   setSyncProgress,
@@ -23,6 +22,7 @@ import {
   type StoreDataByKey,
   type StoreKey,
 } from "./lib/store";
+import { readCache } from "./lib/storage";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -87,8 +87,7 @@ async function fetchWantlistPrices(
   collection: CollectionRelease[],
   reportProgress: PriceSyncReporter,
 ): Promise<{ fetched: number; skipped: number; total: number }> {
-  const existingPrices =
-    (await getCachedData<WantlistPricesMap>(username, "wantlist_prices")) ?? {};
+  const existingPrices = (await readCache(username, "wantlist_prices")) ?? {};
 
   const collectionMasterIds = new Set<number>();
   for (const item of collection) {
@@ -298,15 +297,8 @@ const worker = new Worker(
       });
 
       const oldCollection =
-        (await getCachedData<CollectionRelease[]>(
-          user.username,
-          "collection",
-        )) ?? [];
-      const oldWantlist =
-        (await getCachedData<ProcessedWantlistItem[]>(
-          user.username,
-          "wantlist",
-        )) ?? [];
+        (await readCache(user.username, "collection")) ?? [];
+      const oldWantlist = (await readCache(user.username, "wantlist")) ?? [];
 
       // Build lookup maps from cached data (keyed by unique identifiers)
       const cachedCollectionMap = new Map<number, CollectionRelease>();
