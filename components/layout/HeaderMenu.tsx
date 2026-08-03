@@ -35,16 +35,19 @@ const THEMES: ThemeOption[] = [
   { id: "light", labelKey: "light", swatch: ["#ece3d1", "#c56a1e"] },
 ];
 
-const THEME_STORAGE_KEY = "theme";
+const THEME_COOKIE_NAME = "theme";
+// One year is arbitrary but longer than any realistic session — the cookie
+// is only read on server render so a shorter TTL wouldn't buy anything.
+const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 const DEFAULT_THEME: Theme = "dark-blue";
 
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
-  try {
-    localStorage.setItem(THEME_STORAGE_KEY, theme);
-  } catch {
-    // localStorage may be unavailable (privacy mode); ignore.
-  }
+  // Persist to a cookie (not localStorage) so the layout can server-render
+  // <html data-theme=…> on the next navigation without an inline init
+  // script. React 19 warns about any <script> tag in the component tree,
+  // so we skip that path entirely.
+  document.cookie = `${THEME_COOKIE_NAME}=${theme}; Path=/; Max-Age=${THEME_COOKIE_MAX_AGE}; SameSite=Lax`;
 }
 
 function subscribeThemeAttribute(onChange: () => void) {

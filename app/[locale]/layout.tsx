@@ -6,6 +6,7 @@ import {
   getTranslations,
   setRequestLocale,
 } from "next-intl/server";
+import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import "../globals.css";
 import React from "react";
@@ -29,6 +30,14 @@ const spaceMono = Space_Mono({
   display: "swap",
 });
 
+const THEMES = ["dark-blue", "earthy", "olive", "light"] as const;
+type Theme = (typeof THEMES)[number];
+const DEFAULT_THEME: Theme = "dark-blue";
+
+function isTheme(value: string | undefined): value is Theme {
+  return !!value && (THEMES as readonly string[]).includes(value);
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -46,20 +55,6 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
-// Inline, render-blocking so the theme is set before first paint.
-// Without this, the page would flash in the default theme before React
-// hydrates and the theme picker sub-menu can mirror the persisted choice.
-const themeInitScript = `
-(function(){
-  try {
-    var t = localStorage.getItem('theme');
-    var allowed = ['dark-blue','earthy','olive','light'];
-    if (!t || allowed.indexOf(t) === -1) t = 'dark-blue';
-    document.documentElement.dataset.theme = t;
-  } catch (e) {}
-})();
-`;
-
 export default async function RootLayout({
   children,
   params,
@@ -75,27 +70,21 @@ export default async function RootLayout({
   const messages = await getMessages();
   const t = await getTranslations("footer");
 
+  // Server-render the persisted theme onto <html data-theme=…> so the
+  // right theme is applied on the initial paint. Reading the theme from a
+  // cookie (rather than a client-side inline script off localStorage)
+  // means no <script> tag inside the React tree — which React 19 refuses
+  // to execute on client renders and warns loudly about — and no
+  // hydration mismatch since server and client see the same value.
+  const themeCookie = (await cookies()).get("theme")?.value;
+  const theme: Theme = isTheme(themeCookie) ? themeCookie : DEFAULT_THEME;
+
   return (
     <html
       lang={locale}
-      // The inline themeInitScript below sets data-theme on this element
-      // before hydration, so the server tree (without data-theme) and the
-      // client tree (with it) intentionally differ. suppressHydrationWarning
-      // tells React this is expected and prevents the warning from cascading
-      // into a hydration failure that leaves child components un-hydrated.
-      suppressHydrationWarning
+      data-theme={theme}
       className={`${inter.variable} ${fraunces.variable} ${spaceMono.variable}`}
     >
-      <head>
-        {/*
-          Set data-theme before first paint so the persisted theme applies
-          before hydration and the page doesn't flash the default theme.
-          dangerouslySetInnerHTML passes the body as raw HTML instead of
-          React children — React 19 refuses to execute script children on
-          the client, and next/script trips the same guard in Next 16.
-        */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
       <body className="flex min-h-screen flex-col bg-discogs-bg font-sans text-discogs-text">
         <NextIntlClientProvider messages={messages} locale={locale}>
           <div className="flex-1">{children}</div>
