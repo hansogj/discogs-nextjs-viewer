@@ -9,20 +9,8 @@ import {
   processWantlist as processWantlistWithApi,
   getCustomFields,
 } from "./lib/discogs";
-import {
-  clearSyncProgress,
-  setCachedData,
-  setSyncInfo,
-  setSyncProgress,
-} from "./lib/cache";
-import {
-  getStorageBackend,
-  setSyncInfoInStore,
-  setUserData,
-  type StoreDataByKey,
-  type StoreKey,
-} from "./lib/store";
-import { readCache } from "./lib/storage";
+import { clearSyncProgress, setSyncProgress } from "./lib/cache";
+import { getUserData, setSyncInfoInStore, setUserData } from "./lib/store";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
@@ -31,35 +19,6 @@ import type {
   WantlistPricesMap,
 } from "./lib/types";
 import connection from "./lib/redis";
-
-// Dispatch a cache write to the file backend, the Redis store, or both,
-// per the STORAGE_BACKEND env flag. Called instead of setCachedData
-// directly so Epic-3 can flip readers to Redis without touching the
-// worker again. Each backend swallows its own errors internally, so a
-// Redis outage during dual-write doesn't lose the file write.
-async function writeCache<K extends StoreKey>(
-  username: string,
-  key: K,
-  data: StoreDataByKey[K],
-): Promise<void> {
-  const backend = getStorageBackend();
-  if (backend === "file" || backend === "dual") {
-    await setCachedData(username, key, data);
-  }
-  if (backend === "redis" || backend === "dual") {
-    await setUserData(username, key, data);
-  }
-}
-
-async function writeSyncInfo(username: string, info: SyncInfo): Promise<void> {
-  const backend = getStorageBackend();
-  if (backend === "file" || backend === "dual") {
-    await setSyncInfo(username, info);
-  }
-  if (backend === "redis" || backend === "dual") {
-    await setSyncInfoInStore(username, info);
-  }
-}
 
 // --- ADDED LOGGING ---
 console.log("[Worker Init] Starting worker.ts execution.");
@@ -87,7 +46,7 @@ async function fetchWantlistPrices(
   collection: CollectionRelease[],
   reportProgress: PriceSyncReporter,
 ): Promise<{ fetched: number; skipped: number; total: number }> {
-  const existingPrices = (await readCache(username, "wantlist_prices")) ?? {};
+  const existingPrices = (await getUserData(username, "wantlist_prices")) ?? {};
 
   const collectionMasterIds = new Set<number>();
   for (const item of collection) {
@@ -152,12 +111,12 @@ async function fetchWantlistPrices(
     processed++;
     // Persist intermittently so a long sync survives a crash
     if (processed % 25 === 0 || processed === total) {
-      await writeCache(username, "wantlist_prices", prices);
+      await setUserData(username, "wantlist_prices", prices);
     }
     await reportProgress({ processed, total });
   }
 
-  await writeCache(username, "wantlist_prices", prices);
+  await setUserData(username, "wantlist_prices", prices);
 
   return {
     fetched: processed,
@@ -297,8 +256,8 @@ const worker = new Worker(
       });
 
       const oldCollection =
-        (await readCache(user.username, "collection")) ?? [];
-      const oldWantlist = (await readCache(user.username, "wantlist")) ?? [];
+        (await getUserData(user.username, "collection")) ?? [];
+      const oldWantlist = (await getUserData(user.username, "wantlist")) ?? [];
 
       // Build lookup maps from cached data (keyed by unique identifiers)
       const cachedCollectionMap = new Map<number, CollectionRelease>();
@@ -441,10 +400,10 @@ const worker = new Worker(
         stepName: "Saving data",
         message: "Saving data locally...",
       });
-      await writeCache(user.username, "collection", finalCollection);
-      await writeCache(user.username, "wantlist", finalWantlist);
-      await writeCache(user.username, "folders", folders);
-      await writeCache(user.username, "custom_fields", customFields.fields);
+      await setUserData(user.username, "collection", finalCollection);
+      await setUserData(user.username, "wantlist", finalWantlist);
+      await setUserData(user.username, "folders", folders);
+      await setUserData(user.username, "custom_fields", customFields.fields);
 
       // --- Update sync info ---
       const newSyncInfo: SyncInfo = { syncedAt: Date.now() };
@@ -454,7 +413,7 @@ const worker = new Worker(
       if (finalWantlist.length > 0) {
         newSyncInfo.wantlistLastAdded = finalWantlist[0].date_added;
       }
-      await writeSyncInfo(user.username, newSyncInfo);
+      await setSyncInfoInStore(user.username, newSyncInfo);
       console.log("[Worker] Sync complete.", {
         collection: {
           total: finalCollection.length,

@@ -8,10 +8,10 @@ import type {
   WantlistPricesMap,
 } from "./types";
 
-// Redis-backed store for per-user Discogs data. Introduced alongside the
-// file cache in lib/cache.ts as the first step of a migration away from
-// .next/cache/discogs-data JSON files. Not yet wired into worker.ts or
-// lib/data.ts — see TODO.md "Storage consolidation epic".
+// Redis-backed store for per-user Discogs data. Sole persistence layer
+// for the app's cached collection/wantlist/etc since Epic-4 retired the
+// on-disk JSON cache. Sync progress state still lives in lib/cache.ts
+// (also Redis, but ephemeral with a 1h TTL).
 
 const KEY_PREFIX = "discogs-viewer";
 
@@ -26,11 +26,10 @@ export type StoreDataByKey = {
   wantlist_prices: WantlistPricesMap;
 };
 
-export type StorageBackend = "file" | "redis" | "dual";
-
-// Same slug rule as safeCachePath in lib/cache.ts. Kept in sync so a
-// username maps to the same identifier in both backends during the
-// dual-write migration window.
+// Strip any character that can't appear in a safe key fragment (anything
+// outside [A-Za-z0-9]). Returns a deterministic slug derived from the
+// session-provided username, matching the sanitiser the previous
+// file-cache backend used so key names stay stable across the migration.
 export function sanitizeUsername(username: string): string {
   return username.replace(/[^a-z0-9]/gi, "_").toLowerCase();
 }
@@ -45,12 +44,6 @@ export function syncInfoKey(username: string): string {
 
 function userKeyPattern(username: string): string {
   return `${KEY_PREFIX}:user:${sanitizeUsername(username)}:*`;
-}
-
-export function getStorageBackend(): StorageBackend {
-  const raw = process.env.STORAGE_BACKEND?.toLowerCase();
-  if (raw === "redis" || raw === "dual") return raw;
-  return "file";
 }
 
 export async function getUserData<K extends StoreKey>(

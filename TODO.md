@@ -11,8 +11,8 @@ Sequenced as small PRs:
 - [ ] **Epic-1 — Redis storage layer alongside files, behind a flag.** New `lib/store.ts` with `getUserData / setUserData / deleteUserData / deleteAllUserData`. Env `STORAGE_BACKEND=file|redis|dual` (default `file`). Unit tests.
 - [ ] **Epic-2 — Worker writes to store.** `worker.ts` calls the abstraction. In `dual` mode it writes both files and Redis.
 - [ ] **Epic-3 — Reads flip to Redis under the flag.** `lib/data.ts` uses the store abstraction. Verify page regressions with E2E.
-- [ ] **Epic-4 — Retire file cache.** Drop file writes, remove `getCachePath` / `parsedCache`, repurpose the `discogs-data` Docker volume for Redis AOF/RDB. Update `compose/` for Redis persistence. E2E setup seeds Redis.
-- [ ] **Epic-5 — Auto-sync on stale data.** Server component check on authenticated routes: if `syncedAt` > 6h, enqueue a sync (dedup via BullMQ `jobId=username`). UI shows a "syncing" indicator.
+- [x] **Epic-4 — Retire file cache.** File backend removed. Redis is the sole storage. AOF + RDB persistence configured in `compose/`. E2E setup seeds Redis. (PR pending merge)
+- [ ] **Epic-5 — Auto-sync on stale data.** A client-mount effect already lives in `AppContainer.tsx:89-130` (calls `getCacheStaleness()` and self-triggers `syncAllData()` when stale). Remaining scope: decide whether to add a server-side fallback (middleware or root layout) for users who stay on one page longer than 6h without navigating.
 - [ ] **Epic-6 — "Leave the app" action + About page rewrite.** New `leaveAppAction`: destroy session, `DEL user:{username}:*`. Header UI replaces "Clear cache" with "Leave and delete my data". About page copy revised in nb/en/de/fr — describe data, not backend. Fold in the burger-menu wording fix at the same time.
 - [ ] **Epic-7 — Inactive-user cleanup.** Redis key TTL or small daily job scanning `user:*` for stale `syncedAt` (default 90d). Tiny compared to the original file-based #5.
 

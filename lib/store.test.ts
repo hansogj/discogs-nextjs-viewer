@@ -1,10 +1,5 @@
-import { afterEach, describe, expect, it } from "vitest";
-import {
-  getStorageBackend,
-  sanitizeUsername,
-  syncInfoKey,
-  userKey,
-} from "./store";
+import { describe, expect, it } from "vitest";
+import { sanitizeUsername, syncInfoKey, userKey } from "./store";
 
 describe("sanitizeUsername", () => {
   it("lowercases and preserves alphanumerics", () => {
@@ -15,9 +10,7 @@ describe("sanitizeUsername", () => {
     expect(sanitizeUsername("../evil / user.名")).toBe("___evil___user__");
   });
 
-  it("matches the safeCachePath slug rule so file/redis backends stay aligned", () => {
-    // Same input, same slug — required during the dual-write migration
-    // window so file and redis keys refer to the same user.
+  it("produces stable slugs for usernames with punctuation", () => {
     expect(sanitizeUsername("Hans.O.Gjerdrum")).toBe("hans_o_gjerdrum");
   });
 });
@@ -53,42 +46,5 @@ describe("syncInfoKey", () => {
     expect(syncInfoKey("hansogj")).toBe(
       "discogs-viewer:user:hansogj:sync_info",
     );
-  });
-});
-
-describe("getStorageBackend", () => {
-  const originalBackend = process.env.STORAGE_BACKEND;
-
-  afterEach(() => {
-    if (originalBackend === undefined) {
-      delete process.env.STORAGE_BACKEND;
-    } else {
-      process.env.STORAGE_BACKEND = originalBackend;
-    }
-  });
-
-  it("defaults to file when the env var is unset", () => {
-    delete process.env.STORAGE_BACKEND;
-    expect(getStorageBackend()).toBe("file");
-  });
-
-  it("accepts redis", () => {
-    process.env.STORAGE_BACKEND = "redis";
-    expect(getStorageBackend()).toBe("redis");
-  });
-
-  it("accepts dual", () => {
-    process.env.STORAGE_BACKEND = "dual";
-    expect(getStorageBackend()).toBe("dual");
-  });
-
-  it("falls back to file for any other value", () => {
-    process.env.STORAGE_BACKEND = "postgres";
-    expect(getStorageBackend()).toBe("file");
-  });
-
-  it("is case-insensitive", () => {
-    process.env.STORAGE_BACKEND = "REDIS";
-    expect(getStorageBackend()).toBe("redis");
   });
 });
