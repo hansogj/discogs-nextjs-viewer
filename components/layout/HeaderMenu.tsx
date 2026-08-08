@@ -11,6 +11,7 @@ import React, {
 import clsx from "clsx";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter, routing, type Locale } from "@/i18n/routing";
+import { leaveAppAction } from "@/app/actions";
 
 interface HeaderMenuProps {
   onSync: () => void;
@@ -141,6 +142,13 @@ export default function HeaderMenu({ onSync, isSyncing }: HeaderMenuProps) {
     router.refresh();
   };
 
+  const handleLeaveAppClick = async () => {
+    if (!window.confirm(t("leaveAppConfirm"))) return;
+    close();
+    await leaveAppAction();
+    router.refresh();
+  };
+
   const handleLocaleSelect = (nextLocale: Locale) => {
     if (nextLocale === locale) {
       setView("main");
@@ -248,6 +256,15 @@ export default function HeaderMenu({ onSync, isSyncing }: HeaderMenuProps) {
                 >
                   <LogoutIcon />
                   <span>{t("logout")}</span>
+                </button>
+                <button
+                  role="menuitem"
+                  type="button"
+                  onClick={handleLeaveAppClick}
+                  className="flex w-full items-center gap-3 border-t border-white/10 bg-discogs-danger-dark px-4 py-3 text-left text-sm font-medium text-white transition-colors hover:bg-discogs-danger"
+                >
+                  <LeaveAppIcon />
+                  <span>{t("leaveApp")}</span>
                 </button>
               </div>
             </>
@@ -489,6 +506,26 @@ function LogoutIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
         d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+      />
+    </svg>
+  );
+}
+
+function LeaveAppIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 flex-shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2}
+      aria-hidden="true"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V4a1 1 0 011-1h6a1 1 0 011 1v3"
       />
     </svg>
   );
