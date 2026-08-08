@@ -2,7 +2,8 @@
 
 import { getIronSession } from "iron-session";
 import { syncQueue } from "@/lib/queue";
-import { getSyncInfoFromStore } from "@/lib/store";
+import { clearSyncProgress } from "@/lib/cache";
+import { deleteAllUserData, getSyncInfoFromStore } from "@/lib/store";
 import { cookies } from "next/headers";
 import { sessionOptions, SessionData } from "@/lib/session-options";
 import type { DiscogsUser } from "@/lib/types";
@@ -83,6 +84,25 @@ export async function enqueueSyncForSession(
   token: DiscogsAuth,
 ): Promise<void> {
   await enqueueSyncIfNotRunning(user, token);
+}
+
+// "Leave and delete my data": nuke every Redis key that belongs to this
+// user and destroy the session cookie in one shot. Called from the burger
+// menu. The follow-up router.refresh() on the client bounces through
+// middleware, which redirects to the sign-in page now that the session
+// is gone.
+export async function leaveAppAction(): Promise<{ success: true }> {
+  const session = await getIronSession<SessionData>(
+    await cookies(),
+    sessionOptions,
+  );
+  const username = session.user?.username;
+  if (username) {
+    await deleteAllUserData(username);
+    await clearSyncProgress(username);
+  }
+  session.destroy();
+  return { success: true };
 }
 
 export async function getSyncJobStatus() {

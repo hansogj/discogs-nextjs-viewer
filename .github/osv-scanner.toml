@@ -1,8 +1,6 @@
 # Retained ignores for advisories in dev-only tooling that cannot be cleared
 # without a major upstream change (see per-entry reason). Every entry has an
 # ignoreUntil date to force periodic reassessment.
-
-[[IgnoredVulns]]
-id = "GHSA-mh99-v99m-4gvg"
-ignoreUntil = 2026-10-31
-reason = "brace-expansion 1.x (dev-only, transitive under ESLint's minimatch@3.1.5). 1.x branch is EOL and only patched in 5.x, whose API is incompatible with minimatch@3. Not attacker-controlled (ESLint file patterns). Clears when eslint config-array upgrades minimatch."
+#
+# No active ignores at the moment — GHSA-mh99-v99m-4gvg (brace-expansion 1.x)
+# was pruned once the scanner reported it unused.
