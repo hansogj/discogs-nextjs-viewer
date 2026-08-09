@@ -22,6 +22,7 @@ export interface SyncProgress {
   progress?: number;
   step?: number;
   totalSteps?: number;
+  stepKey?: string;
   stepName?: string;
   startedAt?: number;
 }
