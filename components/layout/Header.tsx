@@ -178,9 +178,7 @@ export default function Header({
                   <span>
                     {syncProgress.stepKey
                       ? tHeader(
-                          syncProgress.stepKey as Parameters<
-                            typeof tHeader
-                          >[0],
+                          syncProgress.stepKey as Parameters<typeof tHeader>[0],
                         )
                       : syncProgress.message || tHeader("syncingFallback")}
                   </span>
