@@ -40,7 +40,19 @@
     "etaMinutes": "~{n} min",
     "etaHoursMinutes": "~{h}h {m}m",
     "detailItems": "{processed}/{total} items",
-    "detailPage": "page {page}/{pages}"
+    "detailPage": "page {page}/{pages}",
+    "stepFolders": "Fetching folders",
+    "stepCustomFields": "Fetching custom fields",
+    "stepFetchingCollection": "Fetching collection",
+    "stepFetchingWantlist": "Fetching wantlist",
+    "stepComparing": "Comparing",
+    "stepCollectionDetails": "Collection details",
+    "stepCollectionMasters": "Collection master info",
+    "stepWantlistDetails": "Wantlist details",
+    "stepWantlistImages": "Wantlist images",
+    "stepSavingData": "Saving data",
+    "stepWantlistPrices": "Wantlist prices",
+    "stepComplete": "Sync complete"
   },
   "nav": {
     "collection": "Collection",

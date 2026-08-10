@@ -158,7 +158,10 @@ const worker = new Worker(
         page: progress.page,
         pages: progress.pages,
         step,
-        stepName: `Fetching ${progress.resource}`,
+        stepKey:
+          progress.resource === "collection"
+            ? "stepFetchingCollection"
+            : "stepFetchingWantlist",
       });
     };
 
@@ -167,14 +170,14 @@ const worker = new Worker(
       total: number;
       resource: string;
     }) => {
-      const stepMap: Record<string, { step: number; stepName: string }> = {
-        collection_details: { step: 6, stepName: "Collection details" },
-        collection_masters: { step: 7, stepName: "Collection master info" },
-        wantlist_details: { step: 8, stepName: "Wantlist details" },
+      const stepMap: Record<string, { step: number; stepKey: string }> = {
+        collection_details: { step: 6, stepKey: "stepCollectionDetails" },
+        collection_masters: { step: 7, stepKey: "stepCollectionMasters" },
+        wantlist_details: { step: 8, stepKey: "stepWantlistDetails" },
       };
       const info = stepMap[progress.resource] ?? {
         step: 6,
-        stepName: progress.resource,
+        stepKey: "stepCollectionDetails",
       };
       setProgress({
         status: "processing",
@@ -182,16 +185,15 @@ const worker = new Worker(
         processed: progress.processed,
         total: progress.total,
         step: info.step,
-        stepName: info.stepName,
+        stepKey: info.stepKey,
       });
     };
 
     try {
       await setProgress({
         status: "starting",
-        message: "Starting sync...",
         step: 1,
-        stepName: "Fetching folders",
+        stepKey: "stepFolders",
       });
 
       console.log("[Worker] Fetching folders...");
@@ -201,7 +203,7 @@ const worker = new Worker(
       await setProgress({
         status: "fetching",
         step: 2,
-        stepName: "Fetching custom fields",
+        stepKey: "stepCustomFields",
       });
       console.log("[Worker] Fetching custom fields...");
       const customFields = await getCustomFields(user.username, token);
@@ -217,7 +219,7 @@ const worker = new Worker(
         page: 0,
         pages: 1,
         step: 3,
-        stepName: "Fetching collection",
+        stepKey: "stepFetchingCollection",
       });
       const { items: allCollectionItems } = await getFullCollection(
         user.username,
@@ -235,7 +237,7 @@ const worker = new Worker(
         page: 0,
         pages: 1,
         step: 4,
-        stepName: "Fetching wantlist",
+        stepKey: "stepFetchingWantlist",
       });
       const { items: allWantlistItems } = await getFullWantlist(
         user.username,
@@ -251,8 +253,7 @@ const worker = new Worker(
       await setProgress({
         status: "processing",
         step: 5,
-        stepName: "Comparing",
-        message: "Comparing with cached data...",
+        stepKey: "stepComparing",
       });
 
       const oldCollection =
@@ -307,7 +308,7 @@ const worker = new Worker(
         processed: 0,
         total: newCollectionItems.length,
         step: 6,
-        stepName: "Collection details",
+        stepKey: "stepCollectionDetails",
       });
       const collectionWithDetails = await fetchAndAddDetailsToReleases(
         newCollectionItems,
@@ -325,7 +326,7 @@ const worker = new Worker(
         processed: 0,
         total: collectionWithDetails.length,
         step: 7,
-        stepName: "Collection master info",
+        stepKey: "stepCollectionMasters",
       });
       const collectionWithMasterInfo = await addMasterInfoToCollection(
         collectionWithDetails,
@@ -343,7 +344,7 @@ const worker = new Worker(
         processed: 0,
         total: newWantlistItems.length,
         step: 8,
-        stepName: "Wantlist details",
+        stepKey: "stepWantlistDetails",
       });
       const wantlistWithDetails = await fetchAndAddDetailsToReleases(
         newWantlistItems,
@@ -358,8 +359,7 @@ const worker = new Worker(
       await setProgress({
         status: "processing",
         step: 9,
-        stepName: "Wantlist images",
-        message: `Processing ${wantlistWithDetails.length} new wantlist images...`,
+        stepKey: "stepWantlistImages",
       });
       const processedNewWantlist = await processWantlistWithApi(
         wantlistWithDetails,
@@ -397,8 +397,7 @@ const worker = new Worker(
       await setProgress({
         status: "caching",
         step: 10,
-        stepName: "Saving data",
-        message: "Saving data locally...",
+        stepKey: "stepSavingData",
       });
       await setUserData(user.username, "collection", finalCollection);
       await setUserData(user.username, "wantlist", finalWantlist);
@@ -436,7 +435,7 @@ const worker = new Worker(
           processed: 0,
           total: 0,
           step: 11,
-          stepName: "Wantlist prices",
+          stepKey: "stepWantlistPrices",
         });
         const result = await fetchWantlistPrices(
           user.username,
@@ -450,7 +449,7 @@ const worker = new Worker(
               processed,
               total,
               step: 11,
-              stepName: "Wantlist prices",
+              stepKey: "stepWantlistPrices",
             }),
         );
         console.log(
@@ -464,8 +463,7 @@ const worker = new Worker(
       await setProgress({
         status: "done",
         step: TOTAL_STEPS,
-        stepName: "Complete",
-        message: "Sync complete!",
+        stepKey: "stepComplete",
       });
       await clearSyncProgress(user.username);
     } catch (error) {

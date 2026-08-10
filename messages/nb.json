@@ -40,7 +40,19 @@
     "etaMinutes": "~{n} min",
     "etaHoursMinutes": "~{h}t {m}m",
     "detailItems": "{processed}/{total} elementer",
-    "detailPage": "side {page}/{pages}"
+    "detailPage": "side {page}/{pages}",
+    "stepFolders": "Henter mapper",
+    "stepCustomFields": "Henter egendefinerte felt",
+    "stepFetchingCollection": "Henter samling",
+    "stepFetchingWantlist": "Henter ønskeliste",
+    "stepComparing": "Sammenligner",
+    "stepCollectionDetails": "Samlingsdetaljer",
+    "stepCollectionMasters": "Master-informasjon",
+    "stepWantlistDetails": "Ønskelistedetaljer",
+    "stepWantlistImages": "Ønskelistebilder",
+    "stepSavingData": "Lagrer data",
+    "stepWantlistPrices": "Ønskelistepriser",
+    "stepComplete": "Synkronisering fullført"
   },
   "nav": {
     "collection": "Samling",

@@ -176,9 +176,11 @@ export default function Header({
                     </span>
                   )}
                   <span>
-                    {syncProgress.stepName ||
-                      syncProgress.message ||
-                      tHeader("syncingFallback")}
+                    {syncProgress.stepKey
+                      ? tHeader(
+                          syncProgress.stepKey as Parameters<typeof tHeader>[0],
+                        )
+                      : syncProgress.message || tHeader("syncingFallback")}
                   </span>
                   {(() => {
                     const detail = getStepDetail(syncProgress);

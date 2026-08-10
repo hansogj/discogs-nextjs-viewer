@@ -40,7 +40,19 @@
     "etaMinutes": "~{n} min",
     "etaHoursMinutes": "~{h} h {m} m",
     "detailItems": "{processed}/{total} éléments",
-    "detailPage": "page {page}/{pages}"
+    "detailPage": "page {page}/{pages}",
+    "stepFolders": "Chargement des dossiers",
+    "stepCustomFields": "Chargement des champs personnalisés",
+    "stepFetchingCollection": "Chargement de la collection",
+    "stepFetchingWantlist": "Chargement de la liste de souhaits",
+    "stepComparing": "Comparaison en cours",
+    "stepCollectionDetails": "Détails de la collection",
+    "stepCollectionMasters": "Informations maîtres",
+    "stepWantlistDetails": "Détails de la liste de souhaits",
+    "stepWantlistImages": "Images de la liste de souhaits",
+    "stepSavingData": "Enregistrement des données",
+    "stepWantlistPrices": "Prix de la liste de souhaits",
+    "stepComplete": "Synchronisation terminée"
   },
   "nav": {
     "collection": "Collection",

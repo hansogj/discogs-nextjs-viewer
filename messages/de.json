@@ -40,7 +40,19 @@
     "etaMinutes": "~{n} Min.",
     "etaHoursMinutes": "~{h}h {m}m",
     "detailItems": "{processed}/{total} Einträge",
-    "detailPage": "Seite {page}/{pages}"
+    "detailPage": "Seite {page}/{pages}",
+    "stepFolders": "Ordner werden geladen",
+    "stepCustomFields": "Benutzerdefinierte Felder werden geladen",
+    "stepFetchingCollection": "Sammlung wird geladen",
+    "stepFetchingWantlist": "Wunschliste wird geladen",
+    "stepComparing": "Vergleiche",
+    "stepCollectionDetails": "Sammlungsdetails",
+    "stepCollectionMasters": "Master-Informationen",
+    "stepWantlistDetails": "Wunschlistedetails",
+    "stepWantlistImages": "Wunschlistebilder",
+    "stepSavingData": "Daten werden gespeichert",
+    "stepWantlistPrices": "Wunschlistepreise",
+    "stepComplete": "Synchronisierung abgeschlossen"
   },
   "nav": {
     "collection": "Sammlung",
