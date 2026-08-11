@@ -15,6 +15,11 @@ import type {
 
 const KEY_PREFIX = "discogs-viewer";
 
+// User data is kept for this long after the last sync. Any write (including
+// incremental price writes) resets the clock. Data for users who stop using
+// the app will vanish on its own after this window without needing a cron.
+const USER_DATA_TTL_S = 90 * 24 * 60 * 60; // 90 days
+
 export type StoreKey =
   "collection" | "wantlist" | "folders" | "custom_fields" | "wantlist_prices";
 
@@ -66,7 +71,12 @@ export async function setUserData<K extends StoreKey>(
   data: StoreDataByKey[K],
 ): Promise<void> {
   try {
-    await redis.set(userKey(username, key), JSON.stringify(data));
+    await redis.set(
+      userKey(username, key),
+      JSON.stringify(data),
+      "EX",
+      USER_DATA_TTL_S,
+    );
     const itemCount = Array.isArray(data)
       ? data.length
       : Object.keys(data).length;
@@ -107,7 +117,12 @@ export async function setSyncInfoInStore(
   info: SyncInfo,
 ): Promise<void> {
   try {
-    await redis.set(syncInfoKey(username), JSON.stringify(info));
+    await redis.set(
+      syncInfoKey(username),
+      JSON.stringify(info),
+      "EX",
+      USER_DATA_TTL_S,
+    );
   } catch (error) {
     console.error(`[Store] Failed to write sync info for ${username}:`, error);
   }

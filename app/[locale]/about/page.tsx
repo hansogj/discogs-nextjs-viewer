@@ -92,6 +92,7 @@ export default async function AboutPage({
           </ul>
           <p>{t("refreshPolicy")}</p>
           <p>{t("tokensPolicy")}</p>
+          <p>{t("retentionPolicy")}</p>
           <p>{t("sharingPolicy")}</p>
         </Section>
 
