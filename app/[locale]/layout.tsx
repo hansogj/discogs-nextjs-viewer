@@ -85,6 +85,7 @@ export default async function RootLayout({
       data-theme={theme}
       className={`${inter.variable} ${fraunces.variable} ${spaceMono.variable}`}
       suppressHydrationWarning
+      translate="no"
     >
       <body className="flex min-h-screen flex-col bg-discogs-bg font-sans text-discogs-text">
         <NextIntlClientProvider messages={messages} locale={locale}>
