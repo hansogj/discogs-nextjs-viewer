@@ -60,21 +60,21 @@ test.describe("Stats page", () => {
     await expect(page).toHaveURL(/\/stats/);
 
     await expect(
-      page.getByRole("heading", { level: 1, name: "Statistikk" }),
+      page.getByRole("heading", { level: 1, name: "Collection Statistics" }),
     ).toBeVisible();
 
-    // Scope the stat-card check to the four stat cards' uppercase labels —
+    // Scope the stat-card check to the four stat cards' labels —
     // the donut card also has a "Vinyl" legend entry, so a global lookup
     // would be ambiguous.
     const statsGrid = page
       .locator("div")
-      .filter({ has: page.getByText("Utgivelser", { exact: true }) })
+      .filter({ has: page.getByText("Total Releases", { exact: true }) })
       .first();
     for (const label of [
-      "Utgivelser",
-      "Unike artister",
-      "Plateselskaper",
-      "Vinyl",
+      "Total Releases",
+      "Unique Artists",
+      "Unique Labels",
+      "Vinyl %",
     ]) {
       await expect(
         statsGrid.getByText(label, { exact: true }).first(),
@@ -82,15 +82,17 @@ test.describe("Stats page", () => {
     }
 
     await expect(
-      page.getByRole("heading", { name: "Samlingens søyler" }),
+      page.getByRole("heading", { name: "Styles" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Mest samlede artister" }),
+      page.getByRole("heading", { name: "Top Artists" }),
     ).toBeVisible();
     await expect(
-      page.getByRole("heading", { name: "Mest samlede selskaper" }),
+      page.getByRole("heading", { name: "Top Labels" }),
     ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Format" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Formats" }),
+    ).toBeVisible();
   });
 
   test("pillar slider changes the displayed pillar count", async ({ page }) => {
@@ -106,7 +108,9 @@ test.describe("Stats page", () => {
     // dependent). Assert only that the value is at least the minimum 3.
     const initial = await slider.inputValue();
     expect(Number(initial)).toBeGreaterThanOrEqual(3);
-    await expect(page.getByText("Antall søyler")).toBeVisible();
+
+    // The slider label embeds the current count: "Show top N styles"
+    await expect(page.getByText(/show top \d+ styles/i)).toBeVisible();
 
     // Moving to the minimum should stick regardless of the fixture size.
     await setRangeValue(slider, "3");
