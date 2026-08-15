@@ -33,10 +33,10 @@ const COND_LABELS_SET = new Set([
 const VINYL_FORMATS = new Set(["Vinyl", "LP", '12"', '7"', '10"']);
 const CD_FORMATS = new Set(["CD", "CDr", "SACD"]);
 const formatFamily = (name: string | undefined): string => {
-  if (!name) return "Annet";
+  if (!name) return "Other";
   if (VINYL_FORMATS.has(name)) return "Vinyl";
   if (CD_FORMATS.has(name)) return "CD";
-  return "Annet";
+  return "Other";
 };
 
 export function getCollectionDuplicates(

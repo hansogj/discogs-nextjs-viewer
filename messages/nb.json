@@ -129,6 +129,15 @@
     "formats": "Formater",
     "conditions": "Tilstander",
     "pillarSlider": "Vis topp {n} stiler",
+    "stylesSub": "Discogs-stiler med minst {min} utgivelser, rangert etter antall · klikk en stil for å filtrere samlingen",
+    "topArtistsSub": "Topp 20, farget etter dominerende stil · klikk for å filtrere",
+    "topLabelsSub": "Topp 20 · klikk for å filtrere",
+    "decadesSub": "Når musikken opprinnelig kom ut · klikk et tiår for å filtrere",
+    "formatsSub": "Vinyl, CD og annet · klikk for å filtrere",
+    "conditionsSub": "Discogs mediavurdering",
+    "other": "Annet",
+    "footer": "Søyler utledet fra Discogs-stiler i samlingen din · juster glidebryteren for å endre granularitet",
+    "filterBy": "Filtrer samling etter {name}",
     "noData": "Ingen samlingsdata bufret ennå. Synkroniser med Discogs for å fylle statistikken."
   },
   "user": {

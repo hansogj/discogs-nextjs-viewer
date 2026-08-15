@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import type { StatsPayload } from "@/lib/data";
 
 interface StatsDashboardProps {
@@ -59,6 +60,7 @@ const BarRow = ({
   color,
   wide = false,
   href,
+  filterTitle,
 }: {
   name: string;
   value: number;
@@ -66,6 +68,7 @@ const BarRow = ({
   color: string;
   wide?: boolean;
   href?: string;
+  filterTitle?: string;
 }) => {
   const inner = (
     <>
@@ -100,7 +103,7 @@ const BarRow = ({
         href={href}
         className="grid items-center gap-2.5 rounded transition-colors hover:bg-discogs-bg/60"
         style={gridStyle}
-        title={`Filter collection by ${name}`}
+        title={filterTitle}
       >
         {inner}
       </Link>
@@ -119,12 +122,14 @@ const VBars = ({
   primary,
   secondary,
   hrefFor,
+  filterTitle,
 }: {
   data: [string, number][];
   highlight?: (label: string) => boolean;
   primary: string;
   secondary: string;
   hrefFor?: (label: string) => string;
+  filterTitle?: (label: string) => string;
 }) => {
   const max = Math.max(...data.map((d) => d[1]), 1);
   return (
@@ -150,7 +155,7 @@ const VBars = ({
             key={label}
             href={href}
             className="flex h-full flex-1 flex-col items-center justify-end gap-2 rounded transition-colors hover:bg-discogs-bg/60"
-            title={`Filter collection to ${label}`}
+            title={filterTitle?.(label)}
           >
             {bar}
           </Link>
@@ -186,6 +191,7 @@ const Card = ({
 const MIN_STYLE_COUNT = 10;
 
 const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
+  const t = useTranslations("stats");
   const palette = useResolvedPalette();
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -217,6 +223,8 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
     setPillarCount((c) => Math.min(Math.max(c, 3), maxPillars));
   }
 
+  const otherLabel = t("other");
+
   const pillars = useMemo(() => {
     const top = meaningfulStyles
       .slice(0, pillarCount)
@@ -231,26 +239,28 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
       .slice(pillarCount)
       .reduce((sum, [, c]) => sum + c, 0);
     if (otherCount > 0) {
-      top.push({ name: "Andre", count: otherCount, color: palette.other });
+      top.push({ name: otherLabel, count: otherCount, color: palette.other });
     }
     return top;
-  }, [meaningfulStyles, pillarCount, palette]);
+  }, [meaningfulStyles, pillarCount, palette, otherLabel]);
 
   const pillarColorByStyle = useMemo(() => {
     const m = new Map<string, string>();
     for (const p of pillars) {
-      if (p.name !== "Andre") m.set(p.name, p.color);
+      if (p.name !== otherLabel) m.set(p.name, p.color);
     }
     return m;
-  }, [pillars]);
+  }, [pillars, otherLabel]);
 
   const topArtists = stats.artistCounts;
   const topLabels = stats.labelCounts;
   const decades = stats.decadeCounts;
   const conditions = stats.conditionCounts;
 
+  // "Other" is the locale-neutral bucket key from lib/stats.ts; display label
+  // comes from the translation so French/German/etc. see their own word.
   const formats = useMemo(() => {
-    const order = ["Vinyl", "CD", "Annet"];
+    const order = ["Vinyl", "CD", "Other"];
     const map = new Map(stats.formatCounts);
     return order
       .map((k) => [k, map.get(k) ?? 0] as [string, number])
@@ -265,27 +275,32 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
   const formatTotal = formats.reduce((s, [, v]) => s + v, 0);
   const donutR = 64;
 
-  const formatLinkFor = (label: string) => {
-    // The stats page groups vinyl formats into a single "Vinyl" family;
-    // AlbumViewer's format filter matches on the raw format name, so we
-    // send the whole family as comma-separated values.
-    if (label === "Vinyl") return linkFor({ format: 'Vinyl,LP,12",7",10"' });
-    if (label === "CD") return linkFor({ format: "CD,CDr,SACD" });
+  const formatLinkFor = (key: string) => {
+    if (key === "Vinyl") return linkFor({ format: 'Vinyl,LP,12",7",10"' });
+    if (key === "CD") return linkFor({ format: "CD,CDr,SACD" });
     return undefined;
   };
 
+  // Display label for format rows: translate the "Other" bucket key.
+  const formatDisplayLabel = (key: string) =>
+    key === "Other" ? otherLabel : key;
+
+  const statCards = [
+    [stats.totalReleases.toLocaleString(), t("totalReleases")],
+    [stats.uniqueArtists.toLocaleString(), t("uniqueArtists")],
+    [stats.uniqueLabels.toLocaleString(), t("uniqueLabels")],
+    [`${stats.vinylPct} %`, t("vinylPercentage")],
+  ];
+
   return (
     <div ref={rootRef} className="p-4 sm:p-6">
-      <h1 className="mb-6 text-2xl font-bold text-discogs-text">Statistikk</h1>
+      <h1 className="mb-6 text-2xl font-bold text-discogs-text">
+        {t("pageTitle")}
+      </h1>
 
       {/* stat cards */}
       <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        {[
-          [stats.totalReleases.toLocaleString("no-NO"), "Utgivelser"],
-          [stats.uniqueArtists.toLocaleString("no-NO"), "Unike artister"],
-          [stats.uniqueLabels.toLocaleString("no-NO"), "Plateselskaper"],
-          [`${stats.vinylPct} %`, "Vinyl"],
-        ].map(([n, l]) => (
+        {statCards.map(([n, l]) => (
           <div
             key={l}
             className="rounded-xl border border-discogs-border bg-discogs-bg-light p-4 shadow-lg"
@@ -297,14 +312,11 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
       </div>
 
       {/* pillar card */}
-      <Card
-        title="Samlingens søyler"
-        sub={`Discogs-stiler med minst ${MIN_STYLE_COUNT} utgivelser, rangert etter antall · klikk en stil for å filtrere samlingen`}
-      >
+      <Card title={t("styles")} sub={t("stylesSub", { min: MIN_STYLE_COUNT })}>
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <label className="text-sm text-discogs-text-secondary">
-            Antall søyler
-          </label>
+          <span className="text-sm text-discogs-text-secondary">
+            {t("pillarSlider", { n: pillarCount })}
+          </span>
           <input
             type="range"
             min={3}
@@ -314,9 +326,6 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
             className="max-w-[280px] flex-1"
             style={{ accentColor: palette.ramp[0] }}
           />
-          <span className="min-w-[28px] text-right text-lg font-semibold text-discogs-text">
-            {pillarCount}
-          </span>
         </div>
 
         <div className="mb-5 mt-0.5 flex h-[34px] overflow-hidden rounded-md border border-discogs-border">
@@ -342,17 +351,19 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
             max={pillarMax}
             color={p.color}
             wide
-            href={p.name === "Andre" ? undefined : linkFor({ style: p.name })}
+            href={p.name === otherLabel ? undefined : linkFor({ style: p.name })}
+            filterTitle={
+              p.name === otherLabel
+                ? undefined
+                : t("filterBy", { name: p.name })
+            }
           />
         ))}
       </Card>
 
       {/* artists + labels */}
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card
-          title="Mest samlede artister"
-          sub="Topp 20, farget etter dominerende stil · klikk for å filtrere"
-        >
+        <Card title={t("topArtists")} sub={t("topArtistsSub")}>
           {topArtists.map(([name, val]) => {
             const dominant = artistDominantStyle.get(name);
             const color =
@@ -367,14 +378,12 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
                 max={artistMax}
                 color={color}
                 href={linkFor({ artist: name })}
+                filterTitle={t("filterBy", { name })}
               />
             );
           })}
         </Card>
-        <Card
-          title="Mest samlede selskaper"
-          sub="Topp 20 · klikk for å filtrere"
-        >
+        <Card title={t("topLabels")} sub={t("topLabelsSub")}>
           {topLabels.map(([name, val]) => (
             <BarRow
               key={name}
@@ -383,6 +392,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
               max={labelMax}
               color={palette.ramp[0]}
               href={linkFor({ label: name })}
+              filterTitle={t("filterBy", { name })}
             />
           ))}
         </Card>
@@ -390,10 +400,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
 
       {decades.length > 0 && (
         <div className="mt-6">
-          <Card
-            title="Utgivelser per tiår"
-            sub="Når musikken opprinnelig kom ut · klikk et tiår for å filtrere"
-          >
+          <Card title={t("decades")} sub={t("decadesSub")}>
             <VBars
               data={decades}
               primary={palette.ramp[0]}
@@ -406,18 +413,19 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
                 return decades.find(([lab]) => lab === l)?.[1] === peak;
               }}
               hrefFor={(label) => linkFor({ decade: label })}
+              filterTitle={(label) => t("filterBy", { name: label })}
             />
           </Card>
         </div>
       )}
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-        <Card title="Format" sub="Vinyl, CD og annet · klikk for å filtrere">
+        <Card title={t("formats")} sub={t("formatsSub")}>
           <div className="flex flex-wrap items-center gap-6">
             <svg width={180} height={180} viewBox="0 0 180 180">
               {(() => {
                 let cum = 0;
-                return formats.map(([label, val]) => {
+                return formats.map(([key, val]) => {
                   const frac = formatTotal > 0 ? val / formatTotal : 0;
                   const a0 = (cum - 0.25) * 2 * Math.PI;
                   cum += frac;
@@ -428,14 +436,14 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
                   const y1 = 90 + donutR * Math.sin(a1);
                   const large = frac > 0.5 ? 1 : 0;
                   const color =
-                    label === "Vinyl"
+                    key === "Vinyl"
                       ? palette.ramp[0]
-                      : label === "CD"
+                      : key === "CD"
                         ? palette.ramp[1]
                         : palette.other;
                   return (
                     <path
-                      key={label}
+                      key={key}
                       d={`M ${x0} ${y0} A ${donutR} ${donutR} 0 ${large} 1 ${x1} ${y1}`}
                       stroke={color}
                       strokeWidth={26}
@@ -465,23 +473,24 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
               </text>
             </svg>
             <div className="flex flex-col gap-3 text-sm">
-              {formats.map(([label, val]) => {
+              {formats.map(([key, val]) => {
                 const pct =
                   formatTotal > 0 ? Math.round((val / formatTotal) * 100) : 0;
                 const color =
-                  label === "Vinyl"
+                  key === "Vinyl"
                     ? palette.ramp[0]
-                    : label === "CD"
+                    : key === "CD"
                       ? palette.ramp[1]
                       : palette.other;
-                const href = formatLinkFor(label);
+                const href = formatLinkFor(key);
+                const displayLabel = formatDisplayLabel(key);
                 const content = (
                   <>
                     <span
                       className="h-3 w-3 rounded"
                       style={{ background: color }}
                     />
-                    <span>{label}</span>
+                    <span>{displayLabel}</span>
                     <span className="ml-auto pl-4 text-discogs-text-secondary">
                       {val} · {pct}%
                     </span>
@@ -489,16 +498,16 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
                 );
                 return href ? (
                   <Link
-                    key={label}
+                    key={key}
                     href={href}
                     className="flex items-center gap-2.5 rounded px-1 py-0.5 hover:bg-discogs-bg/60"
-                    title={`Filter collection to ${label}`}
+                    title={t("filterBy", { name: displayLabel })}
                   >
                     {content}
                   </Link>
                 ) : (
                   <div
-                    key={label}
+                    key={key}
                     className="flex items-center gap-2.5 px-1 py-0.5"
                   >
                     {content}
@@ -509,7 +518,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
           </div>
         </Card>
         {conditions.length > 0 && (
-          <Card title="Tilstand" sub="Discogs media-gradering">
+          <Card title={t("conditions")} sub={t("conditionsSub")}>
             {conditions.map(([name, val]) => (
               <BarRow
                 key={name}
@@ -524,8 +533,7 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
       </div>
 
       <footer className="mt-10 border-t border-discogs-border pt-4 text-sm text-discogs-text-secondary">
-        Søyler utledet fra Discogs-stiler i samlingen din · juster glidebryteren
-        for å endre granularitet
+        {t("footer")}
       </footer>
     </div>
   );

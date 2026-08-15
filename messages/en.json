@@ -129,6 +129,15 @@
     "formats": "Formats",
     "conditions": "Conditions",
     "pillarSlider": "Show top {n} styles",
+    "stylesSub": "Discogs styles with at least {min} releases, ranked by count · click a style to filter your collection",
+    "topArtistsSub": "Top 20, coloured by dominant style · click to filter",
+    "topLabelsSub": "Top 20 · click to filter",
+    "decadesSub": "When the music was originally released · click a decade to filter",
+    "formatsSub": "Vinyl, CD and other · click to filter",
+    "conditionsSub": "Discogs media grade",
+    "other": "Other",
+    "footer": "Pillars derived from Discogs styles in your collection · adjust the slider to change granularity",
+    "filterBy": "Filter collection by {name}",
     "noData": "No collection data cached yet. Sync with Discogs to populate stats."
   },
   "user": {

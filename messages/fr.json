@@ -129,6 +129,15 @@
     "formats": "Formats",
     "conditions": "États",
     "pillarSlider": "Afficher les {n} styles principaux",
+    "stylesSub": "Styles Discogs avec au moins {min} disques, classés par nombre · cliquez un style pour filtrer votre collection",
+    "topArtistsSub": "Top 20, colorés par style dominant · cliquer pour filtrer",
+    "topLabelsSub": "Top 20 · cliquer pour filtrer",
+    "decadesSub": "Quand la musique a été publiée à l'origine · cliquez une décennie pour filtrer",
+    "formatsSub": "Vinyle, CD et autre · cliquer pour filtrer",
+    "conditionsSub": "Évaluation média Discogs",
+    "other": "Autre",
+    "footer": "Piliers dérivés des styles Discogs de votre collection · ajustez le curseur pour changer la granularité",
+    "filterBy": "Filtrer la collection par {name}",
     "noData": "Aucune donnée de collection en cache pour le moment. Synchronisez avec Discogs pour remplir les statistiques."
   },
   "user": {
