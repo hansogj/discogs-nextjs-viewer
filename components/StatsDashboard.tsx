@@ -351,7 +351,9 @@ const StatsDashboard: React.FC<StatsDashboardProps> = ({ stats }) => {
             max={pillarMax}
             color={p.color}
             wide
-            href={p.name === otherLabel ? undefined : linkFor({ style: p.name })}
+            href={
+              p.name === otherLabel ? undefined : linkFor({ style: p.name })
+            }
             filterTitle={
               p.name === otherLabel
                 ? undefined

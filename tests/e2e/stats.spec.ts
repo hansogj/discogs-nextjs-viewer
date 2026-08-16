@@ -81,18 +81,14 @@ test.describe("Stats page", () => {
       ).toBeVisible();
     }
 
-    await expect(
-      page.getByRole("heading", { name: "Styles" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Styles" })).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Top Artists" }),
     ).toBeVisible();
     await expect(
       page.getByRole("heading", { name: "Top Labels" }),
     ).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "Formats" }),
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Formats" })).toBeVisible();
   });
 
   test("pillar slider changes the displayed pillar count", async ({ page }) => {
