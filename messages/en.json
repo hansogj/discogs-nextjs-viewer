@@ -106,11 +106,13 @@
   },
   "collection": {
     "emptyTitle": "Your collection is empty.",
-    "emptyHint": "Try syncing with Discogs to load your data."
+    "emptyHint": "Try syncing with Discogs to load your data.",
+    "fetchingMore": "Fetching more items from your collection…"
   },
   "wantlist": {
     "emptyTitle": "Your wantlist is empty.",
-    "emptyHint": "Try syncing with Discogs to load your data."
+    "emptyHint": "Try syncing with Discogs to load your data.",
+    "fetchingMore": "Fetching more items from your wantlist…"
   },
   "duplicates": {
     "pageTitle": "Duplicate Releases in Collection",

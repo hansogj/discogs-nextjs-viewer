@@ -128,6 +128,66 @@ export async function setSyncInfoInStore(
   }
 }
 
+const PARTIAL_DATA_TTL_S = 2 * 60 * 60; // 2 hours
+
+function partialKey(
+  username: string,
+  resource: "collection" | "wantlist",
+): string {
+  return `${KEY_PREFIX}:user:${sanitizeUsername(username)}:${resource}_partial`;
+}
+
+export async function setPartialItems(
+  username: string,
+  resource: "collection" | "wantlist",
+  items: CollectionRelease[] | ProcessedWantlistItem[],
+): Promise<void> {
+  try {
+    await redis.set(
+      partialKey(username, resource),
+      JSON.stringify(items),
+      "EX",
+      PARTIAL_DATA_TTL_S,
+    );
+  } catch (error) {
+    console.error(
+      `[Store] Failed to write partial ${resource} for ${username}:`,
+      error,
+    );
+  }
+}
+
+export async function getPartialItems(
+  username: string,
+  resource: "collection" | "wantlist",
+): Promise<CollectionRelease[] | ProcessedWantlistItem[] | null> {
+  try {
+    const data = await redis.get(partialKey(username, resource));
+    if (!data) return null;
+    return JSON.parse(data);
+  } catch (error) {
+    console.error(
+      `[Store] Failed to read partial ${resource} for ${username}:`,
+      error,
+    );
+    return null;
+  }
+}
+
+export async function clearPartialItems(
+  username: string,
+  resource: "collection" | "wantlist",
+): Promise<void> {
+  try {
+    await redis.del(partialKey(username, resource));
+  } catch (error) {
+    console.error(
+      `[Store] Failed to clear partial ${resource} for ${username}:`,
+      error,
+    );
+  }
+}
+
 // Wipe every key belonging to a user in one shot. Uses SCAN rather than
 // KEYS so a runaway keyspace can't block the Redis event loop.
 export async function deleteAllUserData(username: string): Promise<number> {

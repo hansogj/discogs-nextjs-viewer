@@ -106,11 +106,13 @@
   },
   "collection": {
     "emptyTitle": "Votre collection est vide.",
-    "emptyHint": "Essayez de synchroniser avec Discogs pour charger vos données."
+    "emptyHint": "Essayez de synchroniser avec Discogs pour charger vos données.",
+    "fetchingMore": "Récupération d’autres éléments de votre collection…"
   },
   "wantlist": {
     "emptyTitle": "Votre liste de souhaits est vide.",
-    "emptyHint": "Essayez de synchroniser avec Discogs pour charger vos données."
+    "emptyHint": "Essayez de synchroniser avec Discogs pour charger vos données.",
+    "fetchingMore": "Récupération d’autres éléments de votre liste de souhaits…"
   },
   "duplicates": {
     "pageTitle": "Doublons dans la collection",

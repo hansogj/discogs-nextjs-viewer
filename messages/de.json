@@ -106,11 +106,13 @@
   },
   "collection": {
     "emptyTitle": "Deine Sammlung ist leer.",
-    "emptyHint": "Synchronisiere mit Discogs, um deine Daten zu laden."
+    "emptyHint": "Synchronisiere mit Discogs, um deine Daten zu laden.",
+    "fetchingMore": "Weitere Einträge aus deiner Sammlung werden geladen…"
   },
   "wantlist": {
     "emptyTitle": "Deine Wunschliste ist leer.",
-    "emptyHint": "Synchronisiere mit Discogs, um deine Daten zu laden."
+    "emptyHint": "Synchronisiere mit Discogs, um deine Daten zu laden.",
+    "fetchingMore": "Weitere Einträge aus deiner Wunschliste werden geladen…"
   },
   "duplicates": {
     "pageTitle": "Doppelte Releases in der Sammlung",

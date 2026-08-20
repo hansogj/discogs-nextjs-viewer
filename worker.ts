@@ -10,13 +10,20 @@ import {
   getCustomFields,
 } from "./lib/discogs";
 import { clearSyncProgress, setSyncProgress } from "./lib/cache";
-import { getUserData, setSyncInfoInStore, setUserData } from "./lib/store";
+import {
+  clearPartialItems,
+  getUserData,
+  setPartialItems,
+  setSyncInfoInStore,
+  setUserData,
+} from "./lib/store";
 import type {
   CollectionRelease,
   ProcessedWantlistItem,
   SyncInfo,
   WantlistPrice,
   WantlistPricesMap,
+  WantlistRelease,
 } from "./lib/types";
 import connection from "./lib/redis";
 
@@ -225,6 +232,11 @@ const worker = new Worker(
         user.username,
         token,
         progressCallback,
+        undefined,
+        undefined,
+        async (items: CollectionRelease[]) => {
+          await setPartialItems(user.username, "collection", items);
+        },
       );
       console.log(
         `[Worker] Fetched ${allCollectionItems.length} collection items.`,
@@ -243,6 +255,15 @@ const worker = new Worker(
         user.username,
         token,
         progressCallback,
+        undefined,
+        undefined,
+        async (items: WantlistRelease[]) => {
+          const partial: ProcessedWantlistItem[] = items.map((item) => ({
+            ...item,
+            master_cover_image: item.basic_information.cover_image,
+          }));
+          await setPartialItems(user.username, "wantlist", partial);
+        },
       );
       console.log(
         `[Worker] Fetched ${allWantlistItems.length} wantlist items.`,
@@ -403,6 +424,8 @@ const worker = new Worker(
       await setUserData(user.username, "wantlist", finalWantlist);
       await setUserData(user.username, "folders", folders);
       await setUserData(user.username, "custom_fields", customFields.fields);
+      await clearPartialItems(user.username, "collection");
+      await clearPartialItems(user.username, "wantlist");
 
       // --- Update sync info ---
       const newSyncInfo: SyncInfo = { syncedAt: Date.now() };

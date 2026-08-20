@@ -4,7 +4,7 @@ import {
   getCachedFolders,
   getCachedCustomFields,
 } from "@/lib/data";
-import AlbumViewer from "@/components/AlbumViewer";
+import ProgressiveLoader from "@/components/ProgressiveLoader";
 
 export const dynamic = "force-dynamic"; // Ensures data is fetched from cache on every request
 
@@ -17,8 +17,8 @@ export default async function CollectionPage() {
 
   return (
     <AppLayout activeView="collection">
-      <AlbumViewer
-        items={collection}
+      <ProgressiveLoader
+        initialItems={collection}
         viewType="collection"
         folders={folders}
         customFields={customFields}

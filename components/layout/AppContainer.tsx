@@ -10,6 +10,7 @@ import { syncAllData, getCacheStaleness } from "@/app/actions";
 import type { DiscogsUser } from "@/lib/types";
 import type { SyncProgress } from "@/lib/cache";
 import { useRememberedUsers } from "@/hooks/useRememberedUsers";
+import { SyncContext } from "@/lib/sync-context";
 
 interface AppContainerProps {
   children: React.ReactNode;
@@ -138,7 +139,7 @@ export default function AppContainer({
   };
 
   return (
-    <>
+    <SyncContext.Provider value={{ isSyncing, syncProgress }}>
       <Header
         user={user}
         activeView={activeView}
@@ -160,6 +161,6 @@ export default function AppContainer({
         )}
         {children}
       </main>
-    </>
+    </SyncContext.Provider>
   );
 }

@@ -351,6 +351,7 @@ async function fetchAllPaginatedData<T, R>(
   }) => void,
   stopAtDate?: string,
   limit?: number,
+  onPage?: (items: T[]) => Promise<void> | void,
 ): Promise<{ items: T[]; fullFetch: boolean }> {
   let allData: T[] = [];
   let nextUrl: string | undefined = initialUrl;
@@ -386,11 +387,13 @@ async function fetchAllPaginatedData<T, R>(
         if (stopIndex !== -1) {
           const newItems = itemsWithDate.slice(0, stopIndex);
           allData.push(...(newItems as T[]));
+          if (onPage) await onPage([...allData]);
           stoppedEarly = true;
           break;
         }
       }
       allData.push(...itemsToAdd);
+      if (onPage) await onPage([...allData]);
     } else {
       break;
     }
@@ -405,6 +408,7 @@ export async function getFullCollection(
   onProgress?: (progress: any) => void,
   lastSyncDate?: string,
   limit?: number,
+  onPage?: (items: CollectionRelease[]) => Promise<void> | void,
 ): Promise<{ items: CollectionRelease[]; fullFetch: boolean }> {
   const url = `${API_BASE_URL}/users/${username}/collection/folders/0/releases?sort=added&sort_order=desc&per_page=100`;
   return fetchAllPaginatedData<CollectionRelease, CollectionResponse>(
@@ -415,6 +419,7 @@ export async function getFullCollection(
     onProgress,
     lastSyncDate,
     limit,
+    onPage,
   );
 }
 
@@ -424,6 +429,7 @@ export async function getFullWantlist(
   onProgress?: (progress: any) => void,
   lastSyncDate?: string,
   limit?: number,
+  onPage?: (items: WantlistRelease[]) => Promise<void> | void,
 ): Promise<{ items: WantlistRelease[]; fullFetch: boolean }> {
   const url = `${API_BASE_URL}/users/${username}/wants?sort=added&sort_order=desc&per_page=100`;
   return fetchAllPaginatedData<WantlistRelease, WantlistResponse>(
@@ -434,6 +440,7 @@ export async function getFullWantlist(
     onProgress,
     lastSyncDate,
     limit,
+    onPage,
   );
 }
 

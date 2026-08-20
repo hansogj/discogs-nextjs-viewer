@@ -106,11 +106,13 @@
   },
   "collection": {
     "emptyTitle": "Samlingen din er tom.",
-    "emptyHint": "Prøv å synkronisere med Discogs for å laste inn dataene dine."
+    "emptyHint": "Prøv å synkronisere med Discogs for å laste inn dataene dine.",
+    "fetchingMore": "Henter flere elementer fra samlingen din…"
   },
   "wantlist": {
     "emptyTitle": "Ønskelisten din er tom.",
-    "emptyHint": "Prøv å synkronisere med Discogs for å laste inn dataene dine."
+    "emptyHint": "Prøv å synkronisere med Discogs for å laste inn dataene dine.",
+    "fetchingMore": "Henter flere elementer fra ønskelisten din…"
   },
   "duplicates": {
     "pageTitle": "Dupliserte utgivelser i samlingen",
