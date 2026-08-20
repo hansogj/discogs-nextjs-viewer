@@ -72,11 +72,16 @@ export default function ProgressiveLoader({
   }, [shouldPoll, viewType, initialItems.length]);
 
   const displayItems = initialItems.length > 0 ? initialItems : partialItems;
-  const showLoader = isSyncing && partialItems.length > 0 && initialItems.length === 0;
+  const showLoader =
+    isSyncing && partialItems.length > 0 && initialItems.length === 0;
 
   return (
     <div>
-      <AlbumViewer items={displayItems} viewType={viewType} {...albumViewerProps} />
+      <AlbumViewer
+        items={displayItems}
+        viewType={viewType}
+        {...albumViewerProps}
+      />
       {showLoader && (
         <div className="flex items-center justify-center gap-3 py-8 text-sm text-discogs-text-secondary">
           <Spinner className="text-discogs-text-secondary" />
