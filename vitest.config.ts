@@ -50,11 +50,16 @@ export default defineConfig({
       // numbers, so removing tests fails CI. Bump each time coverage
       // improves; do NOT lower to accommodate new untested files —
       // add tests instead.
+      //
+      // NOTE: vitest 4.x fixed all:true for the v8 provider so it now
+      // instruments every file in the include globs (not just those
+      // imported during a test run). Functions and branches dropped from
+      // the vitest-3 readings; these numbers reflect the vitest-4 baseline.
       thresholds: {
         lines: 5,
         statements: 5,
-        functions: 45,
-        branches: 55,
+        functions: 4,
+        branches: 8,
       },
     },
   },
