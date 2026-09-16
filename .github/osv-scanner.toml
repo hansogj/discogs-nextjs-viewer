@@ -4,7 +4,7 @@
 
 [[IgnoredVulns]]
 id = "GHSA-82fw-gwwq-j7x9"
-ignoreUntil = "2027-01-01"
+ignoreUntil = 2027-01-01
 reason = """
 Affects vitest 3.x (dev-only). Upgrade to 4.x causes coverage threshold
 failures (v8 provider behaviour change with all:true) that need a separate
