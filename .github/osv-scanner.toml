@@ -1,6 +1,12 @@
 # Retained ignores for advisories in dev-only tooling that cannot be cleared
 # without a major upstream change (see per-entry reason). Every entry has an
 # ignoreUntil date to force periodic reassessment.
-#
-# No active ignores at the moment — GHSA-mh99-v99m-4gvg (brace-expansion 1.x)
-# was pruned once the scanner reported it unused.
+
+[[IgnoredVulns]]
+id = "GHSA-82fw-gwwq-j7x9"
+ignoreUntil = 2027-01-01
+reason = """
+Affects vitest 3.x (dev-only). Upgrade to 4.x causes coverage threshold
+failures (v8 provider behaviour change with all:true) that need a separate
+investigation and vitest.config.ts update. No production surface.
+"""
