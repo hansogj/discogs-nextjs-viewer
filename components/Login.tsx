@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   useRememberedUsers,
@@ -13,10 +14,11 @@ const PLACEHOLDER_AVATAR =
 
 const Login: React.FC = () => {
   const t = useTranslations("login");
+  const router = useRouter();
   const { users, removeUser } = useRememberedUsers();
 
   const handleLogin = () => {
-    window.location.href = "/api/oauth/request";
+    router.push("/api/oauth/request");
   };
 
   const handleRemove = (e: React.MouseEvent, username: string) => {
