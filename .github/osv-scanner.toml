@@ -10,3 +10,29 @@ Affects vitest 3.x (dev-only). Upgrade to 4.x causes coverage threshold
 failures (v8 provider behaviour change with all:true) that need a separate
 investigation and vitest.config.ts update. No production surface.
 """
+
+# vite dev-server CVEs — no attack surface in this project.
+# This project uses `next dev` (not the vite dev server). Vite is only a
+# transitive dependency pulled in by vitest; none of the exploitable code
+# paths (WebSocket server, optimised-deps serving, Windows UNC paths) are
+# ever started. Fix requires vite 8.x — a major version bump that must be
+# co-ordinated with vitest compatibility. Reassess by 2027-01-01.
+[[IgnoredVulns]]
+id = "GHSA-p9ff-h696-f583"
+ignoreUntil = 2027-01-01
+reason = "vite dev server WebSocket — dev-only, vite dev server never started in this project (uses next dev). Needs vite 8.x major bump."
+
+[[IgnoredVulns]]
+id = "GHSA-4w7w-66w2-5vf9"
+ignoreUntil = 2027-01-01
+reason = "vite optimised-deps path traversal — dev-only, vite dev server never started. Needs vite 8.x major bump."
+
+[[IgnoredVulns]]
+id = "GHSA-fx2h-pf6j-xcff"
+ignoreUntil = 2027-01-01
+reason = "vite server.fs.deny bypass — Windows-only, dev-only, vite dev server never started. Needs vite 8.x major bump."
+
+[[IgnoredVulns]]
+id = "GHSA-v6wh-96g9-6wx3"
+ignoreUntil = 2027-01-01
+reason = "vite NTLMv2 hash disclosure via UNC path — Windows-only, dev-only, vite dev server never started. Needs vite 8.x major bump."
