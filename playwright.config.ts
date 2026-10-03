@@ -28,8 +28,12 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: "pnpm dev",
+    // In CI use a pre-built production server to avoid slow on-demand webpack
+    // compilation under Node 24 (which caused the dev-mode E2E suite to exceed
+    // the 20-minute job timeout after the pnpm 12 / Node 24 migration).
+    command: process.env.CI ? "pnpm build && pnpm start" : "pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
 });
