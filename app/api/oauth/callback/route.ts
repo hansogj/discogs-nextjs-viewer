@@ -7,6 +7,8 @@ import {
   getUserProfile,
 } from "@/lib/discogs";
 import { enqueueSyncForSession } from "@/app/actions";
+import { setAuthToken } from "@/lib/store";
+import { scheduleUserSync } from "@/lib/scheduler";
 import type { DiscogsUser } from "@/lib/types";
 
 export async function GET(request: Request) {
@@ -79,13 +81,19 @@ export async function GET(request: Request) {
 
     await session.save(); // This will modify the 'redirectResponse' object's headers
 
-    // Kick off a background sync so freshly logged-in users see current data
-    // rather than a stale cache from a previous session. Enqueue is dedup'd
-    // per-username, so repeated logins won't stack jobs.
-    await enqueueSyncForSession(sessionUser, {
+    const oauthTokens = {
       oauth_token: accessToken,
       oauth_token_secret: accessTokenSecret,
-    });
+    };
+
+    // Persist tokens in Redis so the background scheduler can call Discogs
+    // without a live session cookie.
+    await setAuthToken(identity.username, oauthTokens);
+
+    // Kick off an immediate sync so freshly logged-in users see current data,
+    // then schedule an hourly background sync to keep the cache warm.
+    await enqueueSyncForSession(sessionUser, oauthTokens);
+    await scheduleUserSync(identity.username);
 
     return redirectResponse;
   } catch (error) {

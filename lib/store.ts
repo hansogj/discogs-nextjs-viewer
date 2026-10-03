@@ -7,6 +7,7 @@ import type {
   CustomField,
   WantlistPricesMap,
 } from "./types";
+import type { OAuthTokens } from "./discogs";
 
 // Redis-backed store for per-user Discogs data. Sole persistence layer
 // for the app's cached collection/wantlist/etc since Epic-4 retired the
@@ -185,6 +186,39 @@ export async function clearPartialItems(
       `[Store] Failed to clear partial ${resource} for ${username}:`,
       error,
     );
+  }
+}
+
+function authKey(username: string): string {
+  return `${KEY_PREFIX}:user:${sanitizeUsername(username)}:auth`;
+}
+
+export async function setAuthToken(
+  username: string,
+  tokens: OAuthTokens,
+): Promise<void> {
+  try {
+    await redis.set(
+      authKey(username),
+      JSON.stringify(tokens),
+      "EX",
+      USER_DATA_TTL_S,
+    );
+  } catch (error) {
+    console.error(`[Store] Failed to write auth token for ${username}:`, error);
+  }
+}
+
+export async function getAuthToken(
+  username: string,
+): Promise<OAuthTokens | null> {
+  try {
+    const data = await redis.get(authKey(username));
+    if (!data) return null;
+    return JSON.parse(data) as OAuthTokens;
+  } catch (error) {
+    console.error(`[Store] Failed to read auth token for ${username}:`, error);
+    return null;
   }
 }
 
