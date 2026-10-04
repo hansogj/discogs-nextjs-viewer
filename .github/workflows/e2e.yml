@@ -23,10 +23,41 @@ env:
   NEXT_PUBLIC_APP_URL: http://localhost:3000
 
 jobs:
-  e2e:
-    name: Playwright
+  build:
+    name: Build (for E2E)
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.6.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-
+            nextjs-${{ runner.os }}-
+      - run: pnpm build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: next-build
+          path: .next/
+          retention-days: 1
+
+  e2e:
+    name: Playwright
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     services:
       redis:
         image: redis:7.4-alpine
@@ -46,14 +77,11 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Cache Next.js build
-        uses: actions/cache@v4
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
         with:
-          path: .next/cache
-          key: nextjs-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            nextjs-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-
-            nextjs-${{ runner.os }}-
+          name: next-build
+          path: .next/
       - name: Cache Playwright browsers
         uses: actions/cache@v4
         with:
