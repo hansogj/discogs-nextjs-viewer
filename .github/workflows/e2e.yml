@@ -52,6 +52,7 @@ jobs:
           name: next-build
           path: .next/
           retention-days: 1
+          include-hidden-files: true
 
   e2e:
     name: Playwright
