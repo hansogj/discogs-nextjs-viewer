@@ -1,0 +1,67 @@
+name: Claude auto-fix CI
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+
+# One fixer run per branch at a time; new push cancels the previous attempt.
+concurrency:
+  group: claude-fix-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+  id-token: write
+
+# Stub env vars that lib/discogs.ts and lib/session-options.ts validate at
+# import time — without these, pnpm commands run by Claude crash on import.
+env:
+  DISCOGS_CONSUMER_KEY: ci-stub
+  DISCOGS_CONSUMER_SECRET: ci-stub
+  DISCOGS_CALLBACK_URL: http://localhost:3000/api/oauth/callback
+  AUTH_SECRET: ci-stub-auth-secret-at-least-32-characters-long
+  REDIS_URL: redis://localhost:6379
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  fix:
+    # Only fire for failing pull_request runs; skip dependabot and our own fixes.
+    if: >
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.actor.login != 'dependabot[bot]' &&
+      !startsWith(github.event.workflow_run.head_commit.message, 'fix(ci): claude')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.6.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Fetch failed job logs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run view ${{ github.event.workflow_run.id }} --log-failed \
+            | tail -n 300 > /tmp/ci-failure.log
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: >-
+            --max-turns 25
+            --allowedTools "Read,Edit,Write,Bash(pnpm:*),Bash(git:*)"
+          prompt: |
+            Use the ci-fixer agent.
+            Branch: ${{ github.event.workflow_run.head_branch }}
+            Failure log: /tmp/ci-failure.log

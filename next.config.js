@@ -25,8 +25,13 @@ const nextConfig = {
     config.resolve.alias["#async_hooks"] = "async_hooks";
     return config;
   },
-  // Add turbopack config to silence the warning and potentially resolve build issues
-  turbopack: {},
+  turbopack: {
+    // Mirror the webpack alias so BullMQ's "#async_hooks" import resolves
+    // under Turbopack builds (next build now defaults to Turbopack in v16).
+    resolveAlias: {
+      "#async_hooks": "async_hooks",
+    },
+  },
 };
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
