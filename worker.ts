@@ -12,6 +12,7 @@ import {
 import { clearSyncProgress, setSyncProgress } from "./lib/cache";
 import {
   clearPartialItems,
+  getAuthToken,
   getUserData,
   setPartialItems,
   setSyncInfoInStore,
@@ -135,7 +136,28 @@ async function fetchWantlistPrices(
 const worker = new Worker(
   "sync",
   async (job: Job) => {
-    const { user, token } = job.data;
+    const isScheduled = job.data.source === "scheduled";
+
+    // Scheduled jobs carry only a username; resolve the user object and token
+    // from Redis. Manual jobs carry both inline.
+    let user: typeof job.data.user;
+    let token: typeof job.data.token;
+
+    if (isScheduled) {
+      const username: string = job.data.username;
+      const stored = await getAuthToken(username);
+      if (!stored) {
+        console.warn(
+          `[Worker] Scheduled sync for ${username} skipped — no stored auth token (user may have logged out).`,
+        );
+        return;
+      }
+      user = { username };
+      token = stored;
+    } else {
+      ({ user, token } = job.data);
+    }
+
     const startedAt = Date.now();
 
     console.log(`[Worker] Starting sync for ${user.username}...`);

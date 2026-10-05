@@ -4,6 +4,7 @@ import { getIronSession } from "iron-session";
 import { syncQueue } from "@/lib/queue";
 import { clearSyncProgress } from "@/lib/cache";
 import { deleteAllUserData, getSyncInfoFromStore } from "@/lib/store";
+import { cancelUserSync } from "@/lib/scheduler";
 import { cookies } from "next/headers";
 import { sessionOptions, SessionData } from "@/lib/session-options";
 import type { DiscogsUser } from "@/lib/types";
@@ -98,6 +99,7 @@ export async function leaveAppAction(): Promise<{ success: true }> {
   );
   const username = session.user?.username;
   if (username) {
+    await cancelUserSync(username);
     await deleteAllUserData(username);
     await clearSyncProgress(username);
   }

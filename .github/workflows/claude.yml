@@ -1,0 +1,50 @@
+name: Claude
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+# Cancel duplicate runs on the same PR/issue comment thread.
+concurrency:
+  group: claude-${{ github.event.issue.number || github.event.pull_request.number }}-${{ github.run_id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+# Stub env vars that lib/discogs.ts and lib/session-options.ts validate at
+# import time — without these, any pnpm command Claude runs would crash.
+env:
+  DISCOGS_CONSUMER_KEY: ci-stub
+  DISCOGS_CONSUMER_SECRET: ci-stub
+  DISCOGS_CALLBACK_URL: http://localhost:3000/api/oauth/callback
+  AUTH_SECRET: ci-stub-auth-secret-at-least-32-characters-long
+  REDIS_URL: redis://localhost:6379
+  NEXT_PUBLIC_APP_URL: http://localhost:3000
+
+jobs:
+  claude:
+    if: contains(github.event.comment.body, '@claude')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.6.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_args: --max-turns 30
