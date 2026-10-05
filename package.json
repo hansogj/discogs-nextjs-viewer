@@ -20,22 +20,22 @@
     "test:e2e:oauth": "RUN_INTERACTIVE=1 playwright test --headed --grep 'full OAuth'"
   },
   "dependencies": {
-    "@hansogj/array.utils": "3.0.1",
-    "@hansogj/find-js": "6.7.6",
-    "@hansogj/maybe": "2.7.2",
+    "@hansogj/array.utils": "3.0.2",
+    "@hansogj/find-js": "6.7.7",
+    "@hansogj/maybe": "2.7.3",
     "bullmq": "5.81.3",
     "clsx": "2.1.1",
     "ioredis": "5.11.1",
     "iron-session": "8.0.4",
-    "next": "16.3.4",
-    "next-intl": "4.14.3",
+    "next": "16.3.8",
+    "next-intl": "4.14.8",
     "oauth-1.0a": "2.2.6",
     "p-limit": "4.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "redis": "5.12.1",
     "server-only": "0.0.1",
-    "sharp": "0.35.4"
+    "sharp": "0.35.5"
   },
   "devDependencies": {
     "@playwright/test": "1.63.0",
