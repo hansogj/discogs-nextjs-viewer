@@ -108,10 +108,12 @@ NEXT_PUBLIC_APP_URL=      # e.g. http://localhost:3000
 
 ### CI Workflows
 
-Two workflows in `.github/workflows/`:
+Four workflows in `.github/workflows/`:
 
 - **`ci.yml`** — parallel jobs for typecheck+tests+coverage, lint+format, production build, dependency audit (`google/osv-scanner-action` reading `pnpm-lock.yaml`, configured via `.github/osv-scanner.toml`), and GitHub's `dependency-review-action`.
 - **`e2e.yml`** — Playwright suite against a Redis service container. Seeds fixture data via `tests/e2e/global-setup.ts`.
+- **`claude.yml`** — Triggers `anthropics/claude-code-action@v1` when a PR/issue comment contains `@claude`. Use this for on-demand review or fixes.
+- **`claude-fix-ci.yml`** — Fires automatically when CI fails on a PR branch (excluding dependabot and commits already authored by Claude). Fetches the failed job logs, then invokes the `ci-fixer` subagent (`.claude/agents/ci-fix.md`) to diagnose and push a fix commit (`fix(ci): claude – <summary>`). Does not run on `audit`/`dependency-review`-only failures — the agent posts a PR comment instead.
 
 ### Dependency Policy
 
