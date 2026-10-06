@@ -1,0 +1,70 @@
+name: OSV baseline
+
+on:
+  schedule:
+    # 06:00 UTC every day — before the workday, so new advisories surface early.
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  osv-baseline:
+    name: OSV scan (main)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: OSV scan
+        id: osv
+        continue-on-error: true
+        uses: google/osv-scanner-action/osv-scanner-action@v2.6.0
+        with:
+          scan-args: |-
+            --config=.github/osv-scanner.toml
+            --lockfile=pnpm-lock.yaml
+
+      - name: Open issue on new findings
+        if: steps.osv.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🔒 New OSV advisory found on main (${new Date().toISOString().slice(0,10)})`;
+
+            // Don't open a duplicate if one is already open with the same title prefix.
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'security',
+              per_page: 20,
+            });
+            const duplicate = open.find(i => i.title.startsWith('🔒 New OSV advisory'));
+            if (duplicate) {
+              core.info(`Issue already open: #${duplicate.number} — skipping.`);
+              return;
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              labels: ['security'],
+              body: [
+                'The nightly OSV baseline scan found unignored advisories on `main`.',
+                '',
+                `**Workflow run:** ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+                '',
+                '**Next steps:**',
+                '1. Check the run log above for the advisory IDs.',
+                '2. Upgrade the affected package if a fix is available.',
+                '3. If no fix exists yet, add a time-boxed entry to `.github/osv-scanner.toml`.',
+                '',
+                '_This issue was opened automatically by the OSV baseline workflow._',
+              ].join('\n'),
+            });

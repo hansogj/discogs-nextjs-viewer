@@ -18,6 +18,11 @@ investigation and vitest.config.ts update. No production surface.
 # ever started. Fix requires vite 8.x — a major version bump that must be
 # co-ordinated with vitest compatibility. Reassess by 2027-01-01.
 [[IgnoredVulns]]
+id = "GHSA-vfj7-8cjw-p6xm"
+ignoreUntil = 2027-01-01
+reason = "braces <=3.0.3 stack-exhaustion DoS — 3.0.3 is the latest release, no upstream fix available. Transitive dev dependency via micromatch/fast-glob (vitest/eslint); no production surface."
+
+[[IgnoredVulns]]
 id = "GHSA-p9ff-h696-f583"
 ignoreUntil = 2027-01-01
 reason = "vite dev server WebSocket — dev-only, vite dev server never started in this project (uses next dev). Needs vite 8.x major bump."
