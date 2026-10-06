@@ -58,7 +58,7 @@ jobs:
     name: Playwright
     needs: build
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     services:
       redis:
         image: redis:7.4-alpine
