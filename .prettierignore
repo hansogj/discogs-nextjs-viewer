@@ -10,3 +10,6 @@ coverage/
 # Test artifacts
 playwright-report/
 test-results/
+
+# Internal tooling — not subject to formatting enforcement
+.claude/
