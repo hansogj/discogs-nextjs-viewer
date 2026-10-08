@@ -10,3 +10,6 @@ coverage/
 # Test artifacts
 playwright-report/
 test-results/
+
+# Claude Code workflow/agent definitions — indentation-sensitive, not prose
+.claude/
