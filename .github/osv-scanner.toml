@@ -11,33 +11,30 @@ failures (v8 provider behaviour change with all:true) that need a separate
 investigation and vitest.config.ts update. No production surface.
 """
 
-# vite dev-server CVEs — no attack surface in this project.
-# This project uses `next dev` (not the vite dev server). Vite is only a
-# transitive dependency pulled in by vitest; none of the exploitable code
-# paths (WebSocket server, optimised-deps serving, Windows UNC paths) are
-# ever started. Fix requires vite 8.x — a major version bump that must be
-# co-ordinated with vitest compatibility. Reassess by 2027-01-01.
 [[IgnoredVulns]]
 id = "GHSA-vfj7-8cjw-p6xm"
 ignoreUntil = 2027-01-01
 reason = "braces <=3.0.3 stack-exhaustion DoS — 3.0.3 is the latest release, no upstream fix available. Transitive dev dependency via micromatch/fast-glob (vitest/eslint); no production surface."
 
+# tinypool CVEs — dev-only vitest internal worker pool. Fix requires tinypool
+# 2.x which is a major version bump; vitest 3.x bundles 1.x and a forced
+# override would need vitest compatibility testing. No production surface.
 [[IgnoredVulns]]
-id = "GHSA-p9ff-h696-f583"
+id = "GHSA-5gmw-xhrv-c9v3"
 ignoreUntil = 2027-01-01
-reason = "vite dev server WebSocket — dev-only, vite dev server never started in this project (uses next dev). Needs vite 8.x major bump."
+reason = "tinypool 1.x → 2.x major bump required; dev-only transitive dep of vitest. No production surface."
 
 [[IgnoredVulns]]
-id = "GHSA-4w7w-66w2-5vf9"
+id = "GHSA-85c8-ppgw-ccpr"
 ignoreUntil = 2027-01-01
-reason = "vite optimised-deps path traversal — dev-only, vite dev server never started. Needs vite 8.x major bump."
+reason = "tinypool 1.x → 2.x major bump required; dev-only transitive dep of vitest. No production surface."
 
 [[IgnoredVulns]]
-id = "GHSA-fx2h-pf6j-xcff"
+id = "GHSA-rj75-hqrm-r3gf"
 ignoreUntil = 2027-01-01
-reason = "vite server.fs.deny bypass — Windows-only, dev-only, vite dev server never started. Needs vite 8.x major bump."
+reason = "postcss-selector-parser 6.x → 7.x major bump required; Tailwind v3 pins 6.x. Reassess when Tailwind v4 is adopted."
 
 [[IgnoredVulns]]
-id = "GHSA-v6wh-96g9-6wx3"
+id = "GHSA-68fv-2mgg-jv7q"
 ignoreUntil = 2027-01-01
-reason = "vite NTLMv2 hash disclosure via UNC path — Windows-only, dev-only, vite dev server never started. Needs vite 8.x major bump."
+reason = "source-map-js 1.2.1 → 1.2.2 — covered by PR #91 (direct dep bump). Remove once that merges."
