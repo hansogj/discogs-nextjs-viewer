@@ -41,10 +41,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .next/cache
+          # No broad fallback: a cache from a different lockfile/config could
+          # contain stale compiled output (e.g. missing the #async_hooks alias)
+          # that makes the production server crash on every request.
           key: nextjs-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
-          restore-keys: |
-            nextjs-${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}-
-            nextjs-${{ runner.os }}-
       - run: pnpm build
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
