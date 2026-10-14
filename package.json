@@ -40,7 +40,7 @@
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@testing-library/jest-dom": "6.9.1",
-    "@testing-library/react": "15.0.7",
+    "@testing-library/react": "16.3.3",
     "@types/dotenv": "8.2.3",
     "@types/jsdom": "28.0.3",
     "@types/node": "20.19.43",
