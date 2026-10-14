@@ -34,7 +34,3 @@ id = "GHSA-rj75-hqrm-r3gf"
 ignoreUntil = 2027-01-01
 reason = "postcss-selector-parser 6.x → 7.x major bump required; Tailwind v3 pins 6.x. Reassess when Tailwind v4 is adopted."
 
-[[IgnoredVulns]]
-id = "GHSA-68fv-2mgg-jv7q"
-ignoreUntil = 2027-01-01
-reason = "source-map-js 1.2.1 → 1.2.2 — covered by PR #91 (direct dep bump). Remove once that merges."
