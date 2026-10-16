@@ -26,7 +26,7 @@ import type {
   WantlistPricesMap,
   WantlistRelease,
 } from "./lib/types";
-import connection from "./lib/redis";
+import { bullmqConnection as connection } from "./lib/redis";
 
 // --- ADDED LOGGING ---
 console.log("[Worker Init] Starting worker.ts execution.");

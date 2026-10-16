@@ -1,4 +1,4 @@
 import { Queue } from "bullmq";
-import connection from "./redis";
+import { bullmqConnection } from "./redis";
 
-export const syncQueue = new Queue("sync", { connection });
+export const syncQueue = new Queue("sync", { connection: bullmqConnection });
