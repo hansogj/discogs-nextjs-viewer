@@ -9,7 +9,7 @@ const intlMiddleware = createMiddleware(routing);
 const GATED_ROUTE_PATTERN =
   /^\/(en|nb|de|fr)\/(collection|wantlist|duplicates|stats|user)(?:\/|$)/;
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const pathname = req.nextUrl.pathname;
   const isGated = GATED_ROUTE_PATTERN.test(pathname);
 
