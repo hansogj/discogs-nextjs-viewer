@@ -92,6 +92,16 @@ jobs:
             playwright-${{ runner.os }}-
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
+      - name: Start Next.js server
+        run: pnpm start > /tmp/next-server.log 2>&1 &
+
+      - name: Wait for Next.js server
+        run: |
+          echo "Waiting for Next.js server on http://localhost:3000 ..."
+          timeout 60 bash -c 'until curl -sf http://localhost:3000/ -o /dev/null -w "%{http_code}" 2>/dev/null | grep -qE "^(2|3)"; do sleep 1; done' \
+            && echo "Server ready" \
+            || { echo "Server did not start within 60s. Logs:"; cat /tmp/next-server.log; exit 1; }
+
       - name: Run Playwright tests
         run: pnpm test:e2e
       - name: Upload Playwright report
