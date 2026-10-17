@@ -38,14 +38,21 @@ async function seedForUser(redis: Redis, username: string) {
 
 export default async function globalSetup() {
   const url = process.env.REDIS_URL ?? "redis://localhost:6379";
+  console.log(`[global-setup] Connecting to Redis at ${url}`);
   const redis = new Redis(url, {
     password: process.env.REDIS_PASSWORD,
-    maxRetriesPerRequest: null,
+    // Finite retry limit: if Redis is unreachable, fail fast instead of
+    // hanging indefinitely. maxRetriesPerRequest: null is only appropriate
+    // for BullMQ worker connections, not one-shot seed operations.
+    maxRetriesPerRequest: 3,
+    connectTimeout: 10_000,
+    commandTimeout: 10_000,
   });
   try {
     await seedForUser(redis, "hansogj");
     await seedForUser(redis, "murdrejg");
+    console.log(`[global-setup] Seed complete`);
   } finally {
-    await redis.quit();
+    redis.disconnect();
   }
 }
