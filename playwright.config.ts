@@ -28,11 +28,12 @@ export default defineConfig({
   ],
 
   webServer: {
-    // In CI the build is pre-compiled by the separate 'build' job and the
-    // .next directory is passed via artifact — just start the server here.
+    // In CI the server is pre-started by the e2e workflow before Playwright
+    // runs (see .github/workflows/e2e.yml), so Playwright just reuses it.
+    // Locally, Playwright starts the dev server itself.
     command: process.env.CI ? "pnpm start" : "pnpm dev",
     url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: true,
     timeout: 60_000,
   },
 });
