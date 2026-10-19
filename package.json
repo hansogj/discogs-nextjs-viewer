@@ -25,7 +25,7 @@
     "@hansogj/maybe": "2.7.3",
     "bullmq": "5.81.3",
     "clsx": "2.1.1",
-    "ioredis": "5.11.1",
+    "ioredis": "6.0.0",
     "iron-session": "8.0.4",
     "next": "16.4.0",
     "next-intl": "4.14.9",
