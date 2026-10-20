@@ -1,4 +1,5 @@
 import { Redis } from "ioredis";
+import type { ConnectionOptions } from "bullmq";
 
 console.log(
   `[Redis Init] REDIS_URL: ${process.env.REDIS_URL ? "SET" : "NOT SET"}`,
@@ -19,9 +20,15 @@ const storeConnection = new Redis(process.env.REDIS_URL!, {
 
 // BullMQ connection: requires maxRetriesPerRequest: null — the queue and
 // worker use blocking commands that must not be retried by ioredis.
-export const bullmqConnection = new Redis(process.env.REDIS_URL!, {
-  maxRetriesPerRequest: null,
-  password: process.env.REDIS_PASSWORD,
-});
+// protocol: 2 retains RESP2 wire compatibility with BullMQ 5.x; the type
+// cast bridges ioredis v6's Redis<"legacy"> generic to ConnectionOptions.
+export const bullmqConnection: ConnectionOptions = new Redis(
+  process.env.REDIS_URL!,
+  {
+    maxRetriesPerRequest: null,
+    password: process.env.REDIS_PASSWORD,
+    protocol: 2,
+  },
+) as unknown as ConnectionOptions;
 
 export default storeConnection;
