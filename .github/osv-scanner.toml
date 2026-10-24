@@ -34,3 +34,8 @@ id = "GHSA-rj75-hqrm-r3gf"
 ignoreUntil = 2027-01-01
 reason = "postcss-selector-parser 6.x → 7.x major bump required; Tailwind v3 pins 6.x. Reassess when Tailwind v4 is adopted."
 
+[[IgnoredVulns]]
+id = "GHSA-mh99-v99m-4gvg"
+ignoreUntil = 2027-07-01
+reason = "brace-expansion DoS (CVE-2026-14257) — 2.x branch has no patched release; our 2.1.7 copy is a dev-only transitive dep (test-exclude → glob@10 → minimatch@9 → brace-expansion@2.x, pulled in by vitest coverage). No production surface. Kept in lock-step with allow-ghsas in ci.yml."
+
