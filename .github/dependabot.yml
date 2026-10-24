@@ -1,29 +1,22 @@
 version: 2
+
+# Renovate-style rolling PR: every npm and GitHub Actions update lands in a
+# single "dependencies" PR. While that PR is open, each scheduled run rebases
+# it and adds any newly available updates instead of opening a new PR.
+multi-ecosystem-groups:
+  dependencies:
+    schedule:
+      interval: "daily"
+
 updates:
   # JavaScript dependencies (pnpm reads the npm ecosystem config)
   - package-ecosystem: "npm"
     directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 5
-    groups:
-      # Bundle compatible minor/patch updates so we don't drown in PRs.
-      production-deps:
-        dependency-type: "production"
-        update-types:
-          - "minor"
-          - "patch"
-      dev-deps:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
+    patterns: ["*"]
+    multi-ecosystem-group: "dependencies"
 
   # Pin updates for any GitHub Actions referenced in workflows.
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 3
+    patterns: ["*"]
+    multi-ecosystem-group: "dependencies"
