@@ -24,9 +24,8 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html", "json-summary", "lcov"],
       reportsDirectory: "./coverage",
-      // Measure all source files, not just those imported by tests — gives
-      // an honest picture of coverage gaps rather than 100% of "what's tested".
-      all: true,
+      // Vitest 4+ measures every file matched by `include`, not just those
+      // imported by tests — an honest picture of coverage gaps.
       include: [
         "app/**/*.{ts,tsx}",
         "components/**/*.{ts,tsx}",
@@ -50,11 +49,14 @@ export default defineConfig({
       // numbers, so removing tests fails CI. Bump each time coverage
       // improves; do NOT lower to accommodate new untested files —
       // add tests instead.
+      // Re-baselined for vitest 5: untested files now count towards the
+      // function/branch totals too, so those numbers dropped without any
+      // change in what is actually tested.
       thresholds: {
-        lines: 5,
-        statements: 5,
-        functions: 45,
-        branches: 55,
+        lines: 7,
+        statements: 7,
+        functions: 4,
+        branches: 8,
       },
     },
   },
