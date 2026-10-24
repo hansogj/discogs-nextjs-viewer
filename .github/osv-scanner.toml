@@ -12,6 +12,11 @@ investigation and vitest.config.ts update. No production surface.
 """
 
 [[IgnoredVulns]]
+id = "GHSA-qxg6-89mg-rqv8"
+ignoreUntil = 2027-01-01
+reason = "@vitest/mocker 3.x (dev-only); fix ships in 4.x alongside vitest 4 — same blocker as GHSA-82fw-gwwq-j7x9 above. No production surface."
+
+[[IgnoredVulns]]
 id = "GHSA-vfj7-8cjw-p6xm"
 ignoreUntil = 2027-01-01
 reason = "braces <=3.0.3 stack-exhaustion DoS — 3.0.3 is the latest release, no upstream fix available. Transitive dev dependency via micromatch/fast-glob (vitest/eslint); no production surface."
@@ -28,9 +33,4 @@ reason = "tinypool 1.x → 2.x major bump required; dev-only transitive dep of v
 id = "GHSA-85c8-ppgw-ccpr"
 ignoreUntil = 2027-01-01
 reason = "tinypool 1.x → 2.x major bump required; dev-only transitive dep of vitest. No production surface."
-
-[[IgnoredVulns]]
-id = "GHSA-rj75-hqrm-r3gf"
-ignoreUntil = 2027-01-01
-reason = "postcss-selector-parser 6.x → 7.x major bump required; Tailwind v3 pins 6.x. Reassess when Tailwind v4 is adopted."
 
