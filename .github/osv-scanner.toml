@@ -16,11 +16,6 @@ id = "GHSA-qxg6-89mg-rqv8"
 ignoreUntil = 2027-01-01
 reason = "@vitest/mocker 3.x (dev-only); fix ships in 4.x alongside vitest 4 — same blocker as GHSA-82fw-gwwq-j7x9 above. No production surface."
 
-[[IgnoredVulns]]
-id = "GHSA-vfj7-8cjw-p6xm"
-ignoreUntil = 2027-01-01
-reason = "braces <=3.0.3 stack-exhaustion DoS — 3.0.3 is the latest release, no upstream fix available. Transitive dev dependency via micromatch/fast-glob (vitest/eslint); no production surface."
-
 # tinypool CVEs — dev-only vitest internal worker pool. Fix requires tinypool
 # 2.x which is a major version bump; vitest 3.x bundles 1.x and a forced
 # override would need vitest compatibility testing. No production surface.
