@@ -3,29 +3,12 @@
 # ignoreUntil date to force periodic reassessment.
 
 [[IgnoredVulns]]
-id = "GHSA-82fw-gwwq-j7x9"
-ignoreUntil = 2027-01-01
+id = "GHSA-g3hv-75wg-m249"
+ignoreUntil = 2027-06-01
 reason = """
-Affects vitest 3.x (dev-only). Upgrade to 4.x causes coverage threshold
-failures (v8 provider behaviour change with all:true) that need a separate
-investigation and vitest.config.ts update. No production surface.
+minimatch ReDoS (CVSS 6.9). Affects minimatch 3.x (via eslint-plugin-jsx-a11y,
+eslint-plugin-import) and 10.x (via @eslint/config-array, @typescript-eslint/*,
+eslint). The fix ships in minimatch 11.0.1, but none of these upstream ESLint
+packages have adopted it yet. All affected packages are dev-only (no production
+surface). Revisit when ESLint ecosystem updates to minimatch 11+.
 """
-
-[[IgnoredVulns]]
-id = "GHSA-qxg6-89mg-rqv8"
-ignoreUntil = 2027-01-01
-reason = "@vitest/mocker 3.x (dev-only); fix ships in 4.x alongside vitest 4 — same blocker as GHSA-82fw-gwwq-j7x9 above. No production surface."
-
-# tinypool CVEs — dev-only vitest internal worker pool. Fix requires tinypool
-# 2.x which is a major version bump; vitest 3.x bundles 1.x and a forced
-# override would need vitest compatibility testing. No production surface.
-[[IgnoredVulns]]
-id = "GHSA-5gmw-xhrv-c9v3"
-ignoreUntil = 2027-01-01
-reason = "tinypool 1.x → 2.x major bump required; dev-only transitive dep of vitest. No production surface."
-
-[[IgnoredVulns]]
-id = "GHSA-85c8-ppgw-ccpr"
-ignoreUntil = 2027-01-01
-reason = "tinypool 1.x → 2.x major bump required; dev-only transitive dep of vitest. No production surface."
-
