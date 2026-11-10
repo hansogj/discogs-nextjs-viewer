@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Next.js 16 (App Router) web app for browsing a Discogs vinyl collection and wantlist. Uses OAuth 1.0a for authentication, file-based JSON caching to respect Discogs API rate limits, and BullMQ + Redis for background sync jobs.
 
+## Package manager
+
+pnpm. Node 26.x via nvm; run `nvm use` to switch to the version in `.nvmrc`. pnpm is not installed by hand: nvm installs it automatically into each Node version from `~/.nvm/default-packages` (maintained in the dotfiles repo). If pnpm is missing after `nvm use`, that Node version was installed before the list existed; run `npm i -g pnpm` once, or reinstall that version with `nvm install`. Don't use corepack, and don't install tooling with `pnpm add -g`.
+
 ## Commands
 
 ```bash
