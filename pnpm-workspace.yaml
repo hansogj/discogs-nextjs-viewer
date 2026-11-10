@@ -8,6 +8,7 @@ overrides:
   "nanoid@>=3.3.0 <3.3.18": "3.3.18"
   "vite@>=6.0.0 <6.4.4": "6.4.4"
   "zod@<4.6.6": "4.6.6"
+  "minimatch@>=7.0.0 <11.0.1": "11.0.1"
 
 allowBuilds:
   "@parcel/watcher": true
