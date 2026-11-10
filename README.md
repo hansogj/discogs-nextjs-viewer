@@ -16,20 +16,23 @@ This is a web application built with Next.js that allows you to view your Discog
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) (version 18 or later)
-- [pnpm](https://pnpm.io/installation)
+- [nvm](https://github.com/nvm-sh/nvm) with Node.js 26.x (the version is pinned in `.nvmrc`)
+- [pnpm](https://pnpm.io/), installed automatically by nvm (see below)
 - [Docker](https://www.docker.com/get-started) (for running Redis)
 - A [Discogs](https://www.discogs.com) account.
 
 ### 1. Installation
 
-Clone the repository and install the dependencies:
+Clone the repository, switch to the pinned Node version and install the dependencies:
 
 ```bash
 git clone <repository_url>
 cd <repository_directory>
+nvm use
 pnpm install
 ```
+
+pnpm is not installed by hand: nvm installs it into each Node version from `~/.nvm/default-packages` (maintained in the dotfiles repo). If `pnpm` is missing after `nvm use`, that Node version was installed before the list existed; run `npm i -g pnpm` once, or reinstall that version with `nvm install`. Don't use corepack, and don't install tooling with `pnpm add -g`.
 
 ### 2. Environment Variables
 
