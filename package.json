@@ -23,11 +23,11 @@
     "@hansogj/array.utils": "3.0.2",
     "@hansogj/find-js": "6.7.7",
     "@hansogj/maybe": "2.7.3",
-    "bullmq": "6.7.2",
+    "bullmq": "6.7.3",
     "clsx": "2.1.1",
     "ioredis": "6.0.0",
     "iron-session": "9.0.1",
-    "next": "16.4.5",
+    "next": "16.4.6",
     "next-intl": "4.14.9",
     "oauth-1.0a": "2.2.6",
     "p-limit": "7.3.3",
@@ -53,7 +53,7 @@
     "baseline-browser-mapping": "2.11.35",
     "dotenv": "18.0.10",
     "eslint": "10.14.0",
-    "eslint-config-next": "16.4.5",
+    "eslint-config-next": "16.4.6",
     "eslint-config-prettier": "10.1.8",
     "jsdom": "31.0.0",
     "postcss": "8.5.32",
@@ -63,7 +63,7 @@
     "ts-node": "10.9.2",
     "tsx": "4.23.15",
     "typescript": "5.9.3",
-    "vite": "8.3.6",
+    "vite": "8.3.7",
     "vitest": "5.1.0"
   }
 }
