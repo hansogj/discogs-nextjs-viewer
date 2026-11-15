@@ -38,6 +38,12 @@ export async function GET(request: Request) {
       throw new Error("Missing OAuth request tokens in session.");
     }
 
+    if (oauth_token !== oauthRequestToken) {
+      throw new Error(
+        "OAuth request token mismatch: the session holds a different request token than the one Discogs returned. Start the login again.",
+      );
+    }
+
     // Exchange request token for access token
     const { oauth_token: accessToken, oauth_token_secret: accessTokenSecret } =
       await getDiscogsAccessToken(
