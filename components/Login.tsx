@@ -2,7 +2,6 @@
 
 import React from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
   useRememberedUsers,
@@ -14,11 +13,16 @@ const PLACEHOLDER_AVATAR =
 
 const Login: React.FC = () => {
   const t = useTranslations("login");
-  const router = useRouter();
   const { users, removeUser } = useRememberedUsers();
 
+  // Must be a full browser navigation, not router.push: the client router
+  // first fetches the route as an RSC payload, which runs the handler (and
+  // mints a Discogs request token) a second time. The two runs overwrite each
+  // other's request-token cookie, so the token the user approves no longer
+  // matches the session and the access-token exchange fails.
   const handleLogin = () => {
-    router.push("/api/oauth/request");
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination -- API route that redirects off-site, not a page
+    window.location.assign("/api/oauth/request");
   };
 
   const handleRemove = (e: React.MouseEvent, username: string) => {
